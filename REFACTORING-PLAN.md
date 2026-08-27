@@ -128,11 +128,12 @@ Hot reload is enabled (Vite), so edits are reflected on refresh.
       single array of 11,438 words so Random Word always returns one clean
       word (the original occasionally dumped a ~1000-word sub-array string).
       Original nested structure preserved as comments in `words-common.js`.
-- [x] **GitHub + GitHub Pages** — repo `vicdrose/FreestyleKing` (public); the
+- [x] **GitHub + GitHub Pages** — repo `vicdrose/freestyleking` (public); the
       legacy `vicdrose/FreestyleKing-Unity` repo (a separate Unity project) was
-      renamed aside. `page-main5.php` is gitignored (not published). A
-      GitHub Actions workflow builds and deploys `dist/` to Pages on push to
-      `main` → **https://vicdrose.github.io/FreestyleKing**.
+      renamed aside. Repo renamed to all-lowercase `freestyleking` so the Pages
+      URL is exactly **https://vicdrose.github.io/freestyleking**. `page-main5.php`
+      is gitignored (not published). A GitHub Actions workflow builds and
+      deploys `dist/` to Pages on push to `main`.
 - [ ] **Tone.js UI components** — the original used `tone-ui.js` /
       `components.js` for a Tone.js piano and custom `<tone-*>` elements. These
       were replaced with native controls; verify the sampling/piano experience
