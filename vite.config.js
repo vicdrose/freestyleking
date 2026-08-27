@@ -28,7 +28,7 @@ export default defineConfig({
         scope: './',
         display: 'standalone',
         background_color: '#222428',
-        theme_color: '#222428',
+        theme_color: '#ffffff',
         icons: [
           {
             src: './pwa-192x192.png',
