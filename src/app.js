@@ -16,7 +16,7 @@ import {
 import { getSynonyms, getSoundsLike, getRhymes, getForismaticQuote } from './services/api.js';
 import { initAudio } from './services/audio.js';
 import { getBeatShuffler, getPad, getBreak, getBeat, getFKBeat, getBass, getSFX, getFill } from './services/samples.js';
-import { fetchFeed, playSong } from './services/feed.js';
+import { fetchFeed, playSong, isFeedPlaying, stopFeed } from './services/feed.js';
 
 const Vue = window.Vue;
 
@@ -379,15 +379,39 @@ function renderFeed(key, items) {
     info.appendChild(title);
     info.appendChild(author);
     card.appendChild(info);
-    if (post.audioUrl) {
-      const btn = document.createElement('ion-button');
-      btn.className = 'feed-play';
-      btn.setAttribute('fill', 'solid');
-      btn.setAttribute('shape', 'round');
-      btn.innerHTML = '<ion-icon name="play" slot="icon-only"></ion-icon>';
-      btn.addEventListener('click', () => playSong(post.audioUrl));
-      card.appendChild(btn);
+    const btn = document.createElement('ion-button');
+    btn.className = 'feed-play';
+    btn.setAttribute('fill', 'solid');
+    btn.setAttribute('shape', 'round');
+    const icon = () => btn.querySelector('ion-icon');
+    const setIcon = (name) => {
+      const el = icon();
+      if (el) el.setAttribute('name', name);
+    };
+    if (!post.audioUrl) {
+      btn.setAttribute('title', 'No audio available');
+    } else {
+      btn.setAttribute('title', 'Play');
     }
+    btn.innerHTML = '<ion-icon name="play" slot="icon-only"></ion-icon>';
+    btn.addEventListener('click', async () => {
+      if (!post.audioUrl) return;
+      if (isFeedPlaying()) {
+        stopFeed();
+        setIcon('play');
+        btn.title = 'Play';
+        return;
+      }
+      setIcon('pause');
+      const ok = await playSong(post.audioUrl);
+      if (ok) {
+        btn.title = 'Pause';
+      } else {
+        setIcon('play');
+        btn.title = 'Could not play this track';
+      }
+    });
+    card.appendChild(btn);
     list.appendChild(card);
   });
 }
