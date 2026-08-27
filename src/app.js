@@ -16,6 +16,7 @@ import {
 import { getSynonyms, getSoundsLike, getRhymes, getForismaticQuote } from './services/api.js';
 import { initAudio } from './services/audio.js';
 import { getBeatShuffler, getPad, getBreak, getBeat, getFKBeat, getBass, getSFX, getFill } from './services/samples.js';
+import { fetchFeed, playSong } from './services/feed.js';
 
 const Vue = window.Vue;
 
@@ -326,6 +327,94 @@ function wireUI() {
   roll();
 }
 
+// ---------- Raps & Beats community feed ----------
+function feedStateEl(key) {
+  return document.getElementById('feed-' + key + '-state');
+}
+function feedListEl(key) {
+  return document.getElementById('feed-' + key + '-list');
+}
+
+function renderFeedError(key, message) {
+  const state = feedStateEl(key);
+  if (!state) return;
+  state.classList.add('feed-error');
+  state.innerHTML =
+    '<ion-icon name="cloud-offline-outline" style="font-size:40px"></ion-icon>' +
+    '<p>Couldn\u2019t load this feed right now.</p>' +
+    '<p class="feed-hint">' + message + '</p>' +
+    '<ion-button size="small" color="light" onclick="window.fkRetry(\'' + key + '\')">Try again</ion-button>';
+}
+
+function renderFeed(key, items) {
+  const list = feedListEl(key);
+  const state = feedStateEl(key);
+  if (state) state.style.display = 'none';
+  if (!list) return;
+  list.innerHTML = '';
+  if (!items.length) {
+    list.innerHTML = '<p class="feed-state">Nothing posted yet.</p>';
+    return;
+  }
+  items.forEach((post) => {
+    const card = document.createElement('div');
+    card.className = 'feed-card';
+    const info = document.createElement('div');
+    info.className = 'feed-info';
+    const title = document.createElement('p');
+    title.className = 'feed-title';
+    if (post.link) {
+      const a = document.createElement('a');
+      a.href = post.link;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = post.title;
+      title.appendChild(a);
+    } else {
+      title.textContent = post.title;
+    }
+    const author = document.createElement('p');
+    author.className = 'feed-author';
+    author.textContent = 'by ' + post.author;
+    info.appendChild(title);
+    info.appendChild(author);
+    card.appendChild(info);
+    if (post.audioUrl) {
+      const btn = document.createElement('ion-button');
+      btn.className = 'feed-play';
+      btn.setAttribute('fill', 'solid');
+      btn.setAttribute('shape', 'round');
+      btn.innerHTML = '<ion-icon name="play" slot="icon-only"></ion-icon>';
+      btn.addEventListener('click', () => playSong(post.audioUrl));
+      card.appendChild(btn);
+    }
+    list.appendChild(card);
+  });
+}
+
+async function loadFeed(key) {
+  const state = feedStateEl(key);
+  if (state) {
+    state.classList.remove('feed-error');
+    state.style.display = '';
+  }
+  try {
+    const items = await fetchFeed(key);
+    renderFeed(key, items);
+  } catch (err) {
+    renderFeedError(key, err && err.message ? err.message : 'try again later');
+  }
+}
+
+window.fkRetry = function (key) {
+  loadFeed(key);
+};
+
+function wireFeeds() {
+  loadFeed('raps');
+  loadFeed('beats');
+}
+
 // ---------- Boot: mount Vue and wire UI once Ionic is ready ----------
 export function boot() {
   let app = null;
@@ -348,9 +437,16 @@ export function boot() {
 
   // Wire interactions after Ionic web components have upgraded.
   if (customElements && customElements.whenDefined) {
-    customElements.whenDefined('ion-content').then(() => wireUI()).catch(() => wireUI());
+    customElements.whenDefined('ion-content').then(() => {
+      wireUI();
+      wireFeeds();
+    }).catch(() => {
+      wireUI();
+      wireFeeds();
+    });
   } else {
     wireUI();
+    wireFeeds();
   }
 
   return app;

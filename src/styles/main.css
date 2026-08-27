@@ -413,3 +413,79 @@ ion-input {
   color: #ffce00;
   flex-shrink: 0;
 }
+
+/* ============ Raps / Beats community feed ============ */
+.feed-pane {
+  padding: 16px;
+}
+
+.feed-state {
+  text-align: center;
+  color: #ccc;
+  padding: 40px 0;
+}
+
+.feed-state p {
+  margin-top: 12px;
+}
+
+.feed-state ion-spinner {
+  --color: #fff;
+}
+
+.feed-state.feed-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feed-card {
+  background: #fafafa;
+  border: 1px solid #fff;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.feed-card .feed-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.feed-card .feed-title {
+  font-size: 1rem;
+  color: #222428;
+  margin: 0 0 4px;
+  font-weight: 700;
+  word-wrap: break-word;
+}
+
+.feed-card .feed-author {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0;
+}
+
+.feed-card .feed-play {
+  flex-shrink: 0;
+  --padding-start: 0;
+  --padding-end: 0;
+  width: 44px;
+  height: 44px;
+}
+
+.feed-hint {
+  font-size: 0.85rem;
+  color: #aaa;
+  max-width: 280px;
+  margin: 4px auto 0;
+}
