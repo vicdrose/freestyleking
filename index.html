@@ -145,13 +145,27 @@
 
         <ion-content color="dark" class="welcome-content">
           <div class="welcome">
-              <h1 class="welcome-title">Spit That</h1>
+              <h1 class="welcome-title">Spit That.</h1>
             <p class="welcome-tagline">Welcome to the dojo of rappers.</p>
             <ul class="welcome-list">
               <li><ion-icon name="mic-outline"></ion-icon> Practice rhyming</li>
               <li><ion-icon name="musical-notes-outline"></ion-icon> Share songs</li>
               <li><ion-icon name="person-outline"></ion-icon> Make friends</li>
             </ul>
+          </div>
+
+          <div class="home-feed">
+            <ion-label class="section-center feed-heading"><h2>Recent Raps</h2></ion-label>
+            <div id="feed-raps" class="feed-pane">
+              <div class="feed-state" id="feed-raps-state"><ion-spinner></ion-spinner><p>Loading raps…</p></div>
+              <div class="feed-list" id="feed-raps-list"></div>
+            </div>
+
+            <ion-label class="section-center feed-heading"><h2>Recent Beats</h2></ion-label>
+            <div id="feed-beats" class="feed-pane">
+              <div class="feed-state" id="feed-beats-state"><ion-spinner></ion-spinner><p>Loading beats…</p></div>
+              <div class="feed-list" id="feed-beats-list"></div>
+            </div>
           </div>
         </ion-content>
       </ion-tab>
@@ -241,52 +255,10 @@
         </ion-content>
       </ion-tab>
 
-      <!-- ============ RAPS (Community feed) ============ -->
-      <ion-tab tab="raps">
-        <ion-header>
-          <ion-toolbar>
-            <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
-            <ion-title><img src="/logo.png" style="width: 24px;"> Raps</ion-title>
-          </ion-toolbar>
-        </ion-header>
-
-        <ion-content color="dark">
-          <div id="feed-raps" class="feed-pane">
-            <div class="feed-state" id="feed-raps-state"><ion-spinner></ion-spinner><p>Loading raps…</p></div>
-            <div class="feed-list" id="feed-raps-list"></div>
-          </div>
-        </ion-content>
-      </ion-tab>
-
-      <!-- ============ BEATS (Community feed) ============ -->
-      <ion-tab tab="beats">
-        <ion-header>
-          <ion-toolbar>
-            <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
-            <ion-title><img src="/logo.png" style="width: 24px;"> Beats</ion-title>
-          </ion-toolbar>
-        </ion-header>
-
-        <ion-content color="dark">
-          <div id="feed-beats" class="feed-pane">
-            <div class="feed-state" id="feed-beats-state"><ion-spinner></ion-spinner><p>Loading beats…</p></div>
-            <div class="feed-list" id="feed-beats-list"></div>
-          </div>
-        </ion-content>
-      </ion-tab>
-
       <ion-tab-bar slot="bottom">
         <ion-tab-button tab="home">
           <ion-icon name="home-outline"></ion-icon>
           Home
-        </ion-tab-button>
-        <ion-tab-button tab="raps">
-          <ion-icon name="mic-circle-outline"></ion-icon>
-          Raps
-        </ion-tab-button>
-        <ion-tab-button tab="beats">
-          <ion-icon name="musical-notes-outline"></ion-icon>
-          Beats
         </ion-tab-button>
         <ion-tab-button tab="rap">
           <ion-icon name="mic-outline"></ion-icon>

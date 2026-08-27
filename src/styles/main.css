@@ -369,7 +369,8 @@ ion-input {
 }
 
 .welcome {
-  height: 100%;
+  height: auto;
+  min-height: 60vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -383,7 +384,6 @@ ion-input {
   font-weight: 700;
   font-size: 3.2rem;
   color: #fff;
-  text-shadow: 2px 2px 0 #ffce00;
   margin-bottom: 8px;
 }
 
@@ -490,4 +490,22 @@ ion-input {
   color: #aaa;
   max-width: 280px;
   margin: 4px auto 0;
+}
+
+/* ============ Home discovery feeds ============ */
+.home-feed {
+  text-align: left;
+  border-top: 1px solid rgba(255, 255, 255, .2);
+  padding-top: 8px;
+}
+
+.feed-heading {
+  margin-top: 20px;
+  margin-bottom: 8px;
+}
+
+.feed-heading h2 {
+  color: #fff;
+  font-size: 1.3rem;
+  margin: 0;
 }
