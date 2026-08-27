@@ -379,9 +379,11 @@ ion-input {
 }
 
 .welcome-title {
-  font-weight: 800;
-  font-size: 2.2rem;
-  color: #ffce00;
+  font-family: 'Alex Brush', 'Dancing Script', cursive;
+  font-weight: 700;
+  font-size: 3.2rem;
+  color: #fff;
+  text-shadow: 2px 2px 0 #ffce00;
   margin-bottom: 8px;
 }
 

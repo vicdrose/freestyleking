@@ -159,3 +159,59 @@ Hot reload is enabled (Vite), so edits are reflected on refresh.
 8. Test mic toggle, record → start beat → stop → playback, delete.
 9. Test autorap and autobeats.
 10. Test quote modal (Random Quote + Share).
+
+---
+
+## Raps & Beats community feed (rebuilt)
+
+- [x] **Feed tabs restored** — added `Raps` and `Beats` tab-bar buttons and two
+      `<ion-tab>` views that render community posts as cards (Play button +
+      title + author). Preserves the original homepage repeater look (Beats
+      accent `#cf0a2c`, Raps accent `#415f9d`).
+- [x] **Future-proof fetcher** — `src/services/feed.js` exposes a single
+      `FEED_CONFIG` constant (API base + category slugs/labels/accents). It
+      resolves category slug → id via `categories?slug=`, fetches posts with
+      `_embed` (author/media), and extracts title/link/author/audio (ACF field,
+      embedded media, or audio-URL detection). Swapping backends later is a
+      one-config change. Playback uses a simple `playSong(url)` helper (no
+      legacy helper existed in `page-main5.php`).
+- [x] **Graceful failure** — if the API is unreachable, each feed shows a
+      friendly "Couldn't load this feed" message with a **Try again** button.
+
+### TODO — WordPress host is currently DOWN (blocks live feeds)
+
+The WordPress CMS behind `freestylekingapp.com` is **broken** — an error on the
+host took down the entire WordPress site/CMS, **not** just the API. The result
+is a broken SSL/TLS certificate / trust error, so neither the REST API
+(`/wp-json/wp/v2`) nor the sample audio files are reachable from a browser or
+this build environment.
+
+- The frontend feed is finished and deployed; it will resolve once the host is
+  back. **Do NOT use fake/test data** to fill the feed.
+- Next step (likely in a separate OpenCode context, since the user won't do it
+  by hand): work on the WordPress side — likely via **FileZilla** (FTP/SFTP) to
+  inspect exactly what broke and repair the CMS/cert so the REST API and sample
+  audio come back online. After it's fixed, feed cards should populate with
+  real posts; no frontend change should be required.
+
+### TODO — WordPress / SSL repair (cross-context; keep safe)
+
+- **Root cause of the HTTPS failure:** the site's **X509 SSL certificate has
+  expired** (~4 weeks ago) per DirectAdmin → SSL Certificates ("expired or not
+  yet valid"). Renewing/replacing the cert (ACME / auto-renew, or manual upload)
+  should restore HTTPS and the `freestylekingapp.com` REST API + sample audio.
+- **Hosting:** DirectAdmin Web Control Panel on `Hyperion.hostns.io` (port 2222,
+  path `/Evo/`). Files reachable via **FileZilla**.
+- **Domain confirmed:** the WordPress site is on **`freestylekingapp.com`** —
+  the same domain the feed's `FEED_CONFIG.base` and the sample `HOST` already
+  point at, so no code changes are needed in this repo once the cert is fixed.
+- **Homepage note:** the live front page uses **Slider Revolution** with the
+  "Fashion Big Display" font for "Spit That" (cursive-ish display script, white).
+  That look has been mirrored into this repo's Home tab heading (big H1 now reads
+  **"Spit That"** in `Alex Brush`/`Dancing Script` cursive, white with a thin
+  yellow shadow). Deliberately left the small top-toolbar title as "Freestyle King".
+- **Tooling limitation:** this OpenCode instance is bound to the `freestyle-king`
+  GitHub repo folder only — it **cannot** simultaneously reach the live WordPress
+  site / DirectAdmin / FileZilla files. The WordPress/FileZilla repair should be
+  done in a **separate OpenCode instance** pointed at that content (e.g. named
+  "Freestyle King WordPress Admin").
