@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TURN UP</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Material+Icons&display=block">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+  <link rel="stylesheet" href="/src/styles/main.css">
+</head>
+<body>
+  <div class="header-bar">
+    <a href="http://freestylekingapp.com"><img src="https://assets.codepen.io/909667/FreestyleKing+logo.png" style="width: 140px; padding-left: 20px;"/></a>
+    <div style="float: right; padding-top: 30px"><button style="background-color:green; color: white; padding: 5px; border-radius: 10px; margin-right: 10px;"><s>Account</s></button></div>
+  </div>
+
+  <br>
+  <div style="text-align: center;">
+    <h4>Random</h4>
+    <button id="btn-roll">Compound Word</button>
+    <button id="btn-rollCommon">Random Word</button><br>
+    <button id="btn-rollAdj">Adjective</button>
+    <button id="btn-rollAdv">Adverb</button>
+    <button id="btn-rollVerbs">Verbs</button><br>
+    <button id="btn-rollCeleb">Celebrity</button>
+    <button id="btn-rollAth">Athlete</button>
+    <button id="btn-rollMov">Movie</button><br>
+    <button id="btn-rollEmo">Emotions</button>
+    <button id="btn-rollFla">Flavors</button>
+    <button id="btn-rollQue">Question</button>
+
+    <br><br>
+    <h5>Result</h5>
+    <h1 id="result"></h1>
+    <br>
+
+    <button id="btn-randomA">-A-</button><button id="btn-randomE">-E-</button><button id="btn-randomI"> -I- </button><button id="btn-randomO"> -O- </button><button id="btn-randomU"> -U- </button><br><button id="btn-randomah">Ah</button><button id="btn-randomeh">eh</button><button id="btn-randomih">ih</button><button id="btn-randomowh">owh</button><button id="btn-randomuh">uh</button>
+    <br><br>
+    <button id="relationshipBtn">Rhymes</button>
+    <button id="slBtn">Sounds like</button>
+    <button id="synBtn">Synonyms</button>
+
+    <!-- Rhymes Modal -->
+    <div id="relationshipModal" class="modal">
+      <div class="modal-content relationshipresults">
+        <span class="close1">&times;</span>
+        <div class="well">Rhymes</div>
+        <div class="well" id="rhyres" style="text-align: center">Results</div>
+      </div>
+    </div>
+
+    <!-- Sounds-like Modal -->
+    <div id="slModal" class="modal">
+      <div class="modal-content slResults">
+        <span class="close2">&times;</span>
+        <div class="well">Sounds Like</div>
+        <div class="well" id="slres">Results</div>
+      </div>
+    </div>
+
+    <!-- Synonyms Modal -->
+    <div id="synModal" class="modal">
+      <div class="modal-content synModal">
+        <span class="close3">&times;</span>
+        <div class="well">Synonyms</div>
+        <div class="well" id="synres">Results</div>
+      </div>
+    </div>
+
+    <br>
+    <button onclick="#"><s>Suggestions</s></button>
+    <button onclick="#"><s>Translations</s></button>
+
+    <br><br>
+    <button id="btn-autorap">Autorap</button>
+    <button id="btn-autobeats">Autobeats</button><br>
+    <button id="quptalbtn">Show Quote</button>
+
+    <br><br><audio controls autoplay src="" id="beatShuffler"></audio><br><br>
+  </div>
+
+  <br><br><br>
+
+  <!-- Quote Modal -->
+  <div id="quotal" class="quotal" style="display:none; text-align:center;">
+    <div class="quotal-content">
+      <span class="close4">x</span>
+      <h1>Freestyle King</h1>
+      <br>
+      <div id="logo">
+        <img class="logo" src="https://assets.codepen.io/909667/fklogo.png" style="width: 30%;">
+      </div>
+      <div style="color:white">
+        <p id="quote"></p>
+        <h5><p id="author"></p></h5>
+        <ul class="list-inline">
+          <li class="list-inline-item"><button class="button1" id="quoteBtn" style="background-color: white; color: Black; text-shadow: 1px 1px 2px #ffce00;">Random Quote</button></li>
+          <li class="list-inline-item"><button class="button2" id="shareQuote" style="background-color: white; color: Black; text-shadow: 1px 1px 2px #ffce00;">Share Quote</button></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio Section -->
+  <div class="audio-section">
+    <div>
+      <h1 style="width: 50%">Use headphones</h1>
+      <input type="text" id="audioUrl"> <button id="btn-sendUrl">submit</button>
+
+      <div style="width: 50%;" id="content1">
+        <button id="btn-playerStart">start</button>
+        <button id="btn-playerStop">stop</button>
+        <button id="btn-rollBeats" style="width:100%; background-color: yellow; color: black;padding: 5px 0px;"><b>CLASSICS</b></button>
+        <button id="btn-rollFKBeats" style="width:100%; background-color: gold; color: black;padding: 5px 0px;"><b>FK Beats</b></button>
+        <button style="width:100%; background-color: indigo; color: white;padding: 5px 0px;"><b>Premium</b></button>
+        <button style="width:100%; background-color: orange; color: white;padding: 5px 0px;"><b>Standard</b></button>
+        <button id="btn-rollBreak" style="width:100%; background-color: blue; color: white;padding: 5px 0px;"><b>DRUM LOOP</b></button>
+        <div class="slidecontainer">
+          rate: <input type="range" min="50" max="150" value="100" class="slider" id="myRange">
+        </div>
+        <div class="volslide">
+          vol: <input type="range" min="0" max="100" value="100" class="volslider" id="volRange">
+        </div>
+        <br>rate: <span id="demo"></span>
+        <br>URL:<span id="url"></span>
+        <br>vol:<span id="vol"></span>
+      </div>
+
+      <br>
+      <div id="content2" style="width:50%"></div>
+      <button id="btn-rollSample" style="width:50%; background-color: Blue; color: white;"><b>PAD</b></button><br>
+      <button id="btn-rollBass" style="width:50%; background-color: Indigo; color: white;"><b>BASS</b></button>
+      <button id="btn-rollSFX" style="width:50%; background-color: orange; color: white;"><b>SFX</b></button>
+      <button id="btn-rollFills" style="width:50%; background-color: green; color: white;"><b>Drum Fill</b></button>
+
+      <br>URL:<span id="url2"></span><br><br>
+
+      <!-- mic -->
+      <div style="width: 50%;" id="content">
+        <button id="micBtn">Microphone</button>
+      </div>
+      <!-- end mic -->
+
+      <br><br>
+      <button id="btn-record" style="width: 50%; background-color:pink;color: white;padding:5px 0px; border-radius:5px;"><b>RECORD</b></button>
+      <button id="btn-stopRecord" style="width: 50%; background-color:skyblue;color: white;padding: 5px 0px; border-radius:5px;"><b>STOP</b></button>
+      <button id="btn-deleteRecord" style="width: 50%; background-color:brown;color: white;padding: 5px 0px; border-radius:5px;"><b>DELETE</b></button>
+      <br><br>
+      <audio controls id="recAudio"></audio>
+
+      <h1 style="width: 50%">instructions: <br>
+        turn on mic, load beat, break, or not, press record, start beat or break, press stop when done, listen to replay or download</h1>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/2.4.3/webcomponents-bundle.js"></script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
