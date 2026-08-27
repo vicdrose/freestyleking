@@ -2,7 +2,7 @@
 
 This document tracks the **actual** migration of Freestyle King from the legacy
 monolithic PHP page (`page-main5.php`) to the new JavaScript frontend
-(`FreestyleKing/`).
+(which lives at the repository root).
 
 > Status marker: `[x]` = done, `[ ]` = pending / in progress.
 
@@ -17,7 +17,7 @@ without replacing the WordPress REST API or building a new backend.
 page-main5.php  (legacy reference, kept for comparison)
       │
       ▼
-JavaScript Freestyle King  (FreestyleKing/)
+JavaScript Freestyle King  (repo root)
       │
       ▼
         localhost (Vite dev, port 5174)
@@ -35,7 +35,7 @@ JavaScript Freestyle King  (FreestyleKing/)
 
 The legacy file was fully analyzed. Results (data libraries, PHP scandir sample
 generation, functions, event handlers, external resources, API interactions,
-modals, UI) are captured in `FreestyleKing/ARCHITECTURE.md`.
+modals, UI) are captured in `ARCHITECTURE.md`.
 
 Key findings:
 - ~180 KB of 207 KB total is embedded data across 21 arrays.
@@ -43,8 +43,8 @@ Key findings:
   that emit `<script>` tags pushing sample paths into JS globals.
 - The only APIs used: Datamuse (`ml`, `sl`, `rel_rhy`) and Forismatic (quotes),
   plus a Twitter share URL.
-- `words1` uses a nested array structure (786 base words + 10 pushed
-  sub-arrays = 11,438 total) that must be preserved.
+- `words1` used a nested array structure in the original (786 base words + 10
+  pushed sub-arrays = 11,438 total); it has since been flattened (see below).
 - Data count corrections vs. the earlier draft audit: `emotions` = 444 (not
   446), `items` = 846 (not 847). Extraction is taken directly from source lines
   so these reflect the actual file.
@@ -74,7 +74,8 @@ ordering preserved. See `ARCHITECTURE.md` §4 for the full inventory.
 
 - [x] Rhyme banks (`A ah E eh I ih O U uh owh`) → `rhymes-*.js`
 - [x] `items` → `words-compound.js`
-- [x] `words1` (nested structure preserved) → `words-common.js`
+- [x] `words1` (flattened; original nested structure kept as comments) →
+      `words-common.js`
 - [x] `adjectives` / `adverbs` / `verbs` → `words-*.js`
 - [x] `celebs` / `movies` / `emotions` / `flavors` / `questions` / `athletes`
 
@@ -93,7 +94,6 @@ ordering preserved. See `ARCHITECTURE.md` §4 for the full inventory.
 To run locally:
 
 ```bash
-cd FreestyleKing
 npm install        # once
 npm run dev        # http://localhost:5174
 ```
@@ -110,9 +110,8 @@ Hot reload is enabled (Vite), so edits are reflected on refresh.
 
 ## Phase 7 — Documentation
 
-- [x] `FreestyleKing/ARCHITECTURE.md` — describes the new architecture.
-- [x] This `REFACTORING-PLAN.md` — documents the migration and remaining work
-      (mirrors the legacy root copy for the new project).
+- [x] `ARCHITECTURE.md` — describes the new architecture.
+- [x] This `REFACTORING-PLAN.md` — documents the migration and remaining work.
 
 ---
 
@@ -125,8 +124,15 @@ Hot reload is enabled (Vite), so edits are reflected on refresh.
       subdirectories (`breaks`, `SFX`, `drumfills`, `samples/pads`, `bass`,
       `audios`, `FKBeats`, `Kick`, `Clap`, `HiHat`) to restore full sample
       variety. This does not change the API — only the list contents.
-- [ ] **`words1` normalization decision** — the nested structure is preserved
-      for behavioral parity; decide separately whether to flatten it.
+- [x] **`words1` normalization** — the nested structure was flattened to a
+      single array of 11,438 words so Random Word always returns one clean
+      word (the original occasionally dumped a ~1000-word sub-array string).
+      Original nested structure preserved as comments in `words-common.js`.
+- [x] **GitHub + GitHub Pages** — repo `vicdrose/FreestyleKing` (public); the
+      legacy `vicdrose/FreestyleKing-Unity` repo (a separate Unity project) was
+      renamed aside. `page-main5.php` is gitignored (not published). A
+      GitHub Actions workflow builds and deploys `dist/` to Pages on push to
+      `main` → **https://vicdrose.github.io/FreestyleKing**.
 - [ ] **Tone.js UI components** — the original used `tone-ui.js` /
       `components.js` for a Tone.js piano and custom `<tone-*>` elements. These
       were replaced with native controls; verify the sampling/piano experience

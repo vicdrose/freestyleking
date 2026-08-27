@@ -1,9 +1,9 @@
 # Freestyle King — Architecture
 
 Freestyle King is a browser-based freestyle rap training tool. This document
-describes the **new JavaScript frontend** located in `FreestyleKing/`. The
-legacy PHP reference implementation remains at `page-main5.php` (unchanged) in
-the repository root.
+describes the **new JavaScript frontend**, which lives at the repository root.
+The legacy PHP reference implementation remains at `page-main5.php` (unchanged,
+gitignored so it is not published) at the repository root.
 
 ---
 
@@ -56,11 +56,11 @@ freestylekingapp.com sample infrastructure as the legacy page.
 ## 3. Project structure
 
 ```
-FreestyleKing/
 ├── index.html
 ├── package.json
 ├── vite.config.js
 ├── .gitignore
+├── .github/workflows/deploy.yml   # Build + publish dist/ to GitHub Pages
 ├── src/
 │   ├── main.js            # Entry: imports CSS + boots the app
 │   ├── app.js             # Controller: event wiring, word randomizers, modals
@@ -70,7 +70,7 @@ FreestyleKing/
 │   │   ├── index.js       # Aggregates/exports all data libraries
 │   │   ├── items.js       # (words-compound.js) compound words
 │   │   ├── words-compound.js
-│   │   ├── words-common.js    # words1 (nested structure preserved)
+│   │   ├── words-common.js    # words1 (flattened: 11,438 words)
 │   │   ├── words-adjectives.js
 │   │   ├── words-adverbs.js
 │   │   ├── words-verbs.js
@@ -105,36 +105,35 @@ All embedded data was extracted from `page-main5.php` into `src/data/` as ES
 modules (`const X = [...]; export default X;`). Values, ordering, and nested
 structure are preserved exactly.
 
-### `words1` (words-common.js) — special structure preserved
+### `words1` (words-common.js) — flattened array
 
-The legacy code built `words1` as:
+The legacy code built `words1` with a structural quirk:
 
 ```js
 words1 = ["the", "of", ...];          // ~786 base words
 words1.push(["boat", "noble", ...]);  // 10 push() calls, each a sub-array
 ```
 
-`words1.push([...])` pushes a **single array element**, so `words1` is a nested
-array of `length 796` (786 string elements + 10 sub-arrays). Our
-`words-common.js` reproduces this exact structure:
+The `push([...])` calls each pushed a **sub-array as a single element**, so the
+original `words1` was nested with length 796 (786 strings + 10 sub-arrays).
+Because `rollCommon()` selects a random top-level element, it would occasionally
+(~1.3%) dump an entire ~1000-word sub-array as a comma-joined string.
+
+We **flattened** `words1` into a single flat array of **11,438 words** so Random
+Word always returns one clean word. No words were lost. The original nested
+structure is preserved as comments inside `words-common.js` for reference:
 
 ```js
-const words1 = ["the", "of", ...];
-words1.push(["boat", "noble", ...]);
-// ... 9 more push() calls ...
+const words1 = [ "the", "of", ... /* 11,438 flat words */ ];
+// ... original 10 push([...]) calls preserved as comments ...
 export default words1;
 ```
-
-Total word count (including nested sub-arrays): **11,438**. This nested behavior
-is intentional to match the original — `rollCommon()` picks a random top-level
-element which may be a string or a sub-array (rendering as comma-joined text).
-It is preserved as-is for now; a later cleanup task may normalize it.
 
 ### Element counts
 
 | Library | Count | Notes |
 |---|---|---|
-| words1 | 796 top-level / 11,438 total | nested (see above) |
+| words1 | 11,438 | flattened (see above) |
 | items | 846 | compound words |
 | adjectives | 1,115 | |
 | movies | 250 | |
