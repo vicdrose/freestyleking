@@ -3,44 +3,254 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TURN UP</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Material+Icons&display=block">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+  <title>Freestyle King</title>
+
+  <!-- Ionic (CDN) -->
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.esm.js"></script>
+  <script nomodule src="https://cdn.jsdelivr.net/npm/@ionic/core/dist/ionic/ionic.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ionic/core/css/ionic.bundle.css" />
+
+  <!-- Vue 3 (CDN) -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
   <link rel="stylesheet" href="/src/styles/main.css">
 </head>
 <body>
-  <div class="header-bar">
-    <a href="http://freestylekingapp.com"><img src="https://assets.codepen.io/909667/FreestyleKing+logo.png" style="width: 140px; padding-left: 20px;"/></a>
-    <div style="float: right; padding-top: 30px"><button style="background-color:green; color: white; padding: 5px; border-radius: 10px; margin-right: 10px;"><s>Account</s></button></div>
+  <!-- Start Menu -->
+  <ion-menu side="start" content-id="main-content">
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Menu</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content color="dark">
+      <ion-list>
+        <ion-item><ion-label>Friends</ion-label></ion-item>
+        <ion-item><ion-label>Settings</ion-label></ion-item>
+        <ion-item><ion-label>Posts</ion-label></ion-item>
+      </ion-list>
+    </ion-content>
+  </ion-menu>
+  <!-- /Start Menu -->
+
+  <!-- End Menu (Friends) -->
+  <ion-menu side="end" content-id="main-content">
+    <ion-header>
+      <ion-toolbar>
+        <ion-title><img src="/logo.png" style="width: 24px;"> Friends</ion-title>
+      </ion-toolbar>
+      <ion-searchbar placeholder="Search friends"></ion-searchbar>
+    </ion-header>
+    <ion-content class="ion-padding" color="dark">This is the user content.</ion-content>
+  </ion-menu>
+  <!-- /End Menu -->
+
+  <div class="ion-page" id="main-content">
+    <ion-tabs>
+      <!-- ============ RAP (Default page: Randomizer + Quotes) ============ -->
+      <ion-tab tab="rap">
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
+            <ion-title><img src="/logo.png" style="width: 24px;"> Rap</ion-title>
+          </ion-toolbar>
+        </ion-header>
+
+        <ion-content color="dark">
+          <div class="section section-center">
+            <ion-label class="ion-padding-start">Random</ion-label>
+          </div>
+
+          <div class="btn-grid">
+            <ion-button id="btn-roll">Compound Word</ion-button>
+            <ion-button id="btn-rollCommon">Random Word</ion-button>
+            <ion-button id="btn-rollAdj">Adjective</ion-button>
+            <ion-button id="btn-rollAdv">Adverb</ion-button>
+            <ion-button id="btn-rollVerbs">Verbs</ion-button>
+            <ion-button id="btn-rollCeleb">Celebrity</ion-button>
+            <ion-button id="btn-rollAth">Athlete</ion-button>
+            <ion-button id="btn-rollMov">Movie</ion-button>
+            <ion-button id="btn-rollEmo">Emotions</ion-button>
+            <ion-button id="btn-rollFla">Flavors</ion-button>
+            <ion-button id="btn-rollQue">Question</ion-button>
+          </div>
+
+          <div class="section result-section">
+            <ion-label class="ion-padding-start">Result</ion-label>
+            <h1 id="result"></h1>
+          </div>
+
+          <div class="btn-grid vowel-grid">
+            <ion-button id="btn-randomA">-A-</ion-button>
+            <ion-button id="btn-randomE">-E-</ion-button>
+            <ion-button id="btn-randomI">-I-</ion-button>
+            <ion-button id="btn-randomO">-O-</ion-button>
+            <ion-button id="btn-randomU">-U-</ion-button>
+            <ion-button id="btn-randomah">Ah</ion-button>
+            <ion-button id="btn-randomeh">eh</ion-button>
+            <ion-button id="btn-randomih">ih</ion-button>
+            <ion-button id="btn-randomowh">owh</ion-button>
+            <ion-button id="btn-randomuh">uh</ion-button>
+          </div>
+
+          <div class="btn-grid">
+            <ion-button id="relationshipBtn">Rhymes</ion-button>
+            <ion-button id="slBtn">Sounds like</ion-button>
+            <ion-button id="synBtn">Synonyms</ion-button>
+          </div>
+
+          <div class="btn-grid">
+            <ion-button id="btn-autorap">Autorap</ion-button>
+            <ion-button id="btn-autobeats">Autobeats</ion-button>
+            <ion-button id="quptalbtn">Show Quote</ion-button>
+          </div>
+
+          <audio controls autoplay src="" id="beatShuffler" style="display:none;"></audio>
+
+          <div class="section">
+            <ion-label class="ion-padding-start">Quote</ion-label>
+          </div>
+          <div class="ion-padding quote-block">
+            <h5 id="rap-quote"></h5>
+            <p id="rap-author"></p>
+            <div class="btn-grid">
+              <ion-button id="rap-quoteBtn">Random Quote</ion-button>
+              <ion-button id="rap-shareQuote">Share Quote</ion-button>
+            </div>
+          </div>
+        </ion-content>
+      </ion-tab>
+
+      <!-- ============ HOME (Welcome) ============ -->
+      <ion-tab tab="home">
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
+            <ion-title><img src="/logo.png" style="width: 24px;"> Freestyle King</ion-title>
+          </ion-toolbar>
+        </ion-header>
+
+        <ion-content color="dark" class="welcome-content">
+          <div class="welcome">
+            <h1 class="welcome-title">Freestyle King</h1>
+            <p class="welcome-tagline">Welcome to the dojo of rappers.</p>
+            <ul class="welcome-list">
+              <li><ion-icon name="mic-outline"></ion-icon> Practice rhyming</li>
+              <li><ion-icon name="crown-outline"></ion-icon> Share songs</li>
+              <li><ion-icon name="person-outline"></ion-icon> Make friends</li>
+            </ul>
+          </div>
+        </ion-content>
+      </ion-tab>
+
+      <!-- ============ BEAT (Audio tools) ============ -->
+      <ion-tab tab="beat">
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
+            <ion-title><img src="/logo.png" style="width: 24px;"> Beat</ion-title>
+          </ion-toolbar>
+        </ion-header>
+
+        <ion-content color="dark">
+          <div class="audio-section">
+            <h3 class="ion-padding-start">Use Headphones</h3>
+
+            <div class="ion-padding">
+              <ion-input id="audioUrl" placeholder="Paste audio URL"></ion-input>
+              <ion-button id="btn-sendUrl">Submit</ion-button>
+            </div>
+
+            <div class="btn-grid">
+              <ion-button id="btn-playerStart">Start</ion-button>
+              <ion-button id="btn-playerStop">Stop</ion-button>
+            </div>
+
+            <div class="btn-grid">
+              <ion-button color="warning" id="btn-rollBeats">CLASSICS</ion-button>
+              <ion-button color="warning" id="btn-rollFKBeats">FK Beats</ion-button>
+              <ion-button color="primary" id="btn-rollBreak">DRUM LOOP</ion-button>
+            </div>
+
+            <div class="ion-padding">
+              <div class="item-row">rate: <span id="demo">100</span>
+                <ion-range min="50" max="150" value="100" id="myRange" debounce="50"></ion-range>
+              </div>
+              <div class="item-row">vol: <span id="vol">100</span>
+                <ion-range min="0" max="100" value="100" id="volRange" debounce="50"></ion-range>
+              </div>
+              <div class="item-row">URL: <span id="url"></span></div>
+            </div>
+
+            <div class="btn-grid">
+              <ion-button color="primary" id="btn-rollSample">PAD</ion-button>
+              <ion-button color="tertiary" id="btn-rollBass">BASS</ion-button>
+              <ion-button color="warning" id="btn-rollSFX">SFX</ion-button>
+              <ion-button color="success" id="btn-rollFills">Drum Fill</ion-button>
+            </div>
+
+            <div class="ion-padding">URL: <span id="url2"></span></div>
+
+            <!-- Mic -->
+            <div class="ion-padding">
+              <ion-button id="micBtn" expand="block">Microphone</ion-button>
+            </div>
+
+            <!-- Recording -->
+            <div class="btn-grid record-grid">
+              <ion-button color="danger" id="btn-record">RECORD</ion-button>
+              <ion-button color="primary" id="btn-stopRecord">STOP</ion-button>
+              <ion-button color="dark" id="btn-deleteRecord">DELETE</ion-button>
+            </div>
+            <div class="ion-padding">
+              <audio controls id="recAudio"></audio>
+            </div>
+
+            <div class="ion-padding instructions">
+              instructions: turn on mic, load beat, break, or not, press record, start
+              beat or break, press stop when done, listen to replay or download
+            </div>
+          </div>
+        </ion-content>
+      </ion-tab>
+
+      <!-- ============ SEARCH ============ -->
+      <ion-tab tab="search">
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
+            <ion-title><img src="/logo.png" style="width: 24px;"> Search</ion-title>
+          </ion-toolbar>
+        </ion-header>
+
+        <ion-content color="dark">
+          <ion-searchbar placeholder="Type here"></ion-searchbar>
+        </ion-content>
+      </ion-tab>
+
+      <ion-tab-bar slot="bottom">
+        <ion-tab-button tab="home">
+          <ion-icon name="home-outline"></ion-icon>
+          Home
+        </ion-tab-button>
+        <ion-tab-button tab="rap">
+          <ion-icon name="mic-outline"></ion-icon>
+          Rap
+        </ion-tab-button>
+        <ion-tab-button tab="beat">
+          <ion-icon name="apps-sharp"></ion-icon>
+          Beat
+        </ion-tab-button>
+        <ion-tab-button tab="search">
+          <ion-icon name="search"></ion-icon>
+          Search
+        </ion-tab-button>
+      </ion-tab-bar>
+    </ion-tabs>
   </div>
 
-  <br>
-  <div style="text-align: center;">
-    <h4>Random</h4>
-    <button id="btn-roll">Compound Word</button>
-    <button id="btn-rollCommon">Random Word</button><br>
-    <button id="btn-rollAdj">Adjective</button>
-    <button id="btn-rollAdv">Adverb</button>
-    <button id="btn-rollVerbs">Verbs</button><br>
-    <button id="btn-rollCeleb">Celebrity</button>
-    <button id="btn-rollAth">Athlete</button>
-    <button id="btn-rollMov">Movie</button><br>
-    <button id="btn-rollEmo">Emotions</button>
-    <button id="btn-rollFla">Flavors</button>
-    <button id="btn-rollQue">Question</button>
-
-    <br><br>
-    <h5>Result</h5>
-    <h1 id="result"></h1>
-    <br>
-
-    <button id="btn-randomA">-A-</button><button id="btn-randomE">-E-</button><button id="btn-randomI"> -I- </button><button id="btn-randomO"> -O- </button><button id="btn-randomU"> -U- </button><br><button id="btn-randomah">Ah</button><button id="btn-randomeh">eh</button><button id="btn-randomih">ih</button><button id="btn-randomowh">owh</button><button id="btn-randomuh">uh</button>
-    <br><br>
-    <button id="relationshipBtn">Rhymes</button>
-    <button id="slBtn">Sounds like</button>
-    <button id="synBtn">Synonyms</button>
-
-    <!-- Rhymes Modal -->
+  <!-- Relationship Modals (render in root content so overlay works) -->
+  <div id="modal-hosts">
     <div id="relationshipModal" class="modal">
       <div class="modal-content relationshipresults">
         <span class="close1">&times;</span>
@@ -49,7 +259,6 @@
       </div>
     </div>
 
-    <!-- Sounds-like Modal -->
     <div id="slModal" class="modal">
       <div class="modal-content slResults">
         <span class="close2">&times;</span>
@@ -58,7 +267,6 @@
       </div>
     </div>
 
-    <!-- Synonyms Modal -->
     <div id="synModal" class="modal">
       <div class="modal-content synModal">
         <span class="close3">&times;</span>
@@ -67,93 +275,25 @@
       </div>
     </div>
 
-    <br>
-    <button onclick="#"><s>Suggestions</s></button>
-    <button onclick="#"><s>Translations</s></button>
-
-    <br><br>
-    <button id="btn-autorap">Autorap</button>
-    <button id="btn-autobeats">Autobeats</button><br>
-    <button id="quptalbtn">Show Quote</button>
-
-    <br><br><audio controls autoplay src="" id="beatShuffler"></audio><br><br>
-  </div>
-
-  <br><br><br>
-
-  <!-- Quote Modal -->
-  <div id="quotal" class="quotal" style="display:none; text-align:center;">
-    <div class="quotal-content">
-      <span class="close4">x</span>
-      <h1>Freestyle King</h1>
-      <br>
-      <div id="logo">
-        <img class="logo" src="https://assets.codepen.io/909667/fklogo.png" style="width: 30%;">
-      </div>
-      <div style="color:white">
-        <p id="quote"></p>
-        <h5><p id="author"></p></h5>
-        <ul class="list-inline">
-          <li class="list-inline-item"><button class="button1" id="quoteBtn" style="background-color: white; color: Black; text-shadow: 1px 1px 2px #ffce00;">Random Quote</button></li>
-          <li class="list-inline-item"><button class="button2" id="shareQuote" style="background-color: white; color: Black; text-shadow: 1px 1px 2px #ffce00;">Share Quote</button></li>
-        </ul>
+    <div id="quotal" class="quotal" style="display:none; text-align:center;">
+      <div class="quotal-content">
+        <span class="close4">x</span>
+        <h1>Freestyle King</h1>
+        <div id="logo">
+          <img class="logo" src="/logo.png" style="width: 30%;">
+        </div>
+        <div style="color:white">
+          <p id="quote"></p>
+          <h5><p id="author"></p></h5>
+          <ul class="list-inline">
+            <li class="list-inline-item"><button class="button1" id="quoteBtn" style="background-color: white; color: Black; text-shadow: 1px 1px 2px #ffce00;">Random Quote</button></li>
+            <li class="list-inline-item"><button class="button2" id="shareQuote" style="background-color: white; color: Black; text-shadow: 1px 1px 2px #ffce00;">Share Quote</button></li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Audio Section -->
-  <div class="audio-section">
-    <div>
-      <h1 style="width: 50%">Use headphones</h1>
-      <input type="text" id="audioUrl"> <button id="btn-sendUrl">submit</button>
-
-      <div style="width: 50%;" id="content1">
-        <button id="btn-playerStart">start</button>
-        <button id="btn-playerStop">stop</button>
-        <button id="btn-rollBeats" style="width:100%; background-color: yellow; color: black;padding: 5px 0px;"><b>CLASSICS</b></button>
-        <button id="btn-rollFKBeats" style="width:100%; background-color: gold; color: black;padding: 5px 0px;"><b>FK Beats</b></button>
-        <button style="width:100%; background-color: indigo; color: white;padding: 5px 0px;"><b>Premium</b></button>
-        <button style="width:100%; background-color: orange; color: white;padding: 5px 0px;"><b>Standard</b></button>
-        <button id="btn-rollBreak" style="width:100%; background-color: blue; color: white;padding: 5px 0px;"><b>DRUM LOOP</b></button>
-        <div class="slidecontainer">
-          rate: <input type="range" min="50" max="150" value="100" class="slider" id="myRange">
-        </div>
-        <div class="volslide">
-          vol: <input type="range" min="0" max="100" value="100" class="volslider" id="volRange">
-        </div>
-        <br>rate: <span id="demo"></span>
-        <br>URL:<span id="url"></span>
-        <br>vol:<span id="vol"></span>
-      </div>
-
-      <br>
-      <div id="content2" style="width:50%"></div>
-      <button id="btn-rollSample" style="width:50%; background-color: Blue; color: white;"><b>PAD</b></button><br>
-      <button id="btn-rollBass" style="width:50%; background-color: Indigo; color: white;"><b>BASS</b></button>
-      <button id="btn-rollSFX" style="width:50%; background-color: orange; color: white;"><b>SFX</b></button>
-      <button id="btn-rollFills" style="width:50%; background-color: green; color: white;"><b>Drum Fill</b></button>
-
-      <br>URL:<span id="url2"></span><br><br>
-
-      <!-- mic -->
-      <div style="width: 50%;" id="content">
-        <button id="micBtn">Microphone</button>
-      </div>
-      <!-- end mic -->
-
-      <br><br>
-      <button id="btn-record" style="width: 50%; background-color:pink;color: white;padding:5px 0px; border-radius:5px;"><b>RECORD</b></button>
-      <button id="btn-stopRecord" style="width: 50%; background-color:skyblue;color: white;padding: 5px 0px; border-radius:5px;"><b>STOP</b></button>
-      <button id="btn-deleteRecord" style="width: 50%; background-color:brown;color: white;padding: 5px 0px; border-radius:5px;"><b>DELETE</b></button>
-      <br><br>
-      <audio controls id="recAudio"></audio>
-
-      <h1 style="width: 50%">instructions: <br>
-        turn on mic, load beat, break, or not, press record, start beat or break, press stop when done, listen to replay or download</h1>
-    </div>
-  </div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/2.4.3/webcomponents-bundle.js"></script>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>

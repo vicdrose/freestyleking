@@ -219,3 +219,197 @@ body {
   background-color: white;
   color: black;
 }
+
+/* ============================================================
+   Ionic + Vue customization (from the Ionic practice skeleton)
+   ============================================================ */
+* {
+  --color-selected: darkred;
+}
+
+ion-toolbar, ion-tab-bar {
+  --background: tan;
+  --color: white;
+}
+
+ion-fab-button {
+  --background: rgba(0, 121, 107, 0.75);
+}
+
+ion-item {
+  --background: #2f2f2f;
+  --color: #fff;
+}
+
+ion-button {
+  display: inline-block;
+}
+
+.example-content {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0px 40px 0px;
+  text-align: center;
+}
+
+.btn-cntnr {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-cntnr ion-button {
+  --background: rgba(0, 121, 107, 0.75);
+}
+
+ion-segment-button::part(indicator-background) {
+  background: goldenrod;
+}
+
+/* Material Design styles */
+ion-segment-button.md {
+  --color: #777;
+  --color-checked: goldenrod;
+  --indicator-height: 4px;
+}
+
+.list-md {
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
+/* ---- new layout helpers ---- */
+.section {
+  margin: 4px 12px;
+  font-size: 1.2rem;
+  color: #ccc;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  padding-bottom: 4px;
+}
+
+.section-center ion-label {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding-left: 0;
+}
+
+.result-section {
+  margin-top: 16px;
+}
+
+.result-section ion-label {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding-left: 0;
+}
+
+.result-section h1 {
+  color: white;
+  margin: 8px 12px 0;
+  text-align: center;
+  word-break: break-word;
+}
+
+.btn-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 12px;
+}
+
+.btn-grid ion-button {
+  flex: 1 1 30%;
+  margin: 0;
+  min-width: 90px;
+}
+
+.vowel-grid ion-button {
+  flex: 1 1 18%;
+}
+
+.audio-section {
+  background: transparent;
+  border: tan 1px solid;
+  color: white;
+  margin: 12px;
+}
+
+.audio-section h3 {
+  color: white;
+}
+
+.audio-section .item-row {
+  padding: 6px 0;
+}
+
+.record-grid ion-button {
+  flex: 1 1 30%;
+}
+
+.instructions {
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+.quote-block p,
+.quote-block h5 {
+  color: white;
+}
+
+ion-input {
+  --background: #1f1f1f;
+  --color: white;
+  margin-bottom: 8px;
+}
+
+.welcome-content {
+  --ion-background-color: #000;
+}
+
+.welcome {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 24px;
+}
+
+.welcome-title {
+  font-weight: 800;
+  font-size: 2.2rem;
+  color: #ffce00;
+  margin-bottom: 8px;
+}
+
+.welcome-tagline {
+  font-size: 1.1rem;
+  color: #ccc;
+  margin-bottom: 32px;
+}
+
+.welcome-list {
+  list-style: none;
+  padding: 0 8px;
+  margin: 0;
+  width: 100%;
+  max-width: 320px;
+  font-size: 1.15rem;
+  color: #fff;
+}
+
+.welcome-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  text-align: left;
+}
+
+.welcome-list ion-icon {
+  color: #ffce00;
+  flex-shrink: 0;
+}

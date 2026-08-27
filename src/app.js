@@ -1,3 +1,13 @@
+/**
+ * Freestyle King — application controller.
+ *
+ * Hybrid approach: Vue 3 (loaded via CDN) provides the app/reactive layer,
+ * Ionic web components (loaded via CDN) provide the modern UI. The core
+ * Freestyle King logic (word randomizers, Datamuse relationships, quotes,
+ * Tone.js audio) is wired imperatively against the Ionic markup in index.html.
+ *
+ * All data + services are bundled by Vite as ES modules.
+ */
 import {
   items, words1, adjectives, adverbs, verbs, celebs, athletes,
   movies, emotions, flavors, questions,
@@ -6,6 +16,8 @@ import {
 import { getSynonyms, getSoundsLike, getRhymes, getForismaticQuote } from './services/api.js';
 import { initAudio } from './services/audio.js';
 import { getBeatShuffler, getPad, getBreak, getBeat, getFKBeat, getBass, getSFX, getFill } from './services/samples.js';
+
+const Vue = window.Vue;
 
 const resultEl = document.getElementById('result');
 
@@ -111,8 +123,16 @@ function getNewQuote() {
     .then((response) => {
       quote = response.quoteText;
       author = response.quoteAuthor;
-      document.getElementById('quote').textContent = '"' + quote + '"';
-      document.getElementById('author').textContent = author ? '- ' + author : '- unknown';
+      const text = '"' + quote + '"';
+      const byline = author ? '- ' + author : '- unknown';
+      const q = document.getElementById('quote');
+      const a = document.getElementById('author');
+      if (q) q.textContent = text;
+      if (a) a.textContent = byline;
+      const rq = document.getElementById('rap-quote');
+      const ra = document.getElementById('rap-author');
+      if (rq) rq.textContent = text;
+      if (ra) ra.textContent = byline;
     })
     .catch(() => {});
 }
@@ -122,7 +142,7 @@ function setupModal(modal, closeClass, openId) {
   const btn = document.getElementById(openId);
   const span = document.getElementsByClassName(closeClass)[0];
   if (btn) {
-    btn.onclick = () => { modal.style.display = 'block'; };
+    btn.onclick = (e) => { e.preventDefault(); modal.style.display = 'block'; };
   }
   if (span) {
     span.onclick = () => { modal.style.display = 'none'; };
@@ -154,8 +174,8 @@ function autorapadj() {
   setInterval(rollAdj, 8000);
 }
 
-// ---------- Boot ----------
-export function boot() {
+// ---------- Wire up all UI (called from Vue mounted) ----------
+function wireUI() {
   const audio = initAudio();
   const { player, sampler, recorder, mic } = audio;
 
@@ -196,24 +216,31 @@ export function boot() {
     e.preventDefault();
     window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent('"' + quote + '"' + '- ' + author));
   };
+  const rqb = document.getElementById('rap-quoteBtn');
+  if (rqb) rqb.onclick = (e) => { e.preventDefault(); getNewQuote(); };
+  const rsb = document.getElementById('rap-shareQuote');
+  if (rsb) rsb.onclick = (e) => {
+    e.preventDefault();
+    window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent('"' + quote + '"' + '- ' + author));
+  };
   getNewQuote();
 
-  // Sliders
+  // Sliders (Ionic ion-range emits ionChange)
   const slider = document.getElementById('myRange');
   const output = document.getElementById('demo');
-  output.innerHTML = slider.value;
-  slider.oninput = function () {
-    output.innerHTML = this.value;
-    player.playbackRate = this.value / 100;
-  };
+  output.innerHTML = slider.value || 100;
+  slider.addEventListener('ionChange', () => {
+    output.innerHTML = slider.value;
+    player.playbackRate = slider.value / 100;
+  });
 
   const volslider = document.getElementById('volRange');
   const volume = document.getElementById('vol');
-  volume.innerHTML = volslider.value;
-  volslider.oninput = function () {
-    volume.innerHTML = this.value;
-    player.volume = -(this.value / 100);
-  };
+  volume.innerHTML = volslider.value || 100;
+  volslider.addEventListener('ionChange', () => {
+    volume.innerHTML = volslider.value;
+    player.volume = -(volslider.value / 100);
+  });
 
   // Player start/stop
   document.getElementById('btn-playerStart').onclick = () => player.start();
@@ -283,20 +310,50 @@ export function boot() {
   // Autorap buttons
   document.getElementById('btn-autorap').onclick = autorap1;
   document.getElementById('btn-autobeats').onclick = () => {
-    const { rel, url } = getBeatShuffler();
+    const { url } = getBeatShuffler();
     const el = document.getElementById('beatShuffler');
     el.src = url;
   };
 
   // Autobeats on ended
   document.getElementById('beatShuffler').onended = () => {
-    const { rel, url } = getBeatShuffler();
+    const { url } = getBeatShuffler();
     const el = document.getElementById('beatShuffler');
     el.src = url;
   };
 
   // Initial behavior parity
   roll();
+}
+
+// ---------- Boot: mount Vue and wire UI once Ionic is ready ----------
+export function boot() {
+  let app = null;
+
+  // Mount Vue ONLY on a small dedicated element so it never clobbers the
+  // existing Ionic markup that the imperative wiring (wireUI) depends on.
+  // Later this can be migrated to full .vue SFCs / Vue-owned templates.
+  const holder = document.getElementById('vue-holder');
+  if (Vue && holder) {
+    app = Vue.createApp({
+      data() {
+        return {
+          message: 'Freestyle King',
+          version: 'Ionic + Vue'
+        };
+      }
+    });
+    app.mount('#vue-holder');
+  }
+
+  // Wire interactions after Ionic web components have upgraded.
+  if (customElements && customElements.whenDefined) {
+    customElements.whenDefined('ion-content').then(() => wireUI()).catch(() => wireUI());
+  } else {
+    wireUI();
+  }
+
+  return app;
 }
 
 export {
