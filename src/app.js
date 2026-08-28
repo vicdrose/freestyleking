@@ -60,8 +60,53 @@ const modal1 = document.getElementById('relationshipModal');
 const modal2 = document.getElementById('slModal');
 const modal3 = document.getElementById('synModal');
 
+const wordStage = document.getElementById('wordstage');
+const stageSyn = document.getElementById('stageSyn');
+const stageRhy = document.getElementById('stageRhy');
+const stageWord = document.getElementById('stageWord');
+
+function stageOpen() {
+  if (!wordStage) return;
+  wordStage.classList.add('ws-open');
+  wordStage.setAttribute('aria-hidden', 'false');
+}
+
+function stageClose() {
+  if (!wordStage) return;
+  wordStage.classList.remove('ws-open');
+  wordStage.setAttribute('aria-hidden', 'true');
+  syncStageWord();
+}
+
+// Reflect whatever word is currently in #result into the stage center.
+function syncStageWord() {
+  if (!stageWord) return;
+  stageWord.textContent = resultEl.innerHTML || '';
+}
+
+function fillPanel(panel, data) {
+  if (!panel) return;
+  panel.innerHTML = '';
+  data.forEach((element) => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'ws-chip';
+    chip.textContent = element.word;
+    chip.addEventListener('click', () => other2(element.word));
+    panel.appendChild(chip);
+  });
+}
+
+function renderStage(word) {
+  if (stageWord) stageWord.textContent = word;
+  getSynonyms(word).then((data) => fillPanel(stageSyn, data));
+  getRhymes(word).then((data) => fillPanel(stageRhy, data));
+}
+
 function loadRelationships() {
   const Input = resultEl.innerHTML;
+  renderStage(Input);
+
   document.getElementById('rhyres').innerHTML = '';
   document.getElementById('synres').innerHTML = '';
   document.getElementById('slres').innerHTML = '';
@@ -146,29 +191,125 @@ function setupModal(modal, closeClass, openId) {
   }
 }
 
-// ---------- Autorap ----------
+// ---------- Autorap (dedicated split-screen overlay + auto-advance timer) ----------
+const autoStage = document.getElementById('autostage');
+const autoSyn = document.getElementById('autoSyn');
+const autoRhy = document.getElementById('autoRhy');
+const autoWord = document.getElementById('autoWord');
+const asSeconds = document.getElementById('asSeconds');
+const asMult = document.getElementById('asMult');
+const asClock = document.getElementById('asClock');
+
+const autorap = {
+  timer: null,
+  rollFn: null,
+  base: 8,
+  mult: 1,
+  current: 0,
+
+  effectiveMs() {
+    return Math.max(300, (this.base * this.mult) * 1000);
+  },
+
+  updateClock() {
+    if (asClock) asClock.textContent = Math.round(this.effectiveMs() / 1000) + 's';
+  },
+
+  open(rollFn, seeds) {
+    this.stop();
+    this.rollFn = rollFn;
+    if (asSeconds) this.base = Math.max(1, parseInt(asSeconds.value, 10) || 8);
+    if (asMult) this.mult = parseFloat(asMult.value) || 1;
+    this.updateClock();
+
+    // Show the overlay up front.
+    if (autoStage) {
+      autoStage.classList.add('as-open');
+      autoStage.setAttribute('aria-hidden', 'false');
+    }
+
+    // Seed the first word immediately, then auto-advance every interval.
+    this.advance(seeds);
+    this.schedule();
+  },
+
+  schedule() {
+    this.stop();
+    const ms = this.effectiveMs();
+    this.timer = setInterval(() => {
+      this.advance();
+    }, ms);
+  },
+
+  advance(seeds) {
+    const word = seeds && seeds.length ? random_item(seeds) : random_item(items);
+    this.render(word);
+  },
+
+  render(word) {
+    if (autoWord) autoWord.textContent = word;
+    getSynonyms(word).then((data) => fillPanel(autoSyn, data));
+    getRhymes(word).then((data) => fillPanel(autoRhy, data));
+  },
+
+  stop() {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
+  },
+
+  close() {
+    this.stop();
+    if (autoStage) {
+      autoStage.classList.remove('as-open');
+      autoStage.setAttribute('aria-hidden', 'true');
+    }
+  },
+
+  wire() {
+    if (asSeconds) {
+      asSeconds.addEventListener('change', () => {
+        this.base = Math.max(1, parseInt(asSeconds.value, 10) || 8);
+        this.updateClock();
+        this.schedule();
+      });
+    }
+    if (asMult) {
+      asMult.addEventListener('input', () => {
+        this.mult = parseFloat(asMult.value) || 1;
+        this.updateClock();
+        this.schedule();
+      });
+    }
+    const skipBtn = document.getElementById('asSkip');
+    if (skipBtn) {
+      skipBtn.addEventListener('click', () => {
+        this.advance();
+        this.schedule();
+      });
+    }
+    const closeBtn = document.getElementById('asClose');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => this.close());
+    }
+  }
+};
+
 function autorap1() {
-  modal3.style.display = 'block';
-  modal1.style.display = 'block';
-  setInterval(roll, 8000);
+  autorap.open(random_item, items);
 }
 
 function autorapverbs() {
-  modal3.style.display = 'block';
-  modal1.style.display = 'block';
-  setInterval(rollVerbs, 8000);
+  autorap.open(random_item, verbs);
 }
 
 function autorapadv() {
-  modal3.style.display = 'block';
-  modal1.style.display = 'block';
-  setInterval(rollAdv, 8000);
+  autorap.open(random_item, adverbs);
 }
 
 function autorapadj() {
-  modal3.style.display = 'block';
-  modal1.style.display = 'block';
-  setInterval(rollAdj, 8000);
+  autorap.open(random_item, adjectives);
 }
 
 // ---------- Wire up all UI (called from Vue mounted) ----------
@@ -201,11 +342,32 @@ function wireUI() {
   document.getElementById('btn-randomowh').onclick = randomowh;
   document.getElementById('btn-randomuh').onclick = randomuh;
 
-  // Modals
-  setupModal(modal1, 'close1', 'relationshipBtn');
+  // Modals (Rhymes & Synonyms open the split-screen stage)
   setupModal(modal2, 'close2', 'slBtn');
-  setupModal(modal3, 'close3', 'synBtn');
   setupModal(document.getElementById('quotal'), 'close4', 'quptalbtn');
+  const relationshipBtn = document.getElementById('relationshipBtn');
+  const synBtn = document.getElementById('synBtn');
+  if (relationshipBtn) {
+    relationshipBtn.onclick = (e) => {
+      e.preventDefault();
+      renderStage(resultEl.innerHTML);
+      stageOpen();
+    };
+  }
+  if (synBtn) {
+    synBtn.onclick = (e) => {
+      e.preventDefault();
+      renderStage(resultEl.innerHTML);
+      stageOpen();
+    };
+  }
+
+  // Close the stage when tapping anywhere outside the panels.
+  if (wordStage) {
+    wordStage.addEventListener('click', (e) => {
+      if (e.target === wordStage) stageClose();
+    });
+  }
 
   // Quote
   document.getElementById('quoteBtn').onclick = (e) => { e.preventDefault(); getNewQuote(); };
@@ -298,6 +460,7 @@ function wireUI() {
   });
 
   // Autorap buttons
+  autorap.wire();
   document.getElementById('btn-autorap').onclick = autorap1;
   document.getElementById('btn-autobeats').onclick = () => {
     const { url } = getBeatShuffler();
