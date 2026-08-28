@@ -14,6 +14,7 @@ export default defineConfig({
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
+      updateViaCache: 'none',
       injectRegister: 'auto',
       includeAssets: [
         'pwa-192x192.png',
