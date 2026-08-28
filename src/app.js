@@ -155,6 +155,14 @@ function UpdateWords() {
 function other2(Input) {
   resultEl.innerHTML = Input;
   loadRelationships();
+
+  // Mirror the new word into whichever relationship surface is open and re-search it immediately.
+  if (autoStage && autoStage.classList.contains('as-open')) {
+    autorap.render(Input);
+  } else if (wordStage && wordStage.classList.contains('ws-open')) {
+    renderStage(Input);
+  }
+
   modal1.style.display = 'none';
   modal2.style.display = 'none';
   modal3.style.display = 'none';
