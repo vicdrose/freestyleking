@@ -323,6 +323,21 @@ const autorap = {
     if (closeBtn) {
       closeBtn.addEventListener('click', () => this.close());
     }
+
+    // Phonetics rows: tap a sound to auto-rap within that phoneme group.
+    const phonMap = [
+      ['ariaA', A], ['ariaE', E], ['ariaI', I], ['ariaO', O], ['ariaU', U],
+      ['ariaah', ah], ['ariaeh', eh], ['ariaih', ih], ['ariaowh', owh], ['ariauh', uh]
+    ];
+    phonMap.forEach(([id, list]) => {
+      const b = document.getElementById(id);
+      if (b) {
+        b.addEventListener('click', () => {
+          this.render(random_item(list));
+          if (!this.paused) this.schedule();
+        });
+      }
+    });
   }
 };
 

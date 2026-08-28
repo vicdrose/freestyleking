@@ -718,7 +718,7 @@ ion-input {
 }
 
 .as-body {
-  flex: 1 1 0;
+  flex: 0 1 60%;
   display: flex;
   flex-direction: row;
   gap: 12px;
@@ -832,4 +832,26 @@ ion-input {
   .as-controls {
     flex-wrap: wrap;
   }
+}
+
+/* ============ Autorap phonetics row ============ */
+.as-phon {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.as-phon-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 0;
+}
+
+.as-phon-btn {
+  padding: 6px 14px;
+  min-width: 60px;
+  text-align: center;
 }
