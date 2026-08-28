@@ -199,6 +199,7 @@ const autoWord = document.getElementById('autoWord');
 const asSeconds = document.getElementById('asSeconds');
 const asMult = document.getElementById('asMult');
 const asClock = document.getElementById('asClock');
+const asPause = document.getElementById('asPause');
 
 const autorap = {
   timer: null,
@@ -206,6 +207,7 @@ const autorap = {
   base: 8,
   mult: 1,
   current: 0,
+  paused: false,
 
   effectiveMs() {
     return Math.max(300, (this.base * this.mult) * 1000);
@@ -215,8 +217,23 @@ const autorap = {
     if (asClock) asClock.textContent = Math.round(this.effectiveMs() / 1000) + 's';
   },
 
+  setPaused(p) {
+    this.paused = p;
+    if (p) { this.stop(); }
+    if (asPause) {
+      asPause.title = p ? 'Resume' : 'Pause on this word';
+      asPause.innerHTML = p ? '&#9654;' : '&#10074;&#10074;';
+    }
+    if (!p) this.schedule();
+  },
+
   open(rollFn, seeds) {
     this.stop();
+    this.paused = false;
+    if (asPause) {
+      asPause.title = 'Pause on this word';
+      asPause.innerHTML = '&#10074;&#10074;';
+    }
     this.rollFn = rollFn;
     if (asSeconds) this.base = Math.max(1, parseInt(asSeconds.value, 10) || 8);
     if (asMult) this.mult = parseFloat(asMult.value) || 1;
@@ -235,6 +252,7 @@ const autorap = {
 
   schedule() {
     this.stop();
+    if (this.paused) return;
     const ms = this.effectiveMs();
     this.timer = setInterval(() => {
       this.advance();
@@ -285,9 +303,13 @@ const autorap = {
     const skipBtn = document.getElementById('asSkip');
     if (skipBtn) {
       skipBtn.addEventListener('click', () => {
+        if (this.paused) { this.setPaused(false); return; }
         this.advance();
         this.schedule();
       });
+    }
+    if (asPause) {
+      asPause.addEventListener('click', () => this.setPaused(!this.paused));
     }
     const closeBtn = document.getElementById('asClose');
     if (closeBtn) {
