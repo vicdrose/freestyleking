@@ -215,3 +215,27 @@ this build environment.
   site / DirectAdmin / FileZilla files. The WordPress/FileZilla repair should be
   done in a **separate OpenCode instance** pointed at that content (e.g. named
   "Freestyle King WordPress Admin").
+
+### Feed status (session update — app is DONE, only the cert blocks live use)
+
+All **frontend** blockers are resolved and deployed to Pages. The feed now works
+end-to-end on the GitHub Pages origin whenever the WordPress host is reachable:
+
+- Audio URL is resolved from the **post's attachment** (`wp/v2/media?parent=<id>`),
+  taking the first `audio/*` file. Image thumbnails / featured media are skipped
+  so a `.jpg` is never treated as a track.
+- The shared Home player is a **plain `<audio controls id="feedPlayer">`** streamed
+  directly — no `AudioContext`/`createMediaElementSource` (which caused cross-origin
+  "outputs zeroes" silence), no CORS requirement, and the service worker **no longer
+  intercepts `freestylekingapp.com` media** (removed the `NetworkFirst` "audio-samples"
+  runtime-cache rule that returned `no-response` and broke playback).
+- PWA now uses `updateViaCache: 'none'` so `sw.js` is always revalidated on the
+  network and new deploys take over on a normal refresh (no manual unregister).
+
+**The single remaining blocker is the expired X509 SSL cert** — browsers report
+`net::ERR_CERT_DATE_INVALID` on `https://freestylekingapp.com/wp-json/...`, so the
+JSON feed and `.wav` files fail on the deployed site even though the code is correct.
+Renewing the cert on the WordPress host (DirectAdmin → SSL, `Hyperion.hostns.io:2222`)
+will restore the live feed with **no further repo changes**. It only "works on
+localhost" because that browser profile already trusted the old cert.
+
