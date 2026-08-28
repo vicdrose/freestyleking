@@ -130,10 +130,6 @@ function getNewQuote() {
       const a = document.getElementById('author');
       if (q) q.textContent = text;
       if (a) a.textContent = byline;
-      const rq = document.getElementById('rap-quote');
-      const ra = document.getElementById('rap-author');
-      if (rq) rq.textContent = text;
-      if (ra) ra.textContent = byline;
     })
     .catch(() => {});
 }
@@ -214,13 +210,6 @@ function wireUI() {
   // Quote
   document.getElementById('quoteBtn').onclick = (e) => { e.preventDefault(); getNewQuote(); };
   document.getElementById('shareQuote').onclick = (e) => {
-    e.preventDefault();
-    window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent('"' + quote + '"' + '- ' + author));
-  };
-  const rqb = document.getElementById('rap-quoteBtn');
-  if (rqb) rqb.onclick = (e) => { e.preventDefault(); getNewQuote(); };
-  const rsb = document.getElementById('rap-shareQuote');
-  if (rsb) rsb.onclick = (e) => {
     e.preventDefault();
     window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent('"' + quote + '"' + '- ' + author));
   };

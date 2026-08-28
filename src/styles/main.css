@@ -542,3 +542,23 @@ ion-input {
   width: 100%;
   max-width: 320px;
 }
+
+/* ============ Luxury divider (Rap view) ============ */
+.lux-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 32px 24px 8px;
+}
+
+.lux-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(82, 90, 100, .45), transparent);
+}
+
+.lux-diamond {
+  color: rgba(255, 255, 255, .3);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
