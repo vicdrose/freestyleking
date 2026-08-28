@@ -86,14 +86,21 @@
           </div>
 
           <div class="home-feed">
-            <ion-label class="section-center feed-heading"><h2>Recent Raps</h2></ion-label>
+            <ion-segment id="home-feed-seg" value="raps">
+              <ion-segment-button value="raps">
+                <ion-label>Raps</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="beats">
+                <ion-label>Beats</ion-label>
+              </ion-segment-button>
+            </ion-segment>
+
             <div id="feed-raps" class="feed-pane">
               <div class="feed-state" id="feed-raps-state"><ion-spinner></ion-spinner><p>Loading raps…</p></div>
               <div class="feed-list" id="feed-raps-list"></div>
             </div>
 
-            <ion-label class="section-center feed-heading"><h2>Recent Beats</h2></ion-label>
-            <div id="feed-beats" class="feed-pane">
+            <div id="feed-beats" class="feed-pane" style="display:none">
               <div class="feed-state" id="feed-beats-state"><ion-spinner></ion-spinner><p>Loading beats…</p></div>
               <div class="feed-list" id="feed-beats-list"></div>
             </div>

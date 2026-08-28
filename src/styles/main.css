@@ -497,7 +497,7 @@ ion-input {
 .home-feed {
   text-align: left;
   border-top: 1px solid rgba(255, 255, 255, .2);
-  padding-top: 8px;
+  padding-top: 0;
 }
 
 .feed-heading {
@@ -509,6 +509,26 @@ ion-input {
   color: #fff;
   font-size: 1.3rem;
   margin: 0;
+}
+
+/* Two-tab Raps | Beats segment on the Home feed (side by side, half each) */
+.home-feed ion-segment {
+  display: flex;
+  width: 100%;
+  --background: rgba(255, 255, 255, .08);
+  --background-checked: #fff;
+  --color: rgba(255, 255, 255, .7);
+  --color-checked: #000;
+  --indicator-color: transparent;
+}
+
+.home-feed ion-segment ion-segment-button {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.home-feed ion-segment ion-label {
+  font-weight: 600;
 }
 
 /* ============ Centered Home feed player ============ */

@@ -437,6 +437,22 @@ window.fkRetry = function (key) {
 function wireFeeds() {
   loadFeed('raps');
   loadFeed('beats');
+
+  // Two-tab Home feed organizer: Raps | Beats segment shows one feed at a time.
+  const seg = document.getElementById('home-feed-seg');
+  if (seg) {
+    seg.addEventListener('ionChange', (ev) => {
+      showFeedPane(ev.detail && ev.detail.value);
+    });
+  }
+  showFeedPane('raps');
+}
+
+function showFeedPane(key) {
+  ['raps', 'beats'].forEach((k) => {
+    const pane = document.getElementById('feed-' + k);
+    if (pane) pane.style.display = k === key ? '' : 'none';
+  });
 }
 
 // ---------- Boot: mount Vue and wire UI once Ionic is ready ----------
