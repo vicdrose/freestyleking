@@ -844,6 +844,8 @@ ion-input {
 }
 
 .as-phon-row {
+  flex: 0 0 auto;
+  overflow: visible;
   display: flex;
   justify-content: center;
   gap: 8px;
