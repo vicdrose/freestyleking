@@ -49,32 +49,37 @@ async function resolveCategoryId(category) {
   return catIdCache[category.slug];
 }
 
-async function resolveAudioUrl(post) {
-  // 1) Prefer an explicit ACF audio URL if the field is exposed (string URL).
-  const acf = post.acf || {};
-  const field = acf.rap || acf.beat;
-  if (typeof field === 'string' && /^https?:\/\//.test(field)) return field;
+const AUDIO_FILE = /\.(mp3|wav|ogg|oga|m4a|aac|flac|opus)$/i;
 
-  // 2) The post's featured media may be the audio file.
+function isAudioMedia(m) {
+  return !!(m && m.source_url && (/^audio\//i.test(m.mime_type || '') || AUDIO_FILE.test(m.source_url)));
+}
+
+async function resolveAudioUrl(post) {
+  // 1) The post's featured media is usually its thumbnail image, so only use
+  //    it as the track when it is actually audio.
   const media = post._embedded && post._embedded['wp:featuredmedia'];
-  if (media && media[0] && media[0].source_url) {
+  if (isAudioMedia(media && media[0])) {
     return media[0].source_url;
   }
 
-  // 3) Practical source: audio attached to the post (wp/v2/media?parent=<id>).
+  // 2) Reliable source: audio attached to the post (wp/v2/media?parent=<id>).
   //    Each post is a real track; the audio lives as an attachment, not as
   //    featured media or an ACF field.
   try {
     const list = await getJson(
       buildUrl(FEED_CONFIG.base, '/media', { parent: post.id, per_page: 10 })
     );
-    const audio = (Array.isArray(list) ? list : []).find(
-      (a) => a.source_url && /^audio\//i.test(a.mime_type || '')
-    );
+    const audio = (Array.isArray(list) ? list : []).find(isAudioMedia);
     if (audio) return audio.source_url;
   } catch (err) {
     // Fall through; no attachable audio URL found.
   }
+
+  // 3) Last resort: an explicit ACF audio URL if the field is exposed.
+  const acf = post.acf || {};
+  const field = acf.rap || acf.beat;
+  if (typeof field === 'string' && AUDIO_FILE.test(field)) return field;
 
   return '';
 }
