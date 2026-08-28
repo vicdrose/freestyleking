@@ -385,6 +385,7 @@ ion-input {
   font-weight: 700;
   font-size: 3.2rem;
   color: #fff;
+  text-shadow: 0 3px 0 #000, 0 2px 14px rgba(255, 255, 255, .05);
   margin-bottom: 8px;
 }
 
