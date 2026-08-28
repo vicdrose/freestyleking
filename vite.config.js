@@ -66,18 +66,6 @@ export default defineConfig({
                 maxAgeSeconds: 60 * 60 * 24 * 30
               }
             }
-          },
-          {
-            urlPattern: ({ url }) => url.origin === 'https://freestylekingapp.com',
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'audio-samples',
-              networkTimeoutSeconds: 8,
-              expiration: {
-                maxEntries: 80,
-                maxAgeSeconds: 60 * 60 * 24 * 7
-              }
-            }
           }
         ]
       }
