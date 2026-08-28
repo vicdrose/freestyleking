@@ -311,9 +311,8 @@ const autorap = {
     const skipBtn = document.getElementById('asSkip');
     if (skipBtn) {
       skipBtn.addEventListener('click', () => {
-        if (this.paused) { this.setPaused(false); return; }
         this.advance();
-        this.schedule();
+        if (!this.paused) this.schedule();
       });
     }
     if (asPause) {
