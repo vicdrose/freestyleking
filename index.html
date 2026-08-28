@@ -59,7 +59,48 @@
   <!-- /End Menu -->
 
   <div class="ion-page" id="main-content">
-    <ion-tabs>
+      <ion-tabs>
+
+      <!-- ============ HOME (Welcome) ============ -->
+      <ion-tab tab="home">
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
+            <ion-title><img src="/logo.png" style="width: 24px;"> Freestyle King</ion-title>
+          </ion-toolbar>
+        </ion-header>
+
+        <ion-content color="dark" class="welcome-content">
+          <div class="welcome">
+              <h1 class="welcome-title">Spit That.</h1>
+            <p class="welcome-tagline">Welcome to the dojo of rappers.</p>
+            <ul class="welcome-list">
+              <li><ion-icon name="mic-outline"></ion-icon> Practice rhyming</li>
+              <li><ion-icon name="musical-notes-outline"></ion-icon> Share songs</li>
+              <li><ion-icon name="person-outline"></ion-icon> Make friends</li>
+            </ul>
+          </div>
+
+          <div class="feed-player-wrap">
+            <audio controls id="feedPlayer"></audio>
+          </div>
+
+          <div class="home-feed">
+            <ion-label class="section-center feed-heading"><h2>Recent Raps</h2></ion-label>
+            <div id="feed-raps" class="feed-pane">
+              <div class="feed-state" id="feed-raps-state"><ion-spinner></ion-spinner><p>Loading raps…</p></div>
+              <div class="feed-list" id="feed-raps-list"></div>
+            </div>
+
+            <ion-label class="section-center feed-heading"><h2>Recent Beats</h2></ion-label>
+            <div id="feed-beats" class="feed-pane">
+              <div class="feed-state" id="feed-beats-state"><ion-spinner></ion-spinner><p>Loading beats…</p></div>
+              <div class="feed-list" id="feed-beats-list"></div>
+            </div>
+          </div>
+        </ion-content>
+      </ion-tab>
+
       <!-- ============ RAP (Default page: Randomizer + Quotes) ============ -->
       <ion-tab tab="rap">
         <ion-header>
@@ -129,42 +170,6 @@
             <div class="btn-grid">
               <ion-button id="rap-quoteBtn">Random Quote</ion-button>
               <ion-button id="rap-shareQuote">Share Quote</ion-button>
-            </div>
-          </div>
-        </ion-content>
-      </ion-tab>
-
-      <!-- ============ HOME (Welcome) ============ -->
-      <ion-tab tab="home">
-        <ion-header>
-          <ion-toolbar>
-            <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
-            <ion-title><img src="/logo.png" style="width: 24px;"> Freestyle King</ion-title>
-          </ion-toolbar>
-        </ion-header>
-
-        <ion-content color="dark" class="welcome-content">
-          <div class="welcome">
-              <h1 class="welcome-title">Spit That.</h1>
-            <p class="welcome-tagline">Welcome to the dojo of rappers.</p>
-            <ul class="welcome-list">
-              <li><ion-icon name="mic-outline"></ion-icon> Practice rhyming</li>
-              <li><ion-icon name="musical-notes-outline"></ion-icon> Share songs</li>
-              <li><ion-icon name="person-outline"></ion-icon> Make friends</li>
-            </ul>
-          </div>
-
-          <div class="home-feed">
-            <ion-label class="section-center feed-heading"><h2>Recent Raps</h2></ion-label>
-            <div id="feed-raps" class="feed-pane">
-              <div class="feed-state" id="feed-raps-state"><ion-spinner></ion-spinner><p>Loading raps…</p></div>
-              <div class="feed-list" id="feed-raps-list"></div>
-            </div>
-
-            <ion-label class="section-center feed-heading"><h2>Recent Beats</h2></ion-label>
-            <div id="feed-beats" class="feed-pane">
-              <div class="feed-state" id="feed-beats-state"><ion-spinner></ion-spinner><p>Loading beats…</p></div>
-              <div class="feed-list" id="feed-beats-list"></div>
             </div>
           </div>
         </ion-content>

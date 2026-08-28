@@ -49,16 +49,33 @@ async function resolveCategoryId(category) {
   return catIdCache[category.slug];
 }
 
-function mediaUrlFor(post) {
-  // Prefer an explicit ACF audio URL if the field is exposed (string URL).
+async function resolveAudioUrl(post) {
+  // 1) Prefer an explicit ACF audio URL if the field is exposed (string URL).
   const acf = post.acf || {};
   const field = acf.rap || acf.beat;
   if (typeof field === 'string' && /^https?:\/\//.test(field)) return field;
-  // Otherwise the post's featured media is the audio file.
+
+  // 2) The post's featured media may be the audio file.
   const media = post._embedded && post._embedded['wp:featuredmedia'];
   if (media && media[0] && media[0].source_url) {
     return media[0].source_url;
   }
+
+  // 3) Practical source: audio attached to the post (wp/v2/media?parent=<id>).
+  //    Each post is a real track; the audio lives as an attachment, not as
+  //    featured media or an ACF field.
+  try {
+    const list = await getJson(
+      buildUrl(FEED_CONFIG.base, '/media', { parent: post.id, per_page: 10 })
+    );
+    const audio = (Array.isArray(list) ? list : []).find(
+      (a) => a.source_url && /^audio\//i.test(a.mime_type || '')
+    );
+    if (audio) return audio.source_url;
+  } catch (err) {
+    // Fall through; no attachable audio URL found.
+  }
+
   return '';
 }
 
@@ -82,28 +99,45 @@ export async function fetchFeed(categoryKey) {
     buildUrl(FEED_CONFIG.base, '/posts', {
       categories: id,
       per_page: FEED_CONFIG.perPage,
-      _embed: 'author,wp:featuredmedia'
+      _embed: true
     })
   );
-  return (Array.isArray(posts) ? posts : []).map((post) => ({
-    key: categoryKey,
-    title: (post.title && post.title.rendered) || '(untitled)',
-    author: authorFor(post),
-    link: post.link || '',
-    audioUrl: mediaUrlFor(post)
-  }));
+  return Promise.all(
+    (Array.isArray(posts) ? posts : []).map(async (post) => ({
+      key: categoryKey,
+      title: (post.title && post.title.rendered) || '(untitled)',
+      author: authorFor(post),
+      link: post.link || '',
+      audioUrl: await resolveAudioUrl(post)
+    }))
+  );
 }
 
-// ---- Simple playback (mirrors the original playSong helper) ----
-let currentFeedAudio = null;
+// ---- Shared audio player ----------
+// Routes every feed Play button through a single shared <audio controls>
+// element (the "open audio tag" on Home), so native controls work, playback is
+// plain-element (no CORS), and only one track plays at a time.
+let feedPlayer = null;
 
 function notifyFeedError(msg) {
   // Best-effort: log it so it's visible in devtools.
   console.error('Feed audio:', msg);
 }
 
+function getPlayer() {
+  if (!feedPlayer) {
+    feedPlayer = document.getElementById('feedPlayer');
+    if (!feedPlayer) feedPlayer = new Audio();
+    // NOTE: intentionally NOT routed through a Web Audio AudioContext.
+    // A MediaElementSource reads the element's samples subject to CORS, so for
+    // cross-origin media it would output silence even though the native
+    // <audio controls> element plays fine. A plain element streams without CORS.
+  }
+  return feedPlayer;
+}
+
 /**
- * Plays a feed audio url, stopping any previous feed track.
+ * Plays a feed audio url through the shared plain <audio controls> player.
  * Returns a promise that resolves true if playback started, false otherwise.
  */
 export function playSong(url) {
@@ -111,14 +145,9 @@ export function playSong(url) {
     notifyFeedError('no audio url');
     return Promise.resolve(false);
   }
-  if (currentFeedAudio) {
-    currentFeedAudio.pause();
-    currentFeedAudio = null;
-  }
+  const audio = getPlayer();
+  audio.pause();
   return new Promise((resolve) => {
-    const audio = new Audio();
-    audio.preload = 'auto';
-    audio.src = url;
     audio.addEventListener('error', () => {
       notifyFeedError('load error for ' + url);
       resolve(false);
@@ -126,23 +155,24 @@ export function playSong(url) {
     audio.addEventListener('playing', () => {
       resolve(true);
     }, { once: true });
+    audio.src = url;
+    audio.load();
     audio.play().catch(() => {
       notifyFeedError('play() rejected for ' + url);
       resolve(false);
     });
-    currentFeedAudio = audio;
   });
 }
 
-/** True while a feed track is playing. */
+/** True while the shared feed player is playing. */
 export function isFeedPlaying() {
-  return !!(currentFeedAudio && !currentFeedAudio.paused && !currentFeedAudio.ended);
+  const audio = feedPlayer;
+  return !!(audio && !audio.paused && !audio.ended);
 }
 
-/** Stops any playing feed track. */
+/** Stops the shared feed player. */
 export function stopFeed() {
-  if (currentFeedAudio) {
-    currentFeedAudio.pause();
-    currentFeedAudio = null;
+  if (feedPlayer) {
+    feedPlayer.pause();
   }
 }

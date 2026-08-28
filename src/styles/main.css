@@ -510,3 +510,15 @@ ion-input {
   font-size: 1.3rem;
   margin: 0;
 }
+
+/* ============ Centered Home feed player ============ */
+.feed-player-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
+}
+
+.feed-player-wrap audio {
+  width: 100%;
+  max-width: 320px;
+}
