@@ -982,3 +982,14 @@ ion-input {
 .ws-phon-row { display: flex; gap: 8px; }
 
 .ws-phon-row .ws-chip { flex: 1 1 0; margin: 0; padding: 6px 8px; font-size: .95rem; white-space: nowrap; }
+
+/* Tiny black superscript "X" marks Auto Wrap and the eligible word buckets it
+   can draw from (everything except Celebrity / Athlete / Movie). */
+.x {
+  font-size: .55em;
+  vertical-align: super;
+  line-height: 1;
+  color: #000;
+  font-weight: 700;
+  margin-left: 2px;
+}

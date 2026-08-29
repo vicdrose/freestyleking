@@ -56,6 +56,28 @@ function randomih() { setResult(random_item(ih)); }
 function randomuh() { setResult(random_item(uh)); }
 function randomowh() { setResult(random_item(owh)); }
 
+// ---------------------------------------------------------------------------
+// Autorap word source (signified by the tiny black "X" on the buttons)
+//
+// The rap-grid buttons marked with a black superscript X (Auto Wrap included)
+// are the eligible single-word buckets. Celebrity, Athlete, Movie do NOT get
+// an X because they are not single words the word API can use.
+//
+// The last X-marked button pressed is QUEUED as the word source that Auto Wrap
+// draws from, so Auto Wrap "auto wraps" from whichever bucket you most recently
+// rolled. It defaults to Compound Word (items), preserving the original
+// behavior, until you roll another eligible bucket.
+// ---------------------------------------------------------------------------
+let autorapQueue = { rollFn: random_item, seeds: items };
+// Support hook: console/automation can inspect the queued Auto Wrap source.
+window.__autorapQueue = () => ({ ...autorapQueue });
+
+function queueAutorapSource(rollFn, seeds, baseRoll) {
+  return () => {
+    autorapQueue = { rollFn, seeds };
+    baseRoll();
+  };
+}
 // ---------- Word relationship API (Datamuse) ----------
 const modal1 = document.getElementById('relationshipModal');
 const modal2 = document.getElementById('slModal');
@@ -361,7 +383,7 @@ const autorap = {
 };
 
 function autorap1() {
-  autorap.open(random_item, items);
+  autorap.open(autorapQueue.rollFn, autorapQueue.seeds);
 }
 
 function autorapverbs() {
@@ -501,17 +523,17 @@ function wireUI() {
   loadSampleDirs();
 
   // Word buttons
-  document.getElementById('btn-roll').onclick = roll;
-  document.getElementById('btn-rollCommon').onclick = rollCommon;
-  document.getElementById('btn-rollAdj').onclick = rollAdj;
-  document.getElementById('btn-rollAdv').onclick = rollAdv;
-  document.getElementById('btn-rollVerbs').onclick = rollVerbs;
+  document.getElementById('btn-roll').onclick = queueAutorapSource(random_item, items, roll);
+  document.getElementById('btn-rollCommon').onclick = queueAutorapSource(random_item, words1, rollCommon);
+  document.getElementById('btn-rollAdj').onclick = queueAutorapSource(random_item, adjectives, rollAdj);
+  document.getElementById('btn-rollAdv').onclick = queueAutorapSource(random_item, adverbs, rollAdv);
+  document.getElementById('btn-rollVerbs').onclick = queueAutorapSource(random_item, verbs, rollVerbs);
   document.getElementById('btn-rollCeleb').onclick = rollCeleb;
   document.getElementById('btn-rollAth').onclick = rollAth;
   document.getElementById('btn-rollMov').onclick = rollMov;
-  document.getElementById('btn-rollEmo').onclick = rollEmo;
-  document.getElementById('btn-rollFla').onclick = rollFla;
-  document.getElementById('btn-rollQue').onclick = rollQue;
+  document.getElementById('btn-rollEmo').onclick = queueAutorapSource(random_item, emotions, rollEmo);
+  document.getElementById('btn-rollFla').onclick = queueAutorapSource(random_item, flavors, rollFla);
+  document.getElementById('btn-rollQue').onclick = queueAutorapSource(random_item, questions, rollQue);
 
   // Vowel buttons
   document.getElementById('btn-randomA').onclick = randomA;
