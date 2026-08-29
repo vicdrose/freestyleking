@@ -95,4 +95,64 @@ export function getBeatShuffler() {
   return { rel, url: toUrl(rel) };
 }
 
+const LIST_URL = `${HOST}/wp-content/themes/thrive-nouveau/list.php`;
+
+// Maps each app array to the on-disk directory (relative to the theme root)
+// that list.php reports back. First matching directory wins.
+const FOLDER_RULES = [
+  ['breaks', ['breaks']],
+  ['sfx', ['SFX', 'sfx']],
+  ['fills', ['drumfills', 'drumFills', 'fills']],
+  ['pads', ['samples/pads', 'pads']],
+  ['bass', ['bass']],
+  ['beats', ['audios', 'Beats', 'beats']],
+  ['fkbeats', ['FKBeats', 'fkbeats']],
+  ['kicks', ['Kick', 'Kicks', 'kicks']],
+  ['claps', ['Clap', 'Claps', 'claps']],
+  ['hihats', ['HiHat', 'HiHats', 'hihats', 'hihat']]
+];
+
+const registry = { breaks, sfx, fills, pads, bass, beats, fkbeats, kicks, claps, hihats };
+
+function normDir(name) {
+  return String(name).toLowerCase().replace(/\\/g, '/');
+}
+
+function pickDir(samples, candidates) {
+  const keys = Object.keys(samples);
+  for (const name of candidates) {
+    const hit = keys.find((k) => normDir(k) === normDir(name));
+    const list = hit ? samples[hit] : null;
+    if (Array.isArray(list) && list.length) return list;
+  }
+  return null;
+}
+
+/**
+ * Fetch the live sample lists from the host's list.php and swap them into the
+ * arrays. Runs fire-and-forget: if the host is unreachable or the endpoint is
+ * missing, the placeholder lists stay in place so the buttons still work.
+ */
+export async function loadSampleDirs() {
+  try {
+    const res = await fetch(LIST_URL, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`list.php ${res.status}`);
+    const data = await res.json();
+    if (!data || typeof data.samples !== 'object') return;
+    FOLDER_RULES.forEach(([key, candidates]) => {
+      const list = pickDir(data.samples, candidates);
+      const target = registry[key];
+      if (!list || !target) return;
+      target.length = 0;
+      list.forEach((rel) => target.push(rel));
+      if (key === 'beats') {
+        beatShuffler.length = 0;
+        list.forEach((rel) => beatShuffler.push(rel));
+      }
+    });
+  } catch (e) {
+    // ignore — keep the bundled placeholder lists
+  }
+}
+
 export { breaks, sfx, fills, pads, bass, beats, fkbeats, kicks, claps, hihats, beatShuffler };

@@ -16,7 +16,7 @@ import {
 import { getSynonyms, getSoundsLike, getRhymes, getForismaticQuote } from './services/api.js';
 import { initAudio } from './services/audio.js';
 import * as Tone from 'tone';
-import { getBeatShuffler, getPad, getBreak, getBeat, getFKBeat, getBass, getSFX, getFill } from './services/samples.js';
+import { getBeatShuffler, getPad, getBreak, getBeat, getFKBeat, getBass, getSFX, getFill, loadSampleDirs } from './services/samples.js';
 import { fetchFeed, playSong, isFeedPlaying, stopFeed } from './services/feed.js';
 
 const Vue = window.Vue;
@@ -463,6 +463,9 @@ function setupPiano() {
 function wireUI() {
   const audio = initAudio();
   const { player, sampler, recorder, mic } = audio;
+
+  // Pull the real sample lists from the host (falls back to bundled placeholders).
+  loadSampleDirs();
 
   // Word buttons
   document.getElementById('btn-roll').onclick = roll;
