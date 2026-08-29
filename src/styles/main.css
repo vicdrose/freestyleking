@@ -553,9 +553,6 @@ ion-input {
   font-weight: 600;
 }
 
-.beat-acc-row.on {
-  --background: rgba(218, 165, 32, .18);
-}
 
 .beat-acc-row ion-toggle {
   --track-background: #7a7a7a;
