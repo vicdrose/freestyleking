@@ -325,6 +325,11 @@ ion-segment-button.md {
   min-width: 90px;
 }
 
+ion-tab[tab="rap"] .btn-grid ion-button {
+  --background: #6a0000;
+  --color: #fff;
+}
+
 .vowel-grid ion-button {
   flex: 1 1 18%;
   min-width: 0;
@@ -671,7 +676,7 @@ ion-input {
 }
 
 .lux-diamond {
-  color: rgba(255, 255, 255, .3);
+  color: #0ABAB5;
   font-size: 1rem;
   flex-shrink: 0;
 }
