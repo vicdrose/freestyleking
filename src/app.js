@@ -384,7 +384,7 @@ function beatToggles() {
 }
 
 // ---------- Piano (Keys & Sounds) ----------
-function setupPiano() {
+function setupPiano(sampler) {
   const el = document.getElementById('pianoKeys');
   if (!el) return;
   const synth = new Tone.PolySynth(Tone.Synth, {
@@ -401,8 +401,16 @@ function setupPiano() {
   const whiteW = 100 / nWhites;
   const blackW = whiteW * 0.65;
 
-  const down = (note) => synth.triggerAttack(note);
-  const up = (note) => synth.triggerRelease(note);
+// When a PAD/BASS/SFX/Fill sample is loaded, the keys pitch-shift that sample.
+  // Otherwise they fall back to the built-in triangle synth.
+  const down = (note) => {
+    if (sampler && sampler.loaded) sampler.triggerAttack(note);
+    else synth.triggerAttack(note);
+  };
+  const up = (note) => {
+    if (sampler && sampler.loaded) sampler.triggerRelease(note);
+    else synth.triggerRelease(note);
+  };
 
   naturals.forEach((note) => {
     const key = document.createElement('button');
@@ -608,25 +616,33 @@ function wireUI() {
   document.getElementById('btn-rollSample').onclick = () => {
     unlock();
     const { rel, url } = getPad();
-    sampler.add('C4', url, false);
+    sampler.add('C4', url, () => {
+      sampler.triggerAttackRelease('C4', 1.2);
+    });
     document.querySelector('#url2').innerHTML = rel;
   };
   document.getElementById('btn-rollBass').onclick = () => {
     unlock();
     const { rel, url } = getBass();
-    sampler.add('C4', url, false);
+    sampler.add('C4', url, () => {
+      sampler.triggerAttackRelease('C4', 1.2);
+    });
     document.querySelector('#url2').innerHTML = rel;
   };
   document.getElementById('btn-rollSFX').onclick = () => {
     unlock();
     const { rel, url } = getSFX();
-    sampler.add('C4', url, false);
+    sampler.add('C4', url, () => {
+      sampler.triggerAttackRelease('C4', 1.2);
+    });
     document.querySelector('#url2').innerHTML = rel;
   };
   document.getElementById('btn-rollFills').onclick = () => {
     unlock();
     const { rel, url } = getFill();
-    sampler.add('C4', url, false);
+    sampler.add('C4', url, () => {
+      sampler.triggerAttackRelease('C4', 1.2);
+    });
     document.querySelector('#url2').innerHTML = rel;
   };
 
@@ -664,7 +680,7 @@ function wireUI() {
 
   // Beat view
   beatToggles();
-  setupPiano();
+  setupPiano(sampler);
 
   // Autorap buttons
   autorap.wire();
