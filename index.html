@@ -187,11 +187,20 @@
         </ion-header>
 
         <ion-content color="dark">
-          <ion-segment id="beat-seg" class="beat-seg" value="player">
-            <ion-segment-button value="player"><ion-label>Player &amp; Beats</ion-label></ion-segment-button>
-            <ion-segment-button value="keys"><ion-label>Keys &amp; Sounds</ion-label></ion-segment-button>
-            <ion-segment-button value="recorder"><ion-label>Recorder</ion-label></ion-segment-button>
-          </ion-segment>
+          <ion-list class="beat-toggle-list">
+            <ion-item>
+              <ion-checkbox id="chk-beat-player" slot="start" checked></ion-checkbox>
+              <ion-label>Player &amp; Beats</ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-checkbox id="chk-beat-keys" slot="start" checked></ion-checkbox>
+              <ion-label>Keys &amp; Sounds</ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-checkbox id="chk-beat-recorder" slot="start" checked></ion-checkbox>
+              <ion-label>Recorder</ion-label>
+            </ion-item>
+          </ion-list>
 
           <div id="beat-pane-player" class="beat-pane">
             <div class="audio-section">
@@ -223,7 +232,7 @@
             </div>
           </div>
 
-          <div id="beat-pane-keys" class="beat-pane" style="display:none">
+          <div id="beat-pane-keys" class="beat-pane">
             <div class="audio-section">
               <h3 class="ion-padding-start">Player</h3>
               <div class="ion-padding">
@@ -244,7 +253,7 @@
             </div>
           </div>
 
-          <div id="beat-pane-recorder" class="beat-pane" style="display:none">
+          <div id="beat-pane-recorder" class="beat-pane">
             <div class="audio-section">
               <h3 class="ion-padding-start">Recorder</h3>
               <div class="ion-padding">

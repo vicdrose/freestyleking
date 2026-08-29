@@ -358,22 +358,20 @@ function autorapadj() {
 }
 
 // ---------- Beat view: Player / Beats / Keys & Sounds / Recorder ----------
-function beatPanes() {
-  const seg = document.getElementById('beat-seg');
-  if (!seg) return;
-  const panes = {
-    player: 'beat-pane-player',
-    keys: 'beat-pane-keys',
-    recorder: 'beat-pane-recorder'
-  };
-  const show = (name) => {
-    Object.keys(panes).forEach((key) => {
-      const el = document.getElementById(panes[key]);
-      if (el) el.style.display = key === name ? 'block' : 'none';
-    });
-  };
-  seg.addEventListener('ionChange', (e) => show(e.detail.value));
-  show(seg.value);
+function beatToggles() {
+  const groups = [
+    ['chk-beat-player', 'beat-pane-player'],
+    ['chk-beat-keys', 'beat-pane-keys'],
+    ['chk-beat-recorder', 'beat-pane-recorder']
+  ];
+  groups.forEach(([chkId, paneId]) => {
+    const chk = document.getElementById(chkId);
+    const pane = document.getElementById(paneId);
+    if (!chk || !pane) return;
+    const apply = (checked) => { pane.style.display = checked ? 'block' : 'none'; };
+    apply(!!chk.checked);
+    chk.addEventListener('ionChange', (e) => apply(!!e.detail.checked));
+  });
 }
 
 // ---------- Piano (Keys & Sounds) ----------
@@ -609,7 +607,7 @@ function wireUI() {
   });
 
   // Beat view
-  beatPanes();
+  beatToggles();
   setupPiano();
 
   // Autorap buttons

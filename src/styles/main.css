@@ -532,25 +532,25 @@ ion-input {
   font-weight: 600;
 }
 
-/* ============ Beat view 4-tab compartment (Player / Beats / Keys & Sounds / Recorder) ============ */
-ion-segment.beat-seg {
-  display: flex;
-  width: 100%;
-  --background: rgba(255, 255, 255, .08);
-  --background-checked: #fff;
-  --color: rgba(255, 255, 255, .7);
-  --color-checked: #000;
-  --indicator-color: transparent;
-  margin: 12px 0 4px;
+/* ============ Beat view checkbox sections ============ */
+.beat-toggle-list {
+  background: transparent;
+  margin: 12px 12px 4px;
+  border: 1px solid rgba(255, 255, 255, .2);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
-ion-segment.beat-seg ion-segment-button {
-  flex: 1 1 0;
-  min-width: 0;
+.beat-toggle-list ion-item {
+  --background: rgba(255, 255, 255, .06);
+  --color: #fff;
+  --border-color: rgba(255, 255, 255, .1);
 }
 
-ion-segment.beat-seg ion-label {
-  font-weight: 600;
+.beat-toggle-list ion-checkbox {
+  --checkbox-background-checked: goldenrod;
+  --border-color-checked: goldenrod;
+  --checkmark-color: #000;
 }
 
 .beat-pane {
