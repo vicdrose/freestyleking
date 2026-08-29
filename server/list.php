@@ -6,10 +6,11 @@
  *   wp-content/themes/thrive-nouveau/list.php
  * on freestylekingapp.com.
  *
- * It recursively scans the theme folder for *.wav files and returns them as
- * JSON, grouped by directory (relative to the theme root), with a CORS header
- * so the static PWA (vicdrose.github.io/freestyleking) can load the real
- * sample lists at runtime — reproducing what the legacy PHP scandir() emitted.
+ * It recursively scans the theme folder for audio files (wav/mp3/m4a/aac/ogg/
+ * flac/opus/wma, optionally overridden via ?ext=...) and returns them as JSON,
+ * grouped by directory (relative to the theme root), with a CORS header so the
+ * static PWA (vicdrose.github.io/freestyleking) can load the real sample lists
+ * at runtime — reproducing what the legacy PHP scandir() emitted.
  *
  * Response shape:
  *   {
@@ -30,6 +31,10 @@ const WEB_BASE = './wp-content/themes/thrive-nouveau';
 
 $root = __DIR__;
 
+$allowed = isset($_GET['ext'])
+    ? array_map('strtolower', array_map('trim', explode(',', $_GET['ext'])))
+    : array('wav', 'mp3', 'm4a', 'aac', 'ogg', 'flac', 'opus', 'wma');
+
 $files = new RecursiveIteratorIterator(
     new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS),
     RecursiveIteratorIterator::LEAVES_ONLY
@@ -41,7 +46,7 @@ foreach ($files as $file) {
     if (!$file->isFile()) {
         continue;
     }
-    if (strtolower($file->getExtension()) !== 'wav') {
+    if (!in_array(strtolower($file->getExtension()), $allowed, true)) {
         continue;
     }
     $abs = str_replace('\\', '/', $file->getPathname());
@@ -66,4 +71,4 @@ foreach ($samples as $group => $list) {
 ksort($samples);
 
 header_remove('X-Powered-By');
-echo json_encode(array('base' => WEB_BASE, 'samples' => $samples));
+echo json_encode(array('base' => WEB_BASE, 'exts' => $allowed, 'samples' => $samples));
