@@ -188,26 +188,27 @@
 
         <ion-content color="dark">
 
-          <div class="beat-sections" id="beatSections">
-            <button type="button" id="beatSectionsToggle" class="beat-sections-toggle">
-              <span>Sections</span>
-              <ion-icon name="chevron-down-outline"></ion-icon>
-            </button>
-            <div id="beatSectionsMenu" class="beat-sections-menu">
-              <label class="beat-section-row" id="chip-beat-player">
-                <ion-checkbox id="chk-beat-player" checked></ion-checkbox>
-                <span>Player</span>
-              </label>
-              <label class="beat-section-row" id="chip-beat-keys">
-                <ion-checkbox id="chk-beat-keys" checked></ion-checkbox>
-                <span>Sampler</span>
-              </label>
-              <label class="beat-section-row" id="chip-beat-recorder">
-                <ion-checkbox id="chk-beat-recorder" checked></ion-checkbox>
-                <span>Recorder</span>
-              </label>
-            </div>
-          </div>
+          <ion-accordion-group class="beat-accordion">
+            <ion-accordion value="sections">
+              <ion-item slot="header" class="beat-acc-header">
+                <ion-label>Sections</ion-label>
+              </ion-item>
+              <div slot="content">
+                <ion-item class="beat-acc-row">
+                  <ion-label>Player</ion-label>
+                  <ion-toggle id="chk-beat-player" checked></ion-toggle>
+                </ion-item>
+                <ion-item class="beat-acc-row">
+                  <ion-label>Sampler</ion-label>
+                  <ion-toggle id="chk-beat-keys" checked></ion-toggle>
+                </ion-item>
+                <ion-item class="beat-acc-row">
+                  <ion-label>Recorder</ion-label>
+                  <ion-toggle id="chk-beat-recorder" checked></ion-toggle>
+                </ion-item>
+              </div>
+            </ion-accordion>
+          </ion-accordion-group>
 
           <div id="beat-pane-player" class="beat-pane">
             <div class="audio-section">

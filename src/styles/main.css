@@ -532,71 +532,32 @@ ion-input {
   font-weight: 600;
 }
 
-.beat-sections {
+.beat-accordion {
   margin: 12px 12px 0;
-}
-
-.beat-sections-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  background: rgba(255, 255, 255, .08);
-  color: #fff;
   border: 1px solid rgba(255, 255, 255, .25);
   border-radius: 10px;
-  padding: 14px 16px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.beat-sections-toggle ion-icon {
-  transition: transform .2s;
-}
-
-.beat-sections-toggle.open ion-icon {
-  transform: rotate(180deg);
-}
-
-.beat-sections-menu {
-  display: none;
-  background: rgba(0, 0, 0, .55);
-  border: 1px solid rgba(255, 255, 255, .25);
-  border-top: none;
-  border-radius: 0 0 10px 10px;
-  margin-top: -1px;
   overflow: hidden;
+  background: rgba(0, 0, 0, .35);
 }
 
-.beat-sections-menu.open {
-  display: block;
-}
-
-.beat-section-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  color: #fff;
-  cursor: pointer;
-  border-top: 1px solid rgba(255, 255, 255, .08);
+.beat-acc-header {
+  --background: rgba(255, 255, 255, .08);
+  --color: #fff;
   font-weight: 600;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
 }
 
-.beat-section-row.on {
-  background: rgba(218, 165, 32, .14);
+.beat-acc-row {
+  --background: rgba(0, 0, 0, .45);
+  --color: #fff;
+  --border-color: rgba(255, 255, 255, .08);
+  font-weight: 600;
 }
 
-.beat-section-row ion-checkbox {
-  pointer-events: none;
-  --checkbox-background-checked: goldenrod;
-  --border-color-checked: goldenrod;
-  --checkmark-color: #000;
+.beat-acc-row ion-toggle {
+  --track-background: #666;
+  --handle-background: #fff;
+  --track-background-checked: goldenrod;
+  --handle-background-checked: #000;
 }
 
 .beat-pane {
