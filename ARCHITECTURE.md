@@ -249,7 +249,7 @@ Removed relative to the legacy page:
 
 The Rap-view word grid buttons carry a tiny black subscript **X** on Auto Wrap
 and on every eligible single-word bucket: **Compound Word, Random Word,
-Adjective, Adverb, Verbs, Emotions, Flavors, Question**. The X means "this is an
+Adjective, Adverb, Verbs, Emotions, Flavors**. The X means "this is an
 eligible Auto Wrap source". Celebrity, Athlete and Movie intentionally do NOT get
 an X because they are proper-noun lists, not single words that make sense to feed
 the word API.

@@ -541,7 +541,7 @@ function wireUI() {
   document.getElementById('btn-rollMov').onclick = rollMov;
   document.getElementById('btn-rollEmo').onclick = queueAutorapSource(random_item, emotions, rollEmo, 'emotions');
   document.getElementById('btn-rollFla').onclick = queueAutorapSource(random_item, flavors, rollFla, 'flavors');
-  document.getElementById('btn-rollQue').onclick = queueAutorapSource(random_item, questions, rollQue, 'question');
+  document.getElementById('btn-rollQue').onclick = rollQue;
 
   // Vowel buttons
   document.getElementById('btn-randomA').onclick = randomA;
