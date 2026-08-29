@@ -21,7 +21,6 @@ export function initAudio() {
   mic.connect(micFFT);
 
   const player = new Tone.Player({
-    url: 'https://freestylekingapp.com/wp-content/themes/thrive-nouveau/HiHat/hats-template-one.wav',
     loop: true,
     loopStart: 0,
     loopEnd: 230

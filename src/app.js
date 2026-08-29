@@ -550,51 +550,98 @@ function wireUI() {
     player.volume = -(volslider.value / 100);
   });
 
-  // Player start/stop
-  document.getElementById('btn-playerStart').onclick = () => player.start();
-  document.getElementById('btn-playerStop').onclick = () => player.stop();
+// Player start/stop.
+  const btnStart = document.getElementById('btn-playerStart');
+  const btnStop = document.getElementById('btn-playerStop');
+  const urlEl = document.getElementById('url');
+  let queuedUrl = null;
 
-  // Custom URL
-  document.getElementById('btn-sendUrl').onclick = () => {
-    player.load(document.querySelector('#audioUrl').value);
+  // Browsers leave the AudioContext suspended until a user gesture unlocks it.
+  const unlock = () => Tone.start().catch(() => {});
+
+  const setState = (state) => { document.body.dataset.playerState = state; };
+
+  // Load a loop into the player and mirror its status onto the URL line.
+  const loadPlayer = (url, label) => {
+    queuedUrl = url;
+    if (urlEl) urlEl.innerHTML = (label || url) + ' - loading';
+    player.stop();
+    setState('loading');
+    return unlock()
+      .then(() => player.load(url))
+      .then(() => {
+        document.body.dataset.bufferLoaded = '1';
+        setState('loaded');
+        if (urlEl) urlEl.innerHTML = (label || url) + ' - ready';
+        return true;
+      })
+      .catch(() => {
+        setState('loadfailed');
+        if (urlEl) urlEl.innerHTML = (label || url) + ' - could not load';
+        return false;
+      });
   };
 
-  // Sample buttons
+  btnStart.onclick = async () => {
+    await unlock();
+    if (queuedUrl && !(player.buffer && player.buffer.loaded)) {
+      const ok = await loadPlayer(queuedUrl, urlEl ? urlEl.textContent : queuedUrl);
+      if (!ok) return;
+    }
+    if (!(player.buffer && player.buffer.loaded)) return;
+    player.start();
+    setState('started');
+    if (urlEl) urlEl.innerHTML = (urlEl.innerHTML || '').replace(' - ready', ' - looping');
+  };
+  btnStop.onclick = () => {
+    player.stop();
+    setState('stopped');
+  };
+
+  // Custom URL.
+  document.getElementById('btn-sendUrl').onclick = () => {
+    const u = (document.querySelector('#audioUrl').value || '').trim();
+    if (u) loadPlayer(u, u);
+  };
+
+  // Sample buttons unlock audio with the tap so the keys are audible.
   document.getElementById('btn-rollSample').onclick = () => {
+    unlock();
     const { rel, url } = getPad();
     sampler.add('C4', url, false);
     document.querySelector('#url2').innerHTML = rel;
   };
   document.getElementById('btn-rollBass').onclick = () => {
+    unlock();
     const { rel, url } = getBass();
     sampler.add('C4', url, false);
     document.querySelector('#url2').innerHTML = rel;
   };
   document.getElementById('btn-rollSFX').onclick = () => {
+    unlock();
     const { rel, url } = getSFX();
     sampler.add('C4', url, false);
     document.querySelector('#url2').innerHTML = rel;
   };
   document.getElementById('btn-rollFills').onclick = () => {
+    unlock();
     const { rel, url } = getFill();
     sampler.add('C4', url, false);
     document.querySelector('#url2').innerHTML = rel;
   };
 
+  // Loop buttons load straight into the player; Start then plays it.
   document.getElementById('btn-rollBreak').onclick = () => {
     const { rel, url } = getBreak();
-    player.load(url);
-    document.querySelector('#url').innerHTML = rel;
+    loadPlayer(url, 'DRUM LOOP: ' + rel);
   };
   document.getElementById('btn-rollBeats').onclick = () => {
     const { rel, url } = getBeat();
-    player.load(url);
-    document.querySelector('#url').innerHTML = rel;
+    loadPlayer(url, 'CLASSICS: ' + rel);
   };
   document.getElementById('btn-rollFKBeats').onclick = () => {
     const { rel, url } = getFKBeat();
-    player.load(url);
-    document.querySelector('#url').innerHTML = rel;
+    loadPlayer(url, 'FK BEATS: ' + rel);
   };
 
   // Recording

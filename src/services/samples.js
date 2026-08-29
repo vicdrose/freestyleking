@@ -52,7 +52,7 @@ function randomPath(list) {
 }
 
 function toUrl(rel) {
-  return HOST + rel.substr(1);
+  return `${LIST_URL}?get=${encodeURIComponent(rel)}`;
 }
 
 export function getBreak() {
