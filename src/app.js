@@ -62,8 +62,8 @@ const modal2 = document.getElementById('slModal');
 const modal3 = document.getElementById('synModal');
 
 const wordStage = document.getElementById('wordstage');
-const stageSyn = document.getElementById('stageSyn');
-const stageRhy = document.getElementById('stageRhy');
+const stageList = document.getElementById('stageList');
+const stageHead = document.getElementById('stageHead');
 const stageWord = document.getElementById('stageWord');
 
 function stageOpen() {
@@ -98,15 +98,30 @@ function fillPanel(panel, data) {
   });
 }
 
-function renderStage(word) {
+const STAGE_LABELS = { rhy: 'Rhymes', sl: 'Sounds like', syn: 'Synonyms' };
+let activeSection = 'rhy';
+let stageHeld = false;
+
+function sectionWords(sec, word) {
+  if (sec === 'sl') return getSoundsLike(word);
+  if (sec === 'syn') return getSynonyms(word);
+  return getRhymes(word);
+}
+
+function showStageSection(sec, word) {
+  activeSection = sec;
   if (stageWord) stageWord.textContent = word;
-  getSynonyms(word).then((data) => fillPanel(stageSyn, data));
-  getRhymes(word).then((data) => fillPanel(stageRhy, data));
+  if (stageHead) stageHead.textContent = STAGE_LABELS[sec];
+  sectionWords(sec, word).then((data) => fillPanel(stageList, data));
+}
+
+function openStage(sec) {
+  showStageSection(sec, resultEl.innerHTML || '');
+  stageOpen();
 }
 
 function loadRelationships() {
   const Input = resultEl.innerHTML;
-  renderStage(Input);
 
   document.getElementById('rhyres').innerHTML = '';
   document.getElementById('synres').innerHTML = '';
@@ -161,7 +176,7 @@ function other2(Input) {
   if (autoStage && autoStage.classList.contains('as-open')) {
     autorap.render(Input);
   } else if (wordStage && wordStage.classList.contains('ws-open')) {
-    renderStage(Input);
+    showStageSection(activeSection, Input);
   }
 
   modal1.style.display = 'none';
@@ -506,33 +521,72 @@ function wireUI() {
   document.getElementById('btn-randomowh').onclick = randomowh;
   document.getElementById('btn-randomuh').onclick = randomuh;
 
-  // Modals (Rhymes & Synonyms open the split-screen stage)
-  setupModal(modal2, 'close2', 'slBtn');
+  // Modal frame for Show Quote
   setupModal(document.getElementById('quotal'), 'close4', 'quptalbtn');
-  const relationshipBtn = document.getElementById('relationshipBtn');
-  const synBtn = document.getElementById('synBtn');
-  if (relationshipBtn) {
-    relationshipBtn.onclick = (e) => {
+
+// Rhymes / Sounds like / Synonyms all open the same hold-to-scroll stage.
+  const stageCatRhy = document.getElementById('stageCatRhy');
+  const stageCatSl = document.getElementById('stageCatSl');
+  const stageCatSyn = document.getElementById('stageCatSyn');
+  const stageHoldBtn = document.getElementById('stageHoldBtn');
+
+  let pressInfo = null;
+  const quickTapMs = 250;
+  const bindStageButton = (el, sec) => {
+    if (!el) return;
+    el.addEventListener('pointerdown', (e) => {
       e.preventDefault();
-      renderStage(resultEl.innerHTML);
-      stageOpen();
-    };
-  }
-  if (synBtn) {
-    synBtn.onclick = (e) => {
-      e.preventDefault();
-      renderStage(resultEl.innerHTML);
-      stageOpen();
-    };
+      pressInfo = { id: e.pointerId, t: Date.now() };
+      stageHeld = false;
+      openStage(sec);
+    });
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        stageHeld = true;
+        openStage(sec);
+      }
+    });
+  };
+  const resolvePress = (id) => {
+    if (!pressInfo || pressInfo.id !== id) return;
+    const wasQuick = (Date.now() - pressInfo.t) < quickTapMs;
+    pressInfo = null;
+    if (stageHeld) return;
+    if (wasQuick) stageHeld = true; // two-tap: quick tap stays open
+    else stageClose();              // long hold released without Hold = peek ends
+  };
+  document.addEventListener('pointerup', (e) => resolvePress(e.pointerId));
+  document.addEventListener('pointercancel', (e) => resolvePress(e.pointerId));
+
+  bindStageButton(document.getElementById('relationshipBtn'), 'rhy');
+  bindStageButton(document.getElementById('slBtn'), 'sl');
+  bindStageButton(document.getElementById('synBtn'), 'syn');
+  bindStageButton(stageCatRhy, 'rhy');
+  bindStageButton(stageCatSl, 'sl');
+  bindStageButton(stageCatSyn, 'syn');
+
+  // Hold pins the stage open (lift your finger and scroll); tapping it again closes.
+  if (stageHoldBtn) {
+    stageHoldBtn.addEventListener('click', () => {
+      if (stageHeld) {
+        stageHeld = false;
+        stageClose();
+      } else {
+        stageHeld = true;
+      }
+    });
   }
 
   // Close the stage when tapping anywhere outside the panels.
   if (wordStage) {
     wordStage.addEventListener('click', (e) => {
-      if (e.target === wordStage) stageClose();
+      if (e.target === wordStage) {
+        stageHeld = false;
+        stageClose();
+      }
     });
   }
-
   // Quote
   document.getElementById('quoteBtn').onclick = (e) => { e.preventDefault(); getNewQuote(); };
   document.getElementById('shareQuote').onclick = (e) => {

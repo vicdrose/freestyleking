@@ -321,21 +321,22 @@
     </ion-tabs>
   </div>
 
-  <!-- Relationship stage: split-screen word explorer (Rhymes | focus word | Synonyms) -->
+  <!-- Relationship stage: hold-to-open word explorer (current list | focus word + Hold | section switch) -->
   <div id="wordstage" class="wordstage" aria-hidden="true">
-    <div class="ws-panel ws-syn">
-      <div class="ws-panel-head">Synonyms</div>
-      <div class="ws-panel-body" id="stageSyn"></div>
+    <div class="ws-panel">
+      <div class="ws-panel-head" id="stageHead">Rhymes</div>
+      <div class="ws-panel-body" id="stageList"></div>
     </div>
 
     <div class="ws-focus">
-      <div class="ws-focus-label">word</div>
       <div class="ws-focus-word" id="stageWord"></div>
+      <ion-button id="stageHoldBtn" class="ws-hold">Hold</ion-button>
     </div>
 
-    <div class="ws-panel ws-rhy">
-      <div class="ws-panel-head">Rhymes</div>
-      <div class="ws-panel-body" id="stageRhy"></div>
+    <div class="ws-cats">
+      <ion-button id="stageCatRhy">Rhymes</ion-button>
+      <ion-button id="stageCatSl">Sounds like</ion-button>
+      <ion-button id="stageCatSyn">Synonyms</ion-button>
     </div>
   </div>
 

@@ -690,11 +690,11 @@ ion-input {
   left: 0;
   z-index: 1100;
   display: flex;
-  flex-direction: row;
-  gap: 12px;
+  flex-direction: column;
+  gap: 10px;
   align-items: stretch;
-  padding: 12px;
-  background: rgba(0, 0, 0, .78);
+  padding: 14px;
+  background: rgba(0, 0, 0, .8);
   opacity: 0;
   visibility: hidden;
   transition: opacity 200ms ease, visibility 0s linear 200ms;
@@ -790,23 +790,6 @@ ion-input {
   text-shadow: 0 2px 0 rgba(0, 0, 0, .6), 0 0 24px rgba(255, 255, 255, .18);
   word-break: break-word;
   max-width: 100%;
-}
-
-@media (max-width: 640px) {
-  .wordstage {
-    flex-direction: column;
-    gap: 8px;
-  }
-  .ws-focus {
-    width: 100%;
-    max-width: none;
-    min-width: 0;
-    flex: 0 0 auto;
-    padding: 8px;
-  }
-  .ws-panel {
-    flex: 1 1 0;
-  }
 }
 
 /* ============ Autorap stage (dedicated overlay) ============ */
@@ -935,34 +918,6 @@ ion-input {
   max-width: 100%;
 }
 
-@media (max-width: 640px) {
-  .autostage .as-body {
-    flex-direction: column;
-    gap: 8px;
-  }
-  .autostage .ws-focus {
-    width: 100%;
-    max-width: none;
-    min-width: 0;
-    flex: 0 0 auto;
-    padding: 8px;
-  }
-  .as-controls {
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-  }
-  .as-timer {
-    justify-content: center;
-    width: 100%;
-  }
-  .as-actions {
-    justify-content: center;
-    margin-left: 0;
-    width: 100%;
-  }
-}
-
 /* ============ Autorap phonetics row ============ */
 .as-phon {
   flex: 0 0 auto;
@@ -985,4 +940,48 @@ ion-input {
   padding: 6px 14px;
   min-width: 60px;
   text-align: center;
+}
+
+/* wordstage: single list + focus word + Hold + section switch (Autorap stage untouched) */
+.wordstage .ws-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.wordstage .ws-focus {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: none;
+  min-width: 0;
+  flex-direction: row;
+  gap: 12px;
+  padding: 4px 2px;
+}
+
+.wordstage .ws-focus-word {
+  flex: 1 1 auto;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: clamp(1.4rem, 4.5vw, 2.6rem);
+  line-height: 1.15;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, .6);
+}
+
+.ws-hold {
+  flex: 0 0 auto;
+  --background: #2f91ae;
+  --color: #fff;
+}
+
+.ws-cats {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 8px;
+}
+
+.ws-cats ion-button {
+  flex: 1 1 0;
+  margin: 0;
+  --background: #2f91ae;
+  --color: #fff;
 }
