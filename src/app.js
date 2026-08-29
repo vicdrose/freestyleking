@@ -373,34 +373,13 @@ function beatToggles() {
     chk.addEventListener('ionChange', (e) => apply(!!e.detail.checked));
   });
 
-  // Sections dropdown: tap to open, tap outside to close.
-  const drop = document.getElementById('beatSectionsMenu');
-  const toggle = document.getElementById('beatSectionsToggle');
-  if (toggle && drop) {
-    const closeDrop = () => { drop.classList.remove('open'); toggle.classList.remove('open'); };
-    toggle.onclick = () => {
-      const isOpen = drop.classList.contains('open');
-      closeDrop();
-      if (!isOpen) { drop.classList.add('open'); toggle.classList.add('open'); }
-    };
-    document.addEventListener('click', (e) => {
-      if (drop && !drop.parentElement.contains(e.target)) closeDrop();
-    });
-  }
-
-  // Rows: tap anywhere on a row toggles its section.
-  document.querySelectorAll('.beat-section-row').forEach((row) => {
-    const chk = row.querySelector('ion-checkbox');
+  // Keep the gold "on" tint on a row while its section is enabled.
+  document.querySelectorAll('.beat-acc-row').forEach((row) => {
+    const chk = row.querySelector('ion-toggle');
     if (!chk) return;
     const sync = () => row.classList.toggle('on', !!chk.checked);
     sync();
     chk.addEventListener('ionChange', sync);
-    row.addEventListener('click', (e) => {
-      if (e.target.closest('ion-checkbox')) return;
-      chk.checked = !chk.checked;
-      chk.dispatchEvent(new CustomEvent('ionChange', { detail: { checked: chk.checked } }));
-      sync();
-    });
   });
 }
 
