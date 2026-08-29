@@ -363,7 +363,6 @@ function beatPanes() {
   if (!seg) return;
   const panes = {
     player: 'beat-pane-player',
-    beats: 'beat-pane-beats',
     keys: 'beat-pane-keys',
     recorder: 'beat-pane-recorder'
   };

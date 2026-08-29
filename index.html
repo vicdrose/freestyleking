@@ -188,8 +188,7 @@
 
         <ion-content color="dark">
           <ion-segment id="beat-seg" class="beat-seg" value="player">
-            <ion-segment-button value="player"><ion-label>Player</ion-label></ion-segment-button>
-            <ion-segment-button value="beats"><ion-label>Beats</ion-label></ion-segment-button>
+            <ion-segment-button value="player"><ion-label>Player &amp; Beats</ion-label></ion-segment-button>
             <ion-segment-button value="keys"><ion-label>Keys &amp; Sounds</ion-label></ion-segment-button>
             <ion-segment-button value="recorder"><ion-label>Recorder</ion-label></ion-segment-button>
           </ion-segment>
@@ -202,21 +201,15 @@
                 <ion-button id="btn-sendUrl">Submit</ion-button>
               </div>
               <div class="btn-grid">
-                <ion-button id="btn-playerStart">Start</ion-button>
-                <ion-button id="btn-playerStop">Stop</ion-button>
-              </div>
-            </div>
-          </div>
-
-          <div id="beat-pane-beats" class="beat-pane" style="display:none">
-            <div class="audio-section">
-              <h3 class="ion-padding-start">Beats</h3>
-              <div class="btn-grid">
                 <ion-button color="warning" id="btn-rollBeats">CLASSICS</ion-button>
                 <ion-button color="warning" id="btn-rollFKBeats">FK Beats</ion-button>
                 <ion-button color="warning" id="btn-rollPremium">Premium</ion-button>
                 <ion-button color="warning" id="btn-rollStandard">Standard</ion-button>
                 <ion-button color="primary" id="btn-rollBreak">DRUM LOOP</ion-button>
+              </div>
+              <div class="btn-grid">
+                <ion-button id="btn-playerStart">Start</ion-button>
+                <ion-button id="btn-playerStop">Stop</ion-button>
               </div>
               <div class="ion-padding">
                 <div class="item-row">rate: <span id="demo">100</span>
