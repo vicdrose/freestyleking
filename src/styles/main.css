@@ -787,6 +787,7 @@ ion-input {
   text-transform: none;
   letter-spacing: normal;
   color: rgba(255, 255, 255, .6);
+  opacity: .1;
 }
 .as-bucket::before { content: '('; }
 .as-bucket::after { content: ')'; }
