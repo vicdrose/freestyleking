@@ -535,7 +535,7 @@ ion-input {
 .beat-accordion {
   margin: 12px 12px 0;
   border: 1px solid rgba(255, 255, 255, .25);
-  border-radius: 10px;
+  border-radius: 8px;
   overflow: hidden;
   background: rgba(255, 255, 255, .08);
 }
@@ -547,8 +547,8 @@ ion-input {
 }
 
 .beat-acc-row {
-  --background: rgba(0, 0, 0, .45);
-  --color: #fff;
+  --background: rgba(255, 255, 255, .12);
+  --color: rgba(255, 255, 255, .75);
   --border-color: rgba(255, 255, 255, .08);
   font-weight: 600;
 }
