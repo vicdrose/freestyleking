@@ -532,60 +532,67 @@ ion-input {
   font-weight: 600;
 }
 
-.beat-sections-content {
-  width: 240px;
-  margin: 30% auto;
-  background: #141414;
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, .2);
-  border-radius: 12px;
-  padding: 18px 16px 20px;
-  position: relative;
+.beat-sections {
+  margin: 12px 12px 0;
 }
 
-.beat-sections-content h3 {
-  margin: 0 0 4px 12px;
-  font-size: 1.1rem;
-}
-
-.beat-sections-content .close5 {
-  position: absolute;
-  top: 6px;
-  right: 12px;
-  color: #aaa;
-  font-size: 26px;
-  font-weight: bold;
-  cursor: pointer;
-  line-height: 1;
-}
-
-.beat-section-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 14px;
-}
-
-.beat-section-chip {
+.beat-sections-toggle {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border: 1px solid rgba(255, 255, 255, .2);
+  justify-content: space-between;
+  width: 100%;
+  background: rgba(255, 255, 255, .08);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, .25);
   border-radius: 10px;
-  cursor: pointer;
-  background: rgba(255, 255, 255, .06);
+  padding: 14px 16px;
+  font-size: 1rem;
   font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
   -webkit-tap-highlight-color: transparent;
-  user-select: none;
 }
 
-.beat-section-chip.on {
-  border-color: goldenrod;
+.beat-sections-toggle ion-icon {
+  transition: transform .2s;
+}
+
+.beat-sections-toggle.open ion-icon {
+  transform: rotate(180deg);
+}
+
+.beat-sections-menu {
+  display: none;
+  background: rgba(0, 0, 0, .55);
+  border: 1px solid rgba(255, 255, 255, .25);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  margin-top: -1px;
+  overflow: hidden;
+}
+
+.beat-sections-menu.open {
+  display: block;
+}
+
+.beat-section-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: #fff;
+  cursor: pointer;
+  border-top: 1px solid rgba(255, 255, 255, .08);
+  font-weight: 600;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.beat-section-row.on {
   background: rgba(218, 165, 32, .14);
 }
 
-.beat-section-chip ion-checkbox {
+.beat-section-row ion-checkbox {
   pointer-events: none;
   --checkbox-background-checked: goldenrod;
   --border-color-checked: goldenrod;

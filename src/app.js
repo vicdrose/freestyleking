@@ -373,24 +373,29 @@ function beatToggles() {
     chk.addEventListener('ionChange', (e) => apply(!!e.detail.checked));
   });
 
-  // Sections modal: open via the header button, close via X or outside tap.
-  const modal = document.getElementById('beatSectionsModal');
-  const openBtn = document.getElementById('btn-beat-sections');
-  if (openBtn && modal) {
-    openBtn.onclick = () => { modal.style.display = 'block'; };
-    const close = document.getElementsByClassName('close5')[0];
-    if (close) close.onclick = () => { modal.style.display = 'none'; };
-    modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+  // Sections dropdown: tap to open, tap outside to close.
+  const drop = document.getElementById('beatSectionsMenu');
+  const toggle = document.getElementById('beatSectionsToggle');
+  if (toggle && drop) {
+    const closeDrop = () => { drop.classList.remove('open'); toggle.classList.remove('open'); };
+    toggle.onclick = () => {
+      const isOpen = drop.classList.contains('open');
+      closeDrop();
+      if (!isOpen) { drop.classList.add('open'); toggle.classList.add('open'); }
+    };
+    document.addEventListener('click', (e) => {
+      if (drop && !drop.parentElement.contains(e.target)) closeDrop();
+    });
   }
 
-  // Chips: tap anywhere on a chip toggles its section.
-  document.querySelectorAll('.beat-section-chip').forEach((chip) => {
-    const chk = chip.querySelector('ion-checkbox');
+  // Rows: tap anywhere on a row toggles its section.
+  document.querySelectorAll('.beat-section-row').forEach((row) => {
+    const chk = row.querySelector('ion-checkbox');
     if (!chk) return;
-    const sync = () => chip.classList.toggle('on', !!chk.checked);
+    const sync = () => row.classList.toggle('on', !!chk.checked);
     sync();
     chk.addEventListener('ionChange', sync);
-    chip.addEventListener('click', (e) => {
+    row.addEventListener('click', (e) => {
       if (e.target.closest('ion-checkbox')) return;
       chk.checked = !chk.checked;
       chk.dispatchEvent(new CustomEvent('ionChange', { detail: { checked: chk.checked } }));
