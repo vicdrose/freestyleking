@@ -183,24 +183,15 @@
           <ion-toolbar>
             <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
             <ion-title><img src="/logo.png" style="width: 24px;"> Beat</ion-title>
+            <ion-buttons slot="end">
+              <ion-button id="btn-beat-sections">
+                <ion-icon slot="icon-only" name="options-outline"></ion-icon>
+              </ion-button>
+            </ion-buttons>
           </ion-toolbar>
         </ion-header>
 
         <ion-content color="dark">
-          <ion-list class="beat-toggle-list">
-            <ion-item>
-              <ion-checkbox id="chk-beat-player" slot="start" checked></ion-checkbox>
-              <ion-label>Player &amp; Beats</ion-label>
-            </ion-item>
-            <ion-item>
-              <ion-checkbox id="chk-beat-keys" slot="start" checked></ion-checkbox>
-              <ion-label>Keys &amp; Sounds</ion-label>
-            </ion-item>
-            <ion-item>
-              <ion-checkbox id="chk-beat-recorder" slot="start" checked></ion-checkbox>
-              <ion-label>Recorder</ion-label>
-            </ion-item>
-          </ion-list>
 
           <div id="beat-pane-player" class="beat-pane">
             <div class="audio-section">
@@ -404,6 +395,27 @@
         <span class="close3">&times;</span>
         <div class="well">Synonyms</div>
         <div class="well" id="synres">Results</div>
+      </div>
+    </div>
+
+    <div id="beatSectionsModal" class="modal">
+      <div class="modal-content beat-sections-content">
+        <span class="close5">&times;</span>
+        <h3>Sections</h3>
+        <div class="beat-section-grid">
+          <label class="beat-section-chip" id="chip-beat-player">
+            <ion-checkbox id="chk-beat-player" checked></ion-checkbox>
+            <span>Player</span>
+          </label>
+          <label class="beat-section-chip" id="chip-beat-keys">
+            <ion-checkbox id="chk-beat-keys" checked></ion-checkbox>
+            <span>Sampler</span>
+          </label>
+          <label class="beat-section-chip" id="chip-beat-recorder">
+            <ion-checkbox id="chk-beat-recorder" checked></ion-checkbox>
+            <span>Recorder</span>
+          </label>
+        </div>
       </div>
     </div>
 

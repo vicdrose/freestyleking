@@ -532,22 +532,61 @@ ion-input {
   font-weight: 600;
 }
 
-/* ============ Beat view checkbox sections ============ */
-.beat-toggle-list {
-  background: transparent;
-  margin: 12px 12px 4px;
+.beat-sections-content {
+  width: 240px;
+  margin: 30% auto;
+  background: #141414;
+  color: #fff;
   border: 1px solid rgba(255, 255, 255, .2);
   border-radius: 12px;
-  overflow: hidden;
+  padding: 18px 16px 20px;
+  position: relative;
 }
 
-.beat-toggle-list ion-item {
-  --background: rgba(255, 255, 255, .06);
-  --color: #fff;
-  --border-color: rgba(255, 255, 255, .1);
+.beat-sections-content h3 {
+  margin: 0 0 4px 12px;
+  font-size: 1.1rem;
 }
 
-.beat-toggle-list ion-checkbox {
+.beat-sections-content .close5 {
+  position: absolute;
+  top: 6px;
+  right: 12px;
+  color: #aaa;
+  font-size: 26px;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.beat-section-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.beat-section-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, .2);
+  border-radius: 10px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, .06);
+  font-weight: 600;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.beat-section-chip.on {
+  border-color: goldenrod;
+  background: rgba(218, 165, 32, .14);
+}
+
+.beat-section-chip ion-checkbox {
+  pointer-events: none;
   --checkbox-background-checked: goldenrod;
   --border-color-checked: goldenrod;
   --checkmark-color: #000;

@@ -372,6 +372,31 @@ function beatToggles() {
     apply(!!chk.checked);
     chk.addEventListener('ionChange', (e) => apply(!!e.detail.checked));
   });
+
+  // Sections modal: open via the header button, close via X or outside tap.
+  const modal = document.getElementById('beatSectionsModal');
+  const openBtn = document.getElementById('btn-beat-sections');
+  if (openBtn && modal) {
+    openBtn.onclick = () => { modal.style.display = 'block'; };
+    const close = document.getElementsByClassName('close5')[0];
+    if (close) close.onclick = () => { modal.style.display = 'none'; };
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+  }
+
+  // Chips: tap anywhere on a chip toggles its section.
+  document.querySelectorAll('.beat-section-chip').forEach((chip) => {
+    const chk = chip.querySelector('ion-checkbox');
+    if (!chk) return;
+    const sync = () => chip.classList.toggle('on', !!chk.checked);
+    sync();
+    chk.addEventListener('ionChange', sync);
+    chip.addEventListener('click', (e) => {
+      if (e.target.closest('ion-checkbox')) return;
+      chk.checked = !chk.checked;
+      chk.dispatchEvent(new CustomEvent('ionChange', { detail: { checked: chk.checked } }));
+      sync();
+    });
+  });
 }
 
 // ---------- Piano (Keys & Sounds) ----------
