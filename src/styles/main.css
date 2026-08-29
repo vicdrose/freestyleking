@@ -534,34 +534,34 @@ ion-input {
 
 .beat-accordion {
   margin: 12px 12px 0;
-  border: 1px solid rgba(255, 255, 255, .25);
+  border: 1px solid rgba(210, 180, 140, .55);
   border-radius: 10px;
   overflow: hidden;
-  background: rgba(0, 0, 0, .35);
+  background: tan;
 }
 
 .beat-acc-header {
-  --background: rgba(255, 255, 255, .08);
+  --background: tan;
   --color: #fff;
   font-weight: 600;
 }
 
 .beat-acc-row {
-  --background: rgba(0, 0, 0, .45);
-  --color: #fff;
-  --border-color: rgba(255, 255, 255, .08);
+  --background: #f5e8cf;
+  --color: #333;
+  --border-color: rgba(120, 90, 40, .18);
   font-weight: 600;
 }
 
 .beat-acc-row.on {
-  --background: rgba(218, 165, 32, .14);
+  --background: rgba(218, 165, 32, .28);
 }
 
 .beat-acc-row ion-toggle {
-  --track-background: #666;
+  --track-background: #d8c9a8;
   --handle-background: #fff;
   --track-background-checked: goldenrod;
-  --handle-background-checked: #000;
+  --handle-background-checked: #fff;
 }
 
 .beat-pane {
