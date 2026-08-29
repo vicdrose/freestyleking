@@ -65,10 +65,9 @@ function randomowh() { setResult(random_item(owh)); }
 //
 // The last X-marked button pressed is QUEUED as the word source that Auto Wrap
 // draws from, so Auto Wrap "auto wraps" from whichever bucket you most recently
-// rolled. It defaults to Compound Word (items), preserving the original
-// behavior, until you roll another eligible bucket.
+// rolled. It defaults to Random Word (words1) until another bucket is pressed.
 // ---------------------------------------------------------------------------
-let autorapQueue = { rollFn: random_item, seeds: items };
+let autorapQueue = { rollFn: random_item, seeds: words1 };
 // Support hook: console/automation can inspect the queued Auto Wrap source.
 window.__autorapQueue = () => ({ ...autorapQueue });
 
@@ -285,6 +284,7 @@ const autorap = {
       asPause.innerHTML = '&#10074;&#10074;';
     }
     this.rollFn = rollFn;
+    this.seeds = seeds;
     if (asSeconds) this.base = Math.max(1, parseInt(asSeconds.value, 10) || 8);
     if (asMult) this.mult = parseFloat(asMult.value) || 1;
     this.updateClock();
@@ -296,7 +296,7 @@ const autorap = {
     }
 
     // Seed the first word immediately, then auto-advance every interval.
-    this.advance(seeds);
+    this.advance();
     this.schedule();
   },
 
@@ -309,9 +309,11 @@ const autorap = {
     }, ms);
   },
 
-  advance(seeds) {
-    const word = seeds && seeds.length ? random_item(seeds) : random_item(items);
-    this.render(word);
+  advance() {
+    // Keep drawing from the bucket chosen in open() (the queued Auto Wrap source) so
+    // Skip / the interval never fall back to a hardcoded list.
+    const seeds = (this.seeds && this.seeds.length) ? this.seeds : words1;
+    this.render(random_item(seeds));
   },
 
   render(word) {
@@ -397,6 +399,9 @@ function autorapadv() {
 function autorapadj() {
   autorap.open(random_item, adjectives);
 }
+
+// Support hook: inspect the actual bucket Auto Wrap is drawing from.
+window.__autorapSeeds = () => autorap.seeds || words1;
 
 // ---------- Beat view: Player / Beats / Keys & Sounds / Recorder ----------
 function beatToggles() {
