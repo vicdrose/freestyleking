@@ -187,64 +187,92 @@
         </ion-header>
 
         <ion-content color="dark">
-          <div class="audio-section">
-            <h3 class="ion-padding-start">Use Headphones</h3>
+          <ion-segment id="beat-seg" class="beat-seg" value="player">
+            <ion-segment-button value="player"><ion-label>Player</ion-label></ion-segment-button>
+            <ion-segment-button value="beats"><ion-label>Beats</ion-label></ion-segment-button>
+            <ion-segment-button value="keys"><ion-label>Keys &amp; Sounds</ion-label></ion-segment-button>
+            <ion-segment-button value="recorder"><ion-label>Recorder</ion-label></ion-segment-button>
+          </ion-segment>
 
-            <div class="ion-padding">
-              <ion-input id="audioUrl" placeholder="Paste audio URL"></ion-input>
-              <ion-button id="btn-sendUrl">Submit</ion-button>
-            </div>
-
-            <div class="btn-grid">
-              <ion-button id="btn-playerStart">Start</ion-button>
-              <ion-button id="btn-playerStop">Stop</ion-button>
-            </div>
-
-            <div class="btn-grid">
-              <ion-button color="warning" id="btn-rollBeats">CLASSICS</ion-button>
-              <ion-button color="warning" id="btn-rollFKBeats">FK Beats</ion-button>
-              <ion-button color="primary" id="btn-rollBreak">DRUM LOOP</ion-button>
-            </div>
-
-            <div class="ion-padding">
-              <div class="item-row">rate: <span id="demo">100</span>
-                <ion-range min="50" max="150" value="100" id="myRange" debounce="50"></ion-range>
+          <div id="beat-pane-player" class="beat-pane">
+            <div class="audio-section">
+              <h3 class="ion-padding-start">Use Headphones</h3>
+              <div class="ion-padding">
+                <ion-input id="audioUrl" placeholder="Paste audio URL"></ion-input>
+                <ion-button id="btn-sendUrl">Submit</ion-button>
               </div>
-              <div class="item-row">vol: <span id="vol">100</span>
-                <ion-range min="0" max="100" value="100" id="volRange" debounce="50"></ion-range>
+              <div class="btn-grid">
+                <ion-button id="btn-playerStart">Start</ion-button>
+                <ion-button id="btn-playerStop">Stop</ion-button>
               </div>
-              <div class="item-row">URL: <span id="url"></span></div>
-            </div>
-
-            <div class="btn-grid">
-              <ion-button color="primary" id="btn-rollSample">PAD</ion-button>
-              <ion-button color="tertiary" id="btn-rollBass">BASS</ion-button>
-              <ion-button color="warning" id="btn-rollSFX">SFX</ion-button>
-              <ion-button color="success" id="btn-rollFills">Drum Fill</ion-button>
-            </div>
-
-            <div class="ion-padding">URL: <span id="url2"></span></div>
-
-            <!-- Mic -->
-            <div class="ion-padding">
-              <ion-button id="micBtn" expand="block">Microphone</ion-button>
-            </div>
-
-            <!-- Recording -->
-            <div class="btn-grid record-grid">
-              <ion-button color="danger" id="btn-record">RECORD</ion-button>
-              <ion-button color="primary" id="btn-stopRecord">STOP</ion-button>
-              <ion-button color="dark" id="btn-deleteRecord">DELETE</ion-button>
-            </div>
-            <div class="ion-padding">
-              <audio controls id="recAudio"></audio>
-            </div>
-
-            <div class="ion-padding instructions">
-              instructions: turn on mic, load beat, break, or not, press record, start
-              beat or break, press stop when done, listen to replay or download
             </div>
           </div>
+
+          <div id="beat-pane-beats" class="beat-pane" style="display:none">
+            <div class="audio-section">
+              <h3 class="ion-padding-start">Beats</h3>
+              <div class="btn-grid">
+                <ion-button color="warning" id="btn-rollBeats">CLASSICS</ion-button>
+                <ion-button color="warning" id="btn-rollFKBeats">FK Beats</ion-button>
+                <ion-button color="warning" id="btn-rollPremium">Premium</ion-button>
+                <ion-button color="warning" id="btn-rollStandard">Standard</ion-button>
+                <ion-button color="primary" id="btn-rollBreak">DRUM LOOP</ion-button>
+              </div>
+              <div class="ion-padding">
+                <div class="item-row">rate: <span id="demo">100</span>
+                  <ion-range min="50" max="150" value="100" id="myRange" debounce="50"></ion-range>
+                </div>
+                <div class="item-row">vol: <span id="vol">100</span>
+                  <ion-range min="0" max="100" value="100" id="volRange" debounce="50"></ion-range>
+                </div>
+                <div class="item-row">URL: <span id="url"></span></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="beat-pane-keys" class="beat-pane" style="display:none">
+            <div class="audio-section">
+              <h3 class="ion-padding-start">Player</h3>
+              <div class="ion-padding">
+                <div class="item-row">MIDI IN:
+                  <select id="midiIn"><option value="none">none</option></select>
+                </div>
+              </div>
+              <div class="ion-padding piano-wrap">
+                <div id="pianoKeys" class="piano"></div>
+              </div>
+              <div class="btn-grid">
+                <ion-button color="primary" id="btn-rollSample">PAD</ion-button>
+                <ion-button color="tertiary" id="btn-rollBass">BASS</ion-button>
+                <ion-button color="warning" id="btn-rollSFX">SFX</ion-button>
+                <ion-button color="success" id="btn-rollFills">Drum Fill</ion-button>
+              </div>
+              <div class="ion-padding">URL: <span id="url2"></span></div>
+            </div>
+          </div>
+
+          <div id="beat-pane-recorder" class="beat-pane" style="display:none">
+            <div class="audio-section">
+              <h3 class="ion-padding-start">Recorder</h3>
+              <div class="ion-padding">
+                <ion-button id="micBtn" expand="block">Microphone</ion-button>
+              </div>
+              <div class="btn-grid record-grid">
+                <ion-button color="danger" id="btn-record">RECORD</ion-button>
+                <ion-button color="primary" id="btn-stopRecord">STOP</ion-button>
+                <ion-button color="dark" id="btn-deleteRecord">DELETE</ion-button>
+              </div>
+              <div class="ion-padding">
+                <audio controls id="recAudio"></audio>
+              </div>
+              <div class="ion-padding instructions">
+                instructions: turn on mic, load beat, break, or not, press record, start
+                beat or break, press stop when done, listen to replay or download
+              </div>
+            </div>
+          </div>
+
+          <audio controls autoplay src="" id="beatShuffler" style="display:none;"></audio>
         </ion-content>
       </ion-tab>
 

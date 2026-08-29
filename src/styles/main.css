@@ -532,6 +532,110 @@ ion-input {
   font-weight: 600;
 }
 
+/* ============ Beat view 4-tab compartment (Player / Beats / Keys & Sounds / Recorder) ============ */
+ion-segment.beat-seg {
+  display: flex;
+  width: 100%;
+  --background: rgba(255, 255, 255, .08);
+  --background-checked: #fff;
+  --color: rgba(255, 255, 255, .7);
+  --color-checked: #000;
+  --indicator-color: transparent;
+  margin: 12px 0 4px;
+}
+
+ion-segment.beat-seg ion-segment-button {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+ion-segment.beat-seg ion-label {
+  font-weight: 600;
+}
+
+.beat-pane {
+  padding: 0 12px 12px;
+}
+
+.beat-pane .audio-section {
+  margin: 0;
+}
+
+#midiIn {
+  background: #1f1f1f;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, .2);
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+
+.piano-wrap {
+  padding: 0 12px;
+}
+
+.piano {
+  position: relative;
+  display: flex;
+  height: 190px;
+  border: 1px solid rgba(255, 255, 255, .25);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+}
+
+.piano-key {
+  padding: 0;
+  margin: 0;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.piano-key.white {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  background: linear-gradient(#fdfdfd, #e6e6e6);
+  color: #222;
+  border-right: 1px solid #aaa;
+  border-radius: 0 0 6px 6px;
+  font-size: .62rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 6px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
+.piano-key.white:active,
+.piano-key.white.pressed {
+  background: linear-gradient(#d9d9d9, #c4c4c4);
+}
+
+.piano-key.black {
+  position: absolute;
+  top: 0;
+  height: 58%;
+  background: linear-gradient(#262626, #0f0f0f);
+  color: #fff;
+  border-radius: 0 0 5px 5px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, .55);
+  z-index: 2;
+  font-size: .55rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 4px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
+.piano-key.black:active,
+.piano-key.black.pressed {
+  background: linear-gradient(#3a3a3a, #1a1a1a);
+}
+
 /* ============ Centered Home feed player ============ */
 .feed-player-wrap {
   display: flex;

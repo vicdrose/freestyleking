@@ -15,6 +15,7 @@ import {
 } from './data/index.js';
 import { getSynonyms, getSoundsLike, getRhymes, getForismaticQuote } from './services/api.js';
 import { initAudio } from './services/audio.js';
+import * as Tone from 'tone';
 import { getBeatShuffler, getPad, getBreak, getBeat, getFKBeat, getBass, getSFX, getFill } from './services/samples.js';
 import { fetchFeed, playSong, isFeedPlaying, stopFeed } from './services/feed.js';
 
@@ -356,6 +357,108 @@ function autorapadj() {
   autorap.open(random_item, adjectives);
 }
 
+// ---------- Beat view: Player / Beats / Keys & Sounds / Recorder ----------
+function beatPanes() {
+  const seg = document.getElementById('beat-seg');
+  if (!seg) return;
+  const panes = {
+    player: 'beat-pane-player',
+    beats: 'beat-pane-beats',
+    keys: 'beat-pane-keys',
+    recorder: 'beat-pane-recorder'
+  };
+  const show = (name) => {
+    Object.keys(panes).forEach((key) => {
+      const el = document.getElementById(panes[key]);
+      if (el) el.style.display = key === name ? 'block' : 'none';
+    });
+  };
+  seg.addEventListener('ionChange', (e) => show(e.detail.value));
+  show(seg.value);
+}
+
+// ---------- Piano (Keys & Sounds) ----------
+function setupPiano() {
+  const el = document.getElementById('pianoKeys');
+  if (!el) return;
+  const synth = new Tone.PolySynth(Tone.Synth, {
+    oscillator: { type: 'triangle' }
+  }).toDestination();
+
+  const octaves = [3, 4, 5, 6];
+  const whiteNames = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+  const blackSpec = [['C#', 0], ['D#', 1], ['F#', 3], ['G#', 4], ['A#', 5]];
+  const naturals = [];
+  octaves.forEach((oct) => whiteNames.forEach((name) => naturals.push(name + oct)));
+
+  const nWhites = naturals.length;
+  const whiteW = 100 / nWhites;
+  const blackW = whiteW * 0.65;
+
+  const down = (note) => synth.triggerAttack(note);
+  const up = (note) => synth.triggerRelease(note);
+
+  naturals.forEach((note) => {
+    const key = document.createElement('button');
+    key.type = 'button';
+    key.className = 'piano-key white';
+    key.textContent = note;
+    key.addEventListener('pointerdown', () => down(note));
+    key.addEventListener('pointerup', () => up(note));
+    key.addEventListener('pointerleave', () => up(note));
+    el.appendChild(key);
+  });
+
+  let octStart = 0;
+  octaves.forEach((oct) => {
+    blackSpec.forEach(([name, li]) => {
+      const note = name + oct;
+      const key = document.createElement('button');
+      key.type = 'button';
+      key.className = 'piano-key black';
+      key.textContent = note.replace('#', '\u266F');
+      key.style.left = (((octStart + li + 1) * whiteW) - (blackW / 2)) + '%';
+      key.style.width = blackW + '%';
+      key.addEventListener('pointerdown', () => down(note));
+      key.addEventListener('pointerup', () => up(note));
+      key.addEventListener('pointerleave', () => up(note));
+      el.appendChild(key);
+    });
+    octStart += 7;
+  });
+
+  const midiSel = document.getElementById('midiIn');
+  if (midiSel && navigator.requestMIDIAccess) {
+    navigator.requestMIDIAccess().then((access) => {
+      const inputs = [];
+      access.inputs.forEach((input) => {
+        inputs.push({ id: input.id, input });
+        const opt = document.createElement('option');
+        opt.value = input.id;
+        opt.textContent = input.name || input.id;
+        midiSel.appendChild(opt);
+      });
+      const wire = () => {
+        inputs.forEach(({ id, input }) => {
+          input.onmidimessage = midiSel.value === id ? (evt) => {
+            if (!evt.data) return;
+            const cmd = evt.data[0];
+            const note = evt.data[1];
+            const vel = evt.data[2];
+            const name = Tone.Frequency(note, 'midi').toNote();
+            if (cmd >= 144 && cmd < 160) {
+              if (vel > 0) down(name); else up(name);
+            } else if (cmd >= 128 && cmd < 144) {
+              up(name);
+            }
+          } : null;
+        });
+      };
+      midiSel.addEventListener('change', wire);
+    }).catch(() => {});
+  }
+}
+
 // ---------- Wire up all UI (called from Vue mounted) ----------
 function wireUI() {
   const audio = initAudio();
@@ -502,6 +605,10 @@ function wireUI() {
       mic.open();
     }
   });
+
+  // Beat view
+  beatPanes();
+  setupPiano();
 
   // Autorap buttons
   autorap.wire();
