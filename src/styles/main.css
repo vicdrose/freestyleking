@@ -781,6 +781,16 @@ ion-input {
   color: rgba(255, 255, 255, .4);
 }
 
+.as-bucket {
+  font-style: italic;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  color: rgba(255, 255, 255, .6);
+}
+.as-bucket::before { content: '('; }
+.as-bucket::after { content: ')'; }
+
 .ws-focus-word {
   font-family: 'Alex Brush', 'Dancing Script', cursive;
   font-weight: 700;

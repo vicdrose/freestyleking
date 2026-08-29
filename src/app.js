@@ -67,13 +67,13 @@ function randomowh() { setResult(random_item(owh)); }
 // draws from, so Auto Wrap "auto wraps" from whichever bucket you most recently
 // rolled. It defaults to Random Word (words1) until another bucket is pressed.
 // ---------------------------------------------------------------------------
-let autorapQueue = { rollFn: random_item, seeds: words1 };
+let autorapQueue = { rollFn: random_item, seeds: words1, label: 'random' };
 // Support hook: console/automation can inspect the queued Auto Wrap source.
 window.__autorapQueue = () => ({ ...autorapQueue });
 
-function queueAutorapSource(rollFn, seeds, baseRoll) {
+function queueAutorapSource(rollFn, seeds, baseRoll, label) {
   return () => {
-    autorapQueue = { rollFn, seeds };
+    autorapQueue = { rollFn, seeds, label };
     baseRoll();
   };
 }
@@ -245,6 +245,7 @@ const autoStage = document.getElementById('autostage');
 const autoSyn = document.getElementById('autoSyn');
 const autoRhy = document.getElementById('autoRhy');
 const autoWord = document.getElementById('autoWord');
+const autoBucket = document.getElementById('autoBucket');
 const asSeconds = document.getElementById('asSeconds');
 const asMult = document.getElementById('asMult');
 const asClock = document.getElementById('asClock');
@@ -276,7 +277,7 @@ const autorap = {
     if (!p) this.schedule();
   },
 
-  open(rollFn, seeds) {
+  open(rollFn, seeds, label) {
     this.stop();
     this.paused = false;
     if (asPause) {
@@ -285,6 +286,8 @@ const autorap = {
     }
     this.rollFn = rollFn;
     this.seeds = seeds;
+    this.label = label || '';
+    if (autoBucket) autoBucket.textContent = this.label;
     if (asSeconds) this.base = Math.max(1, parseInt(asSeconds.value, 10) || 8);
     if (asMult) this.mult = parseFloat(asMult.value) || 1;
     this.updateClock();
@@ -385,19 +388,19 @@ const autorap = {
 };
 
 function autorap1() {
-  autorap.open(autorapQueue.rollFn, autorapQueue.seeds);
+  autorap.open(autorapQueue.rollFn, autorapQueue.seeds, autorapQueue.label);
 }
 
 function autorapverbs() {
-  autorap.open(random_item, verbs);
+  autorap.open(random_item, verbs, 'verbs');
 }
 
 function autorapadv() {
-  autorap.open(random_item, adverbs);
+  autorap.open(random_item, adverbs, 'adverb');
 }
 
 function autorapadj() {
-  autorap.open(random_item, adjectives);
+  autorap.open(random_item, adjectives, 'adjective');
 }
 
 // Support hook: inspect the actual bucket Auto Wrap is drawing from.
@@ -528,17 +531,17 @@ function wireUI() {
   loadSampleDirs();
 
   // Word buttons
-  document.getElementById('btn-roll').onclick = queueAutorapSource(random_item, items, roll);
-  document.getElementById('btn-rollCommon').onclick = queueAutorapSource(random_item, words1, rollCommon);
-  document.getElementById('btn-rollAdj').onclick = queueAutorapSource(random_item, adjectives, rollAdj);
-  document.getElementById('btn-rollAdv').onclick = queueAutorapSource(random_item, adverbs, rollAdv);
-  document.getElementById('btn-rollVerbs').onclick = queueAutorapSource(random_item, verbs, rollVerbs);
+  document.getElementById('btn-roll').onclick = queueAutorapSource(random_item, items, roll, 'common');
+  document.getElementById('btn-rollCommon').onclick = queueAutorapSource(random_item, words1, rollCommon, 'random');
+  document.getElementById('btn-rollAdj').onclick = queueAutorapSource(random_item, adjectives, rollAdj, 'adjective');
+  document.getElementById('btn-rollAdv').onclick = queueAutorapSource(random_item, adverbs, rollAdv, 'adverb');
+  document.getElementById('btn-rollVerbs').onclick = queueAutorapSource(random_item, verbs, rollVerbs, 'verbs');
   document.getElementById('btn-rollCeleb').onclick = rollCeleb;
   document.getElementById('btn-rollAth').onclick = rollAth;
   document.getElementById('btn-rollMov').onclick = rollMov;
-  document.getElementById('btn-rollEmo').onclick = queueAutorapSource(random_item, emotions, rollEmo);
-  document.getElementById('btn-rollFla').onclick = queueAutorapSource(random_item, flavors, rollFla);
-  document.getElementById('btn-rollQue').onclick = queueAutorapSource(random_item, questions, rollQue);
+  document.getElementById('btn-rollEmo').onclick = queueAutorapSource(random_item, emotions, rollEmo, 'emotions');
+  document.getElementById('btn-rollFla').onclick = queueAutorapSource(random_item, flavors, rollFla, 'flavors');
+  document.getElementById('btn-rollQue').onclick = queueAutorapSource(random_item, questions, rollQue, 'question');
 
   // Vowel buttons
   document.getElementById('btn-randomA').onclick = randomA;
