@@ -321,7 +321,7 @@
     </ion-tabs>
   </div>
 
-  <!-- Relationship stage: hold-to-open word explorer (current list | focus word + Hold | section switch) -->
+  <!-- Relationship stage: hold-to-open word explorer (current list | focus word + Hold/Close | section switch | phonetics) -->
   <div id="wordstage" class="wordstage" aria-hidden="true">
     <div class="ws-panel">
       <div class="ws-panel-head" id="stageHead">Rhymes</div>
@@ -330,16 +330,33 @@
 
     <div class="ws-focus">
       <div class="ws-focus-word" id="stageWord"></div>
-      <ion-button id="stageHoldBtn" class="ws-hold">Hold</ion-button>
+      <button type="button" id="stageHoldBtn" class="ws-chip ws-hold">Hold</button>
+      <button type="button" id="stageCloseBtn" class="ws-chip ws-close" title="Close">&times;</button>
     </div>
 
     <div class="ws-cats">
-      <ion-button id="stageCatRhy">Rhymes</ion-button>
-      <ion-button id="stageCatSl">Sounds like</ion-button>
-      <ion-button id="stageCatSyn">Synonyms</ion-button>
+      <button type="button" id="stageCatRhy" class="ws-chip ws-cat">Rhymes</button>
+      <button type="button" id="stageCatSl" class="ws-chip ws-cat">Sounds like</button>
+      <button type="button" id="stageCatSyn" class="ws-chip ws-cat">Synonyms</button>
+    </div>
+
+    <div class="ws-phon">
+      <div class="ws-phon-row">
+        <button type="button" id="stagePhonA" class="ws-chip">-A-</button>
+        <button type="button" id="stagePhonE" class="ws-chip">-E-</button>
+        <button type="button" id="stagePhonI" class="ws-chip">-I-</button>
+        <button type="button" id="stagePhonO" class="ws-chip">-O-</button>
+        <button type="button" id="stagePhonU" class="ws-chip">-U-</button>
+      </div>
+      <div class="ws-phon-row">
+        <button type="button" id="stagePhonAh" class="ws-chip">Ah</button>
+        <button type="button" id="stagePhonEh" class="ws-chip">eh</button>
+        <button type="button" id="stagePhonIh" class="ws-chip">ih</button>
+        <button type="button" id="stagePhonOwh" class="ws-chip">owh</button>
+        <button type="button" id="stagePhonUh" class="ws-chip">uh</button>
+      </div>
     </div>
   </div>
-
   <!-- Autorap stage: dedicated auto-advancing split-screen overlay -->
   <div id="autostage" class="autostage" aria-hidden="true">
     <div class="as-controls">

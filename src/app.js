@@ -112,6 +112,10 @@ function showStageSection(sec, word) {
   activeSection = sec;
   if (stageWord) stageWord.textContent = word;
   if (stageHead) stageHead.textContent = STAGE_LABELS[sec];
+  [['stageCatRhy', 'rhy'], ['stageCatSl', 'sl'], ['stageCatSyn', 'syn']].forEach(([id, s]) => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('on', s === sec);
+  });
   sectionWords(sec, word).then((data) => fillPanel(stageList, data));
 }
 
@@ -577,6 +581,35 @@ function wireUI() {
       }
     });
   }
+
+const stageCloseBtn = document.getElementById('stageCloseBtn');
+  if (stageCloseBtn) {
+    stageCloseBtn.addEventListener('click', () => {
+      stageHeld = false;
+      stageClose();
+    });
+  }
+
+  // Phonetic buttons: pick a word with that sound, then refresh the open list.
+  const wirePhon = (id, fn) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', () => {
+      fn();
+      if (wordStage && wordStage.classList.contains('ws-open')) {
+        showStageSection(activeSection, resultEl.innerHTML || '');
+      }
+    });
+  };
+  wirePhon('stagePhonA', randomA);
+  wirePhon('stagePhonE', randomE);
+  wirePhon('stagePhonI', randomI);
+  wirePhon('stagePhonO', randomO);
+  wirePhon('stagePhonU', randomU);
+  wirePhon('stagePhonAh', randomah);
+  wirePhon('stagePhonEh', randomeh);
+  wirePhon('stagePhonIh', randomih);
+  wirePhon('stagePhonOwh', randomowh);
+  wirePhon('stagePhonUh', randomuh);
 
   // Close the stage when tapping anywhere outside the panels.
   if (wordStage) {

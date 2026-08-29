@@ -967,21 +967,18 @@ ion-input {
   text-shadow: 0 2px 0 rgba(0, 0, 0, .6);
 }
 
-.ws-hold {
-  flex: 0 0 auto;
-  --background: #2f91ae;
-  --color: #fff;
-}
+.ws-hold { flex: 0 0 auto; }
 
-.ws-cats {
-  flex: 0 0 auto;
-  display: flex;
-  gap: 8px;
-}
+.ws-close { flex: 0 0 auto; line-height: 1; font-size: 1.2rem; padding: 5px 11px; }
 
-.ws-cats ion-button {
-  flex: 1 1 0;
-  margin: 0;
-  --background: #2f91ae;
-  --color: #fff;
-}
+.ws-cats { flex: 0 0 auto; display: flex; flex-wrap: nowrap; gap: 8px; }
+
+.ws-cats .ws-chip { flex: 1 1 0; margin: 0; padding: 6px 8px; font-size: .95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.ws-cat.on { background: rgba(255, 255, 255, .18); }
+
+.ws-phon { flex: 0 0 auto; display: flex; flex-direction: column; gap: 8px; }
+
+.ws-phon-row { display: flex; gap: 8px; }
+
+.ws-phon-row .ws-chip { flex: 1 1 0; margin: 0; padding: 6px 8px; font-size: .95rem; white-space: nowrap; }
