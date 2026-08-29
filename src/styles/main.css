@@ -918,6 +918,34 @@ ion-input {
   max-width: 100%;
 }
 
+@media (max-width: 640px) {
+  .autostage .as-body {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .autostage .ws-focus {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    flex: 0 0 auto;
+    padding: 8px;
+  }
+  .as-controls {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .as-timer {
+    justify-content: center;
+    width: 100%;
+  }
+  .as-actions {
+    justify-content: center;
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
 /* ============ Autorap phonetics row ============ */
 .as-phon {
   flex: 0 0 auto;
