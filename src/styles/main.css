@@ -667,8 +667,8 @@ ion-tab[tab="home"] ion-content {
   justify-content: center;
   align-items: center;
   padding: 8px 12px;
-  background: rgba(255, 255, 255, .08);
-  border-top: 1px solid rgba(255, 255, 255, .2);
+  background: rgba(255, 255, 255, .12);
+  border-top: 1px solid rgba(255, 255, 255, .28);
 }
 
 .feed-player-band audio {
