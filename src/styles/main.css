@@ -672,12 +672,12 @@ ion-tab[tab="home"] ion-content {
   justify-content: center;
   align-items: center;
   padding: 8px 12px;
-  background: #fafafa;
+  background: #222428;
   border-radius: 12px 12px 0 0;
 }
 
 .feed-player-band audio {
-  background: #fafafa;
+  background: #222428;
 }
 
 /* ============ Luxury divider (Rap view) ============ */
