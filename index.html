@@ -162,7 +162,6 @@
 
           <div class="btn-grid">
             <ion-button id="btn-autorap">Autorap<span class="x">X</span></ion-button>
-            <ion-button id="btn-autobeats">Autobeats</ion-button>
             <ion-button id="quptalbtn">Show Quote</ion-button>
           </div>
 
@@ -271,6 +270,12 @@
                 <div class="item-row">auto beat vol: <span id="autoBeatVolOut">100</span>
                   <ion-range min="0" max="100" value="100" id="autoBeatVolRange" debounce="50"></ion-range>
                 </div>
+              </div>
+              <div class="ion-padding">
+                <ion-button id="btn-autobeats" expand="block">Auto Beats</ion-button>
+              </div>
+              <div class="ion-padding">
+                <audio controls autoplay crossorigin="anonymous" id="autoBeatAudio" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="></audio>
               </div>
               <div class="btn-grid record-grid">
                 <ion-button color="danger" id="btn-record">RECORD</ion-button>
@@ -458,5 +463,10 @@
   </div>
 
   <script type="module" src="/src/main.js"></script>
+
+
+
+
+
 </body>
 </html>

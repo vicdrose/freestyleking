@@ -533,7 +533,7 @@ function setupPiano(sampler) {
 // ---------- Wire up all UI (called from Vue mounted) ----------
 function wireUI() {
   const audio = initAudio();
-  const { player, sampler, recorder, mic, beatPlayer, beatVolume } = audio;
+  const { player, sampler, recorder, mic, beatGain } = audio;
 
   // Pull the real sample lists from the host (falls back to bundled placeholders).
   loadSampleDirs();
@@ -676,10 +676,18 @@ const volslider = document.getElementById('volRange');
     abOut.innerHTML = abVol.value || 100;
     abVol.addEventListener('ionChange', () => {
       abOut.innerHTML = abVol.value;
-      beatVolume.gain.value = (abVol.value || 100) / 100;
+      beatGain.gain.value = (abVol.value || 100) / 100;
     });
   }
-  window.__reprobe = () => ({ beatState: beatPlayer.state, beatGain: beatVolume.gain.value, recState: recorder.state });
+  window.__reprobe = () => {
+    const el = document.getElementById('autoBeatAudio');
+    return {
+      beatSrc: el ? el.src : '',
+      beatPlaying: el ? !el.paused : false,
+      beatGain: beatGain.gain.value,
+      recState: recorder.state
+    };
+  };
 
 // Player start/stop.
   const btnStart = document.getElementById('btn-playerStart');
@@ -784,7 +792,7 @@ const volslider = document.getElementById('volRange');
   };
 
   // Recording
-  document.getElementById('btn-record').onclick = () => recorder.start();
+  document.getElementById('btn-record').onclick = () => { unlock(); recorder.start(); };
   document.getElementById('btn-stopRecord').onclick = () => recorder.stop();
   document.getElementById('btn-deleteRecord').onclick = () => {
     audio.chunks.length = 0;
@@ -809,15 +817,14 @@ const volslider = document.getElementById('volRange');
   autorap.wire();
   document.getElementById('btn-autorap').onclick = autorap1;
 document.getElementById('btn-autobeats').onclick = () => {
+    unlock();
     const { url } = getBeatShuffler();
-    unlock()
-      .then(() => beatPlayer.load(url))
-      .then(() => beatPlayer.start());
+    document.getElementById('autoBeatAudio').src = url;
   };
 
-  beatPlayer.onstop = () => {
+  document.getElementById('autoBeatAudio').onended = () => {
     const { url } = getBeatShuffler();
-    beatPlayer.load(url).then(() => beatPlayer.start());
+    document.getElementById('autoBeatAudio').src = url;
   };
 
   // Initial behavior parity
@@ -972,19 +979,20 @@ export function boot() {
     app.mount('#vue-holder');
   }
 
-  // Wire interactions after Ionic web components have upgraded.
+// Wire interactions after Ionic web components have upgraded.
+  let wired = false;
+  const doWire = () => {
+    if (wired) return;
+    wired = true;
+    try { wireUI(); } catch (e) {}
+    try { wireFeeds(); } catch (e) {}
+  };
   if (customElements && customElements.whenDefined) {
-    customElements.whenDefined('ion-content').then(() => {
-      wireUI();
-      wireFeeds();
-    }).catch(() => {
-      wireUI();
-      wireFeeds();
-    });
+    customElements.whenDefined('ion-content').then(doWire).catch(doWire);
   } else {
-    wireUI();
-    wireFeeds();
+    doWire();
   }
+  setTimeout(doWire, 4000);
 
   return app;
 }
