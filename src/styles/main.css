@@ -692,6 +692,65 @@ ion-tab[tab="home"] ion-content {
   gap: 10px;
 }
 
+.fk-band {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.fk-seek {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.fk-time {
+  flex: none;
+  min-width: 34px;
+  font-size: 0.72rem;
+  color: #bbb;
+  font-variant-numeric: tabular-nums;
+}
+
+.fk-time + .fk-range + .fk-time {
+  text-align: right;
+}
+
+.fk-range {
+  flex: 1 1 auto;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: #4a4a4a;
+  outline: none;
+}
+
+.fk-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  border: 0;
+  cursor: pointer;
+}
+
+.fk-range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  border: 0;
+  cursor: pointer;
+}
+
+.fk-hidden {
+  display: none;
+}
+
 .fk-art {
   flex: none;
   width: 48px;

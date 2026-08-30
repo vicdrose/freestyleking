@@ -733,6 +733,7 @@ recState: recorder.state
   };
 
   try { wirePlayerToggle(); } catch (e) {}
+    try { wireSeek(); } catch (e) {}
 
 // Player start/stop.
   const btnStart = document.getElementById('btn-playerStart');
@@ -923,6 +924,65 @@ function fkSetPlaying(playing) {
     activeFeedBtn.title = playing ? 'Pause' : 'Play';
   }
 }
+
+function fmtTime(secs) {
+  if (!isFinite(secs) || secs == null) secs = 0;
+  const m = Math.floor(secs / 60);
+  const s = Math.floor(secs % 60);
+  return m + ':' + (s < 10 ? '0' : '') + s;
+}
+
+function wireSeek() {
+  const audio = document.getElementById('feedPlayer');
+  const seek = document.getElementById('fkSeek');
+  const cur = document.getElementById('fkCur');
+  const dur = document.getElementById('fkDur');
+  if (!audio || !seek) return;
+  let dragging = false;
+  const paint = (pct) => {
+    const p = Math.max(0, Math.min(100, pct));
+    seek.style.background = 'linear-gradient(90deg, #fff ' + p + '%, #4a4a4a ' + p + '%)';
+  };
+  const refresh = () => {
+    const d = audio.duration;
+    if (isFinite(d) && d > 0) {
+      seek.max = d;
+      if (dur) dur.textContent = fmtTime(d);
+    }
+    const t = audio.currentTime || 0;
+    if (cur) cur.textContent = fmtTime(t);
+    if (isFinite(d) && d > 0) {
+      seek.value = t;
+      paint((t / d) * 100);
+    }
+  };
+  audio.addEventListener('loadedmetadata', refresh);
+  audio.addEventListener('durationchange', refresh);
+  audio.addEventListener('timeupdate', () => { if (!dragging) refresh(); });
+  audio.addEventListener('ended', () => {
+    seek.value = 0;
+    paint(0);
+    if (cur) cur.textContent = fmtTime(0);
+  });
+  seek.addEventListener('input', () => {
+    dragging = true;
+    const v = parseFloat(seek.value);
+    if (cur) cur.textContent = fmtTime(v);
+    paint(isFinite(audio.duration) && audio.duration > 0 ? (v / audio.duration) * 100 : 0);
+  });
+  seek.addEventListener('change', () => {
+    dragging = false;
+    audio.currentTime = parseFloat(seek.value);
+    refresh();
+  });
+  refresh();
+}
+
+// Re-shows the native <audio controls> reference band on demand (surgical debugging).
+window.__showNativeFeed = (show) => {
+  const band = document.getElementById('fkLiveBand');
+  if (band) band.classList.toggle('fk-hidden', !show);
+};
 
 function wirePlayerToggle() {
   const toggle = document.getElementById('fkToggle');

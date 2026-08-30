@@ -103,7 +103,7 @@
           </div>
         </ion-content>
         <div class="feed-player-wrap">
-          <div class="feed-player-band">
+          <div class="feed-player-band fk-band">
             <div class="fk-player">
               <div class="fk-art"><ion-icon name="musical-notes"></ion-icon></div>
               <div class="fk-info">
@@ -114,9 +114,14 @@
                 <ion-icon name="play"></ion-icon>
               </button>
             </div>
+            <div class="fk-seek">
+              <span class="fk-time" id="fkCur">0:00</span>
+              <input type="range" class="fk-range" id="fkSeek" min="0" max="100" step="0.1" value="0" aria-label="Seek">
+              <span class="fk-time" id="fkDur">0:00</span>
+            </div>
           </div>
         </div>
-        <div class="feed-player-wrap">
+        <div class="feed-player-wrap fk-hidden" id="fkLiveBand">
           <div class="feed-player-band">
             <audio controls id="feedPlayer"></audio>
           </div>
