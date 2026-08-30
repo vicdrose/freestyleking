@@ -298,8 +298,9 @@ const autorap = {
       autoStage.setAttribute('aria-hidden', 'false');
     }
 
-    // Seed the first word immediately, then auto-advance every interval.
-    this.advance();
+// Seed the first word with whatever is already in the center (no jarring
+    // switch), then auto-advance from the chosen bucket every interval.
+    this.render(this.currentWord());
     this.schedule();
   },
 
@@ -312,11 +313,18 @@ const autorap = {
     }, ms);
   },
 
-  advance() {
+advance() {
     // Keep drawing from the bucket chosen in open() (the queued Auto Wrap source) so
     // Skip / the interval never fall back to a hardcoded list.
     const seeds = (this.seeds && this.seeds.length) ? this.seeds : words1;
     this.render(random_item(seeds));
+  },
+
+  currentWord() {
+    const w = resultEl ? String(resultEl.innerHTML || '').trim() : '';
+    if (w) return w;
+    const seeds = (this.seeds && this.seeds.length) ? this.seeds : words1;
+    return random_item(seeds);
   },
 
   render(word) {
