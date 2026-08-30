@@ -668,6 +668,7 @@ ion-tab[tab="home"] ion-content {
 
 .feed-player-wrap {
   background: #222428;
+  padding: 8px;
 }
 
 .feed-player-band {
