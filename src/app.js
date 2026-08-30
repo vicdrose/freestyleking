@@ -444,9 +444,6 @@ function beatToggles() {
 function setupPiano(sampler) {
   const el = document.getElementById('pianoKeys');
   if (!el) return;
-  const synth = new Tone.PolySynth(Tone.Synth, {
-    oscillator: { type: 'triangle' }
-  }).toDestination();
 
   const octaves = [3, 4, 5, 6];
   const whiteNames = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
@@ -458,15 +455,13 @@ function setupPiano(sampler) {
   const whiteW = 100 / nWhites;
   const blackW = whiteW * 0.65;
 
-// When a PAD/BASS/SFX/Fill sample is loaded, the keys pitch-shift that sample.
-  // Otherwise they fall back to the built-in triangle synth.
+// When a PAD/BASS/SFX/Fill sample is loaded, the keys pitch-shift that sample;
+  // otherwise they stay silent (no built-in test tones).
   const down = (note) => {
     if (sampler && sampler.loaded) sampler.triggerAttack(note);
-    else synth.triggerAttack(note);
   };
   const up = (note) => {
     if (sampler && sampler.loaded) sampler.triggerRelease(note);
-    else synth.triggerRelease(note);
   };
 
   naturals.forEach((note) => {
@@ -744,39 +739,17 @@ const volslider = document.getElementById('volRange');
     if (u) loadPlayer(u, u);
   };
 
-  // Sample buttons unlock audio with the tap so the keys are audible.
-  document.getElementById('btn-rollSample').onclick = () => {
+  // Sample buttons unlock audio with the tap so the keys are audible (no test tones).
+  const loadSample = (get) => {
     unlock();
-    const { rel, url } = getPad();
-    sampler.add('C4', url, () => {
-      sampler.triggerAttackRelease('C4', 1.2);
-    });
+    const { rel, url } = get();
+    sampler.add('C4', url);
     document.querySelector('#url2').innerHTML = rel;
   };
-  document.getElementById('btn-rollBass').onclick = () => {
-    unlock();
-    const { rel, url } = getBass();
-    sampler.add('C4', url, () => {
-      sampler.triggerAttackRelease('C4', 1.2);
-    });
-    document.querySelector('#url2').innerHTML = rel;
-  };
-  document.getElementById('btn-rollSFX').onclick = () => {
-    unlock();
-    const { rel, url } = getSFX();
-    sampler.add('C4', url, () => {
-      sampler.triggerAttackRelease('C4', 1.2);
-    });
-    document.querySelector('#url2').innerHTML = rel;
-  };
-  document.getElementById('btn-rollFills').onclick = () => {
-    unlock();
-    const { rel, url } = getFill();
-    sampler.add('C4', url, () => {
-      sampler.triggerAttackRelease('C4', 1.2);
-    });
-    document.querySelector('#url2').innerHTML = rel;
-  };
+  document.getElementById('btn-rollSample').onclick = () => loadSample(getPad);
+  document.getElementById('btn-rollBass').onclick = () => loadSample(getBass);
+  document.getElementById('btn-rollSFX').onclick = () => loadSample(getSFX);
+  document.getElementById('btn-rollFills').onclick = () => loadSample(getFill);
 
   // Loop buttons load straight into the player; Start then plays it.
   document.getElementById('btn-rollBreak').onclick = () => {
@@ -810,9 +783,11 @@ const volslider = document.getElementById('volRange');
     }
   });
 
-  // Beat view
+// Beat view
   beatToggles();
   setupPiano(sampler);
+  // Auto-load a random pad at start so the piano keys are ready to play.
+  loadSample(getPad);
 
   // Autorap buttons
   autorap.wire();
