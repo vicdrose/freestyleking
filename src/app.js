@@ -495,7 +495,7 @@ octStart += 7;
 
   // Computer-keyboard piano (classic Virtual Piano layout):
   // whites A S D F G H J K L, blacks W E T Y U O P, starting at C4.
-  // Z/X shift the octave down/up; C/V lower/raise velocity in steps of 10 (0-125).
+  // Z/X shift the octave down/up; C/V lower/raise velocity in steps of 10 (0-127).
   const octaveOffsets = {
     KeyA: 0, KeyW: 1, KeyS: 2, KeyE: 3, KeyD: 4, KeyF: 5, KeyT: 6,
     KeyG: 7, KeyY: 8, KeyH: 9, KeyU: 10, KeyJ: 11, KeyK: 12, KeyO: 13,
@@ -510,7 +510,7 @@ octStart += 7;
     if (e.code === 'KeyZ') return keyOctave--;
     if (e.code === 'KeyX') return keyOctave++;
     if (e.code === 'KeyC') return keyVelocity = Math.max(0, keyVelocity - 10);
-    if (e.code === 'KeyV') return keyVelocity = Math.min(125, keyVelocity + 10);
+    if (e.code === 'KeyV') return keyVelocity = Math.min(127, keyVelocity + 10);
     if (octaveOffsets[e.code] !== undefined) down(noteFor(e.code), keyVelocity / 127);
   });
   window.addEventListener('keyup', (e) => {
