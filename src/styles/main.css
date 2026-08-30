@@ -1006,8 +1006,6 @@ ion-input {
   text-shadow: 0 2px 0 rgba(0, 0, 0, .6);
 }
 
-.ws-hold { flex: 0 0 auto; }
-
 .ws-close { flex: 0 0 auto; line-height: 1; font-size: 1.2rem; padding: 5px 11px; }
 
 .ws-cats { flex: 0 0 auto; display: flex; flex-wrap: nowrap; gap: 8px; }
@@ -1034,9 +1032,7 @@ ion-input {
   margin-left: 2px;
 }
 
-#relationshipBtn,
-#slBtn,
-#synBtn {
+.relationship-btn {
   --border-color: #fff;
   --border-width: 1px;
   --border-style: solid;

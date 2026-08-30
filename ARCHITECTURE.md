@@ -19,7 +19,7 @@ gitignored so it is not published) at the repository root.
   currently displayed word.
 - Displays random quotes via the Forismatic API, with Twitter sharing.
 - An "AutoRap" mode cycles through words on a timer while showing the
-  relationship modals.
+  relationship view (opened from the Rhymes / Sounds like / Synonyms relationship buttons).
 
 ---
 
@@ -203,7 +203,7 @@ Returns the engine handles for the app controller.
   `randomA`...`randomowh`) using the `random_item()` helper, each of which
   sets `#result` and calls `UpdateWords()`.
 - `UpdateWords()` calls Datamuse for synonyms, sounds-like, and rhymes from the
-  current word and populates the three relationship modals. Clicking a result
+  current word and populates the relationship view (opened from the Rhymes / Sounds like / Synonyms relationship buttons). Clicking a result
   word calls `other2()` to re-target.
 - Quote system (`getNewQuote`, Random Quote, Share via Twitter).
 - Modal open/close wiring (quote, rhymes, sounds-like, synonyms).

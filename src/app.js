@@ -566,11 +566,10 @@ function wireUI() {
   // Modal frame for Show Quote
   setupModal(document.getElementById('quotal'), 'close4', 'quptalbtn');
 
-// Rhymes / Sounds like / Synonyms all open the same hold-to-scroll stage.
+// Rhymes / Sounds like / Synonyms (the relationship buttons) all open the same stage.
   const stageCatRhy = document.getElementById('stageCatRhy');
   const stageCatSl = document.getElementById('stageCatSl');
   const stageCatSyn = document.getElementById('stageCatSyn');
-  const stageHoldBtn = document.getElementById('stageHoldBtn');
 
   let pressInfo = null;
   const quickTapMs = 250;
@@ -607,18 +606,6 @@ function wireUI() {
   bindStageButton(stageCatRhy, 'rhy');
   bindStageButton(stageCatSl, 'sl');
   bindStageButton(stageCatSyn, 'syn');
-
-  // Hold pins the stage open (lift your finger and scroll); tapping it again closes.
-  if (stageHoldBtn) {
-    stageHoldBtn.addEventListener('click', () => {
-      if (stageHeld) {
-        stageHeld = false;
-        stageClose();
-      } else {
-        stageHeld = true;
-      }
-    });
-  }
 
 const stageCloseBtn = document.getElementById('stageCloseBtn');
   if (stageCloseBtn) {
