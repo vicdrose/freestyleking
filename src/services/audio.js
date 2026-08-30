@@ -30,31 +30,13 @@ export function initAudio() {
     release: 1
   }).toDestination();
 
+  const beatPlayer = new Tone.Player({});
+  const beatGain = new Tone.Gain(1);
+  beatPlayer.connect(beatGain);
+  beatGain.toDestination();
+  beatGain.connect(dest);
+
   const beatEl = document.querySelector('#autoBeatAudio');
-  let beatTap = null;
-  const retapBeat = () => {
-    if (beatTap) {
-      try { beatTap.disconnect(); } catch (e) {}
-      beatTap = null;
-    }
-    if (!beatEl || typeof beatEl.captureStream !== 'function') return;
-    if (!(beatEl.readyState >= HTMLMediaElement.HAVE_METADATA)) return;
-    try {
-      beatTap = actx.createMediaStreamSource(beatEl.captureStream());
-      beatTap.connect(dest);
-      beatEl.__retapCount = (beatEl.__retapCount || 0) + 1;
-    } catch (e) {}
-  };
-  if (beatEl) {
-    beatEl.addEventListener('loadstart', () => {
-      if (beatTap) {
-        try { beatTap.disconnect(); } catch (e) {}
-        beatTap = null;
-      }
-    });
-    beatEl.addEventListener('loadedmetadata', retapBeat);
-  }
-  retapBeat();
 
   player.connect(dest);
   mic.connect(dest);
@@ -66,5 +48,5 @@ export function initAudio() {
     audio.src = URL.createObjectURL(blob);
   };
 
-  return { player, sampler, mic, micFFT, recorder, dest, actx, chunks, audio, beatEl };
+  return { player, sampler, mic, micFFT, recorder, dest, actx, chunks, audio, beatEl, beatGain, beatPlayer };
 }

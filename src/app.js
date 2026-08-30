@@ -533,7 +533,7 @@ function setupPiano(sampler) {
 // ---------- Wire up all UI (called from Vue mounted) ----------
 function wireUI() {
   const audio = initAudio();
-  const { player, sampler, recorder, mic, beatEl } = audio;
+  const { player, sampler, recorder, mic, beatGain, beatPlayer, beatEl } = audio;
 
   // Pull the real sample lists from the host (falls back to bundled placeholders).
   loadSampleDirs();
@@ -672,12 +672,12 @@ const volslider = document.getElementById('volRange');
 
   const abVol = document.getElementById('autoBeatVolRange');
   const abOut = document.getElementById('autoBeatVolOut');
-  if (abVol && beatEl) {
+  if (abVol) {
     abOut.innerHTML = abVol.value || 100;
-    beatEl.volume = (abVol.value || 100) / 100;
+    beatGain.gain.value = (abVol.value || 100) / 100;
     abVol.addEventListener('ionChange', () => {
       abOut.innerHTML = abVol.value;
-      beatEl.volume = (abVol.value || 100) / 100;
+      beatGain.gain.value = (abVol.value || 100) / 100;
     });
   }
   window.__reprobe = () => {
@@ -685,8 +685,7 @@ const volslider = document.getElementById('volRange');
     return {
       beatSrc: el ? el.src : '',
       beatPlaying: el ? !el.paused : false,
-      beatVol: el ? el.volume : 0,
-      beatTapped: el ? (el.__retapCount || 0) : 0,
+      beatVol: beatGain.gain.value,
       recState: recorder.state
     };
   };
@@ -818,16 +817,40 @@ const volslider = document.getElementById('volRange');
   // Autorap buttons
   autorap.wire();
   document.getElementById('btn-autorap').onclick = autorap1;
-document.getElementById('btn-autobeats').onclick = () => {
-    unlock();
+const autoBeatEl = document.getElementById('autoBeatAudio');
+  autoBeatEl.muted = true;
+
+  const playBeatTone = () => {
+    if (!beatPlayer.loaded) return;
+    beatPlayer.start(undefined, autoBeatEl.currentTime);
+  };
+  let tonePending = false;
+  const loadBeat = () => {
+    beatPlayer.stop();
     const { url } = getBeatShuffler();
-    document.getElementById('autoBeatAudio').src = url;
+    autoBeatEl.src = url;
+    autoBeatEl.muted = true;
+    beatPlayer.load(url).then(() => {
+      if (tonePending) playBeatTone();
+    }).catch(() => {
+      autoBeatEl.muted = false;
+    }).finally(() => {
+      tonePending = false;
+    });
   };
 
-  document.getElementById('autoBeatAudio').onended = () => {
-    const { url } = getBeatShuffler();
-    document.getElementById('autoBeatAudio').src = url;
+  document.getElementById('btn-autobeats').onclick = () => {
+    unlock();
+    loadBeat();
   };
+
+  autoBeatEl.onplay = () => {
+    unlock();
+    tonePending = !beatPlayer.loaded;
+    playBeatTone();
+  };
+  autoBeatEl.onpause = () => beatPlayer.stop();
+  autoBeatEl.onended = loadBeat;
 
   // Initial behavior parity
   roll();
