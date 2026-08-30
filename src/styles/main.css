@@ -1033,3 +1033,11 @@ ion-input {
   opacity: .1;
   margin-left: 2px;
 }
+
+#relationshipBtn,
+#slBtn,
+#synBtn {
+  --border-color: #fff;
+  --border-width: 1px;
+  --border-style: solid;
+}
