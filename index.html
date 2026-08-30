@@ -166,7 +166,7 @@
             <ion-button id="quptalbtn">Show Quote</ion-button>
           </div>
 
-          <audio controls autoplay src="" id="beatShuffler" style="display:none;"></audio>
+
 
           <!-- Luxury divider -->
           <div class="lux-divider">
@@ -267,6 +267,11 @@
               <div class="ion-padding">
                 <ion-button id="micBtn" expand="block">Microphone</ion-button>
               </div>
+              <div class="ion-padding">
+                <div class="item-row">auto beat vol: <span id="autoBeatVolOut">100</span>
+                  <ion-range min="0" max="100" value="100" id="autoBeatVolRange" debounce="50"></ion-range>
+                </div>
+              </div>
               <div class="btn-grid record-grid">
                 <ion-button color="danger" id="btn-record">RECORD</ion-button>
                 <ion-button color="primary" id="btn-stopRecord">STOP</ion-button>
@@ -282,7 +287,7 @@
             </div>
           </div>
 
-          <audio controls autoplay src="" id="beatShuffler" style="display:none;"></audio>
+
         </ion-content>
       </ion-tab>
 

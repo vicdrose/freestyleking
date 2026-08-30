@@ -533,7 +533,7 @@ function setupPiano(sampler) {
 // ---------- Wire up all UI (called from Vue mounted) ----------
 function wireUI() {
   const audio = initAudio();
-  const { player, sampler, recorder, mic } = audio;
+  const { player, sampler, recorder, mic, beatPlayer, beatVolume } = audio;
 
   // Pull the real sample lists from the host (falls back to bundled placeholders).
   loadSampleDirs();
@@ -662,13 +662,24 @@ const stageCloseBtn = document.getElementById('stageCloseBtn');
     player.playbackRate = slider.value / 100;
   });
 
-  const volslider = document.getElementById('volRange');
+const volslider = document.getElementById('volRange');
   const volume = document.getElementById('vol');
   volume.innerHTML = volslider.value || 100;
   volslider.addEventListener('ionChange', () => {
     volume.innerHTML = volslider.value;
     player.volume = -(volslider.value / 100);
   });
+
+  const abVol = document.getElementById('autoBeatVolRange');
+  const abOut = document.getElementById('autoBeatVolOut');
+  if (abVol) {
+    abOut.innerHTML = abVol.value || 100;
+    abVol.addEventListener('ionChange', () => {
+      abOut.innerHTML = abVol.value;
+      beatVolume.gain.value = (abVol.value || 100) / 100;
+    });
+  }
+  window.__reprobe = () => ({ beatState: beatPlayer.state, beatGain: beatVolume.gain.value, recState: recorder.state });
 
 // Player start/stop.
   const btnStart = document.getElementById('btn-playerStart');
@@ -797,17 +808,16 @@ const stageCloseBtn = document.getElementById('stageCloseBtn');
   // Autorap buttons
   autorap.wire();
   document.getElementById('btn-autorap').onclick = autorap1;
-  document.getElementById('btn-autobeats').onclick = () => {
+document.getElementById('btn-autobeats').onclick = () => {
     const { url } = getBeatShuffler();
-    const el = document.getElementById('beatShuffler');
-    el.src = url;
+    unlock()
+      .then(() => beatPlayer.load(url))
+      .then(() => beatPlayer.start());
   };
 
-  // Autobeats on ended
-  document.getElementById('beatShuffler').onended = () => {
+  beatPlayer.onstop = () => {
     const { url } = getBeatShuffler();
-    const el = document.getElementById('beatShuffler');
-    el.src = url;
+    beatPlayer.load(url).then(() => beatPlayer.start());
   };
 
   // Initial behavior parity

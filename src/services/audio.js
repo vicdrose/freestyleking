@@ -30,6 +30,12 @@ export function initAudio() {
     release: 1
   }).toDestination();
 
+  const beatVolume = new Tone.Gain(1);
+  const beatPlayer = new Tone.Player({ loop: false });
+  beatPlayer.connect(beatVolume);
+  beatVolume.toDestination();
+  beatVolume.connect(dest);
+
   player.connect(dest);
   mic.connect(dest);
   sampler.connect(dest);
@@ -40,5 +46,5 @@ export function initAudio() {
     audio.src = URL.createObjectURL(blob);
   };
 
-  return { player, sampler, mic, micFFT, recorder, dest, actx, chunks, audio };
+  return { player, sampler, mic, micFFT, recorder, dest, actx, chunks, audio, beatPlayer, beatVolume };
 }
