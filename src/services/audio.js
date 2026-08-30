@@ -31,12 +31,30 @@ export function initAudio() {
   }).toDestination();
 
   const beatEl = document.querySelector('#autoBeatAudio');
-  if (beatEl && typeof beatEl.captureStream === 'function') {
+  let beatTap = null;
+  const retapBeat = () => {
+    if (beatTap) {
+      try { beatTap.disconnect(); } catch (e) {}
+      beatTap = null;
+    }
+    if (!beatEl || typeof beatEl.captureStream !== 'function') return;
+    if (!(beatEl.readyState >= HTMLMediaElement.HAVE_METADATA)) return;
     try {
-      const beatStream = actx.createMediaStreamSource(beatEl.captureStream());
-      beatStream.connect(dest);
+      beatTap = actx.createMediaStreamSource(beatEl.captureStream());
+      beatTap.connect(dest);
+      beatEl.__retapCount = (beatEl.__retapCount || 0) + 1;
     } catch (e) {}
+  };
+  if (beatEl) {
+    beatEl.addEventListener('loadstart', () => {
+      if (beatTap) {
+        try { beatTap.disconnect(); } catch (e) {}
+        beatTap = null;
+      }
+    });
+    beatEl.addEventListener('loadedmetadata', retapBeat);
   }
+  retapBeat();
 
   player.connect(dest);
   mic.connect(dest);

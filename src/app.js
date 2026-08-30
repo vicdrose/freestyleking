@@ -686,6 +686,7 @@ const volslider = document.getElementById('volRange');
       beatSrc: el ? el.src : '',
       beatPlaying: el ? !el.paused : false,
       beatVol: el ? el.volume : 0,
+      beatTapped: el ? (el.__retapCount || 0) : 0,
       recState: recorder.state
     };
   };
