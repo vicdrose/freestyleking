@@ -227,8 +227,13 @@ body {
   --color-selected: darkred;
 }
 
-ion-toolbar, ion-tab-bar {
+ion-toolbar {
   --background: tan;
+  --color: white;
+}
+
+ion-tab-bar {
+  --background: rgba(0, 0, 0, .5);
   --color: white;
 }
 
@@ -667,8 +672,7 @@ ion-tab[tab="home"] ion-content {
   justify-content: center;
   align-items: center;
   padding: 8px 12px;
-  background: rgba(255, 255, 255, .12);
-  border-top: 1px solid rgba(255, 255, 255, .28);
+  background: rgba(0, 0, 0, .5);
 }
 
 .feed-player-band audio {
