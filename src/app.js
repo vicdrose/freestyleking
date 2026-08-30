@@ -533,7 +533,7 @@ function setupPiano(sampler) {
 // ---------- Wire up all UI (called from Vue mounted) ----------
 function wireUI() {
   const audio = initAudio();
-  const { player, sampler, recorder, mic, beatGain } = audio;
+  const { player, sampler, recorder, mic, beatEl } = audio;
 
   // Pull the real sample lists from the host (falls back to bundled placeholders).
   loadSampleDirs();
@@ -672,11 +672,12 @@ const volslider = document.getElementById('volRange');
 
   const abVol = document.getElementById('autoBeatVolRange');
   const abOut = document.getElementById('autoBeatVolOut');
-  if (abVol) {
+  if (abVol && beatEl) {
     abOut.innerHTML = abVol.value || 100;
+    beatEl.volume = (abVol.value || 100) / 100;
     abVol.addEventListener('ionChange', () => {
       abOut.innerHTML = abVol.value;
-      beatGain.gain.value = (abVol.value || 100) / 100;
+      beatEl.volume = (abVol.value || 100) / 100;
     });
   }
   window.__reprobe = () => {
@@ -684,7 +685,7 @@ const volslider = document.getElementById('volRange');
     return {
       beatSrc: el ? el.src : '',
       beatPlaying: el ? !el.paused : false,
-      beatGain: beatGain.gain.value,
+      beatVol: el ? el.volume : 0,
       recState: recorder.state
     };
   };
