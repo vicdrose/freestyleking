@@ -457,8 +457,8 @@ function setupPiano(sampler) {
 
 // When a PAD/BASS/SFX/Fill sample is loaded, the keys pitch-shift that sample;
   // otherwise they stay silent (no built-in test tones).
-  const down = (note) => {
-    if (sampler && sampler.loaded) sampler.triggerAttack(note);
+  const down = (note, vel = 1) => {
+    if (sampler && sampler.loaded) sampler.triggerAttack(note, undefined, vel);
   };
   const up = (note) => {
     if (sampler && sampler.loaded) sampler.triggerRelease(note);
@@ -495,22 +495,29 @@ octStart += 7;
 
   // Computer-keyboard piano (classic Virtual Piano layout):
   // whites A S D F G H J K L, blacks W E T Y U O P, starting at C4.
-  const keyToNote = {
-    KeyA: 'C4', KeyW: 'C#4', KeyS: 'D4', KeyE: 'D#4', KeyD: 'E4',
-    KeyF: 'F4', KeyT: 'F#4', KeyG: 'G4', KeyY: 'G#4', KeyH: 'A4',
-    KeyU: 'A#4', KeyJ: 'B4', KeyK: 'C5', KeyO: 'C#5', KeyL: 'D5', KeyP: 'D#5'
+  // Z/X shift the octave down/up; C/V lower/raise velocity in steps of 10 (0-125).
+  const octaveOffsets = {
+    KeyA: 0, KeyW: 1, KeyS: 2, KeyE: 3, KeyD: 4, KeyF: 5, KeyT: 6,
+    KeyG: 7, KeyY: 8, KeyH: 9, KeyU: 10, KeyJ: 11, KeyK: 12, KeyO: 13,
+    KeyL: 14, KeyP: 15
   };
+  let keyOctave = 4;
+  let keyVelocity = 125;
+  const noteFor = (code) =>
+    Tone.Frequency('C4').transpose((keyOctave - 4) * 12 + octaveOffsets[code]).toNote();
   window.addEventListener('keydown', (e) => {
     if (e.repeat) return;
-    const note = keyToNote[e.code];
-    if (note) down(note);
+    if (e.code === 'KeyZ') return keyOctave--;
+    if (e.code === 'KeyX') return keyOctave++;
+    if (e.code === 'KeyC') return keyVelocity = Math.max(0, keyVelocity - 10);
+    if (e.code === 'KeyV') return keyVelocity = Math.min(125, keyVelocity + 10);
+    if (octaveOffsets[e.code] !== undefined) down(noteFor(e.code), keyVelocity / 127);
   });
   window.addEventListener('keyup', (e) => {
-    const note = keyToNote[e.code];
-    if (note) up(note);
+    if (octaveOffsets[e.code] !== undefined) up(noteFor(e.code));
   });
   window.addEventListener('blur', () => {
-    Object.values(keyToNote).forEach((note) => up(note));
+    Object.keys(octaveOffsets).forEach((code) => up(noteFor(code)));
   });
 
   const midiSel = document.getElementById('midiIn');
