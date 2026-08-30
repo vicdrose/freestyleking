@@ -685,6 +685,65 @@ ion-tab[tab="home"] ion-content {
   background: #333539;
 }
 
+.fk-player {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fk-art {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: #4a4a4a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 24px;
+}
+
+.fk-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.fk-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fk-artist {
+  font-weight: 400;
+  font-size: 0.82rem;
+  color: #aaa;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fk-toggle {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fff;
+  color: #000;
+  border: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  cursor: pointer;
+}
+
 /* ============ Luxury divider (Rap view) ============ */
 .lux-divider {
   display: flex;

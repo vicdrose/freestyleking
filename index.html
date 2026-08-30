@@ -104,7 +104,16 @@
         </ion-content>
         <div class="feed-player-wrap">
           <div class="feed-player-band">
-            <audio controls id="feedPlayerMonitor"></audio>
+            <div class="fk-player">
+              <div class="fk-art"><ion-icon name="musical-notes"></ion-icon></div>
+              <div class="fk-info">
+                <div class="fk-title" id="fk-title">Nothing playing</div>
+                <div class="fk-artist" id="fk-artist">Press play on a track</div>
+              </div>
+              <button class="fk-toggle" id="fkToggle" aria-label="Play or pause">
+                <ion-icon name="play"></ion-icon>
+              </button>
+            </div>
           </div>
         </div>
         <div class="feed-player-wrap">

@@ -728,9 +728,11 @@ const volslider = document.getElementById('volRange');
       beatPlaying: el ? !el.paused : false,
       beatVol: beatGain.gain.value,
       samplerVol: samplerGain.gain.value,
-      recState: recorder.state
+recState: recorder.state
     };
   };
+
+  try { wirePlayerToggle(); } catch (e) {}
 
 // Player start/stop.
   const btnStart = document.getElementById('btn-playerStart');
@@ -897,6 +899,48 @@ function renderFeedError(key, message) {
     '<ion-button size="small" color="light" onclick="window.fkRetry(\'' + key + '\')">Try again</ion-button>';
 }
 
+// ---- Kicker player (Home, top band) ----
+// Mirrors whichever feed track is playing: title/author from the tapped post,
+// with a play/pause toggle that drives the shared #feedPlayer audio element
+// (the bottom band stays the live reference while the design is being built).
+let currentFeedTrack = null;
+let activeFeedBtn = null;
+
+function fkSet(track) {
+  currentFeedTrack = track || null;
+  const titleEl = document.getElementById('fk-title');
+  const artistEl = document.getElementById('fk-artist');
+  if (titleEl) titleEl.textContent = track ? track.title : 'Nothing playing';
+  if (artistEl) artistEl.textContent = track ? track.author : 'Press play on a track';
+}
+
+function fkSetPlaying(playing) {
+  const icon = document.querySelector('#fkToggle ion-icon');
+  if (icon) icon.setAttribute('name', playing ? 'pause' : 'play');
+  if (activeFeedBtn) {
+    const bi = activeFeedBtn.querySelector('ion-icon');
+    if (bi) bi.setAttribute('name', playing ? 'pause' : 'play');
+    activeFeedBtn.title = playing ? 'Pause' : 'Play';
+  }
+}
+
+function wirePlayerToggle() {
+  const toggle = document.getElementById('fkToggle');
+  const audio = document.getElementById('feedPlayer');
+  if (!toggle) return;
+  toggle.addEventListener('click', () => {
+    if (isFeedPlaying()) {
+      stopFeed();
+    } else if (currentFeedTrack && currentFeedTrack.audioUrl) {
+      playSong(currentFeedTrack.audioUrl);
+    }
+  });
+  if (audio) {
+    audio.addEventListener('play', () => fkSetPlaying(true));
+    audio.addEventListener('pause', () => fkSetPlaying(false));
+  }
+}
+
 function renderFeed(key, items) {
   const list = feedListEl(key);
   const state = feedStateEl(key);
@@ -945,7 +989,7 @@ function renderFeed(key, items) {
       btn.setAttribute('title', 'Play');
     }
     btn.innerHTML = '<ion-icon name="play" slot="icon-only"></ion-icon>';
-    btn.addEventListener('click', async () => {
+btn.addEventListener('click', async () => {
       if (!post.audioUrl) return;
       if (isFeedPlaying()) {
         stopFeed();
@@ -953,12 +997,13 @@ function renderFeed(key, items) {
         btn.title = 'Play';
         return;
       }
-      setIcon('pause');
+      activeFeedBtn = btn;
+      fkSet(post);
       const ok = await playSong(post.audioUrl);
       if (ok) {
         btn.title = 'Pause';
       } else {
-        setIcon('play');
+        fkSetPlaying(false);
         btn.title = 'Could not play this track';
       }
     });
