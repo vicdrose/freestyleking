@@ -490,7 +490,27 @@ function setupPiano(sampler) {
       key.addEventListener('pointerleave', () => up(note));
       el.appendChild(key);
     });
-    octStart += 7;
+octStart += 7;
+  });
+
+  // Computer-keyboard piano (classic Virtual Piano layout):
+  // whites A S D F G H J K L, blacks W E T Y U O P, starting at C4.
+  const keyToNote = {
+    KeyA: 'C4', KeyW: 'C#4', KeyS: 'D4', KeyE: 'D#4', KeyD: 'E4',
+    KeyF: 'F4', KeyT: 'F#4', KeyG: 'G4', KeyY: 'G#4', KeyH: 'A4',
+    KeyU: 'A#4', KeyJ: 'B4', KeyK: 'C5', KeyO: 'C#5', KeyL: 'D5', KeyP: 'D#5'
+  };
+  window.addEventListener('keydown', (e) => {
+    if (e.repeat) return;
+    const note = keyToNote[e.code];
+    if (note) down(note);
+  });
+  window.addEventListener('keyup', (e) => {
+    const note = keyToNote[e.code];
+    if (note) up(note);
+  });
+  window.addEventListener('blur', () => {
+    Object.values(keyToNote).forEach((note) => up(note));
   });
 
   const midiSel = document.getElementById('midiIn');
