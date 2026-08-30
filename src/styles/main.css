@@ -679,6 +679,7 @@ ion-tab[tab="home"] ion-content {
 
 .feed-player-band audio {
   width: 100%;
+  background: #000;
 }
 
 /* ============ Luxury divider (Rap view) ============ */
