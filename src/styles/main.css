@@ -233,7 +233,7 @@ ion-toolbar {
 }
 
 ion-tab-bar {
-  --background: rgba(0, 0, 0, .5);
+  --background: rgba(210, 180, 140, .5);
   --color: white;
 }
 
