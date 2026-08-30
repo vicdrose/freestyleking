@@ -28,7 +28,11 @@ export function initAudio() {
 
   const sampler = new Tone.Sampler({
     release: 1
-  }).toDestination();
+  });
+  const samplerGain = new Tone.Gain(1);
+  sampler.connect(samplerGain);
+  samplerGain.toDestination();
+  samplerGain.connect(dest);
 
   const beatPlayer = new Tone.Player({});
   const beatGain = new Tone.Gain(1);
@@ -40,7 +44,6 @@ export function initAudio() {
 
   player.connect(dest);
   mic.connect(dest);
-  sampler.connect(dest);
 
   recorder.ondataavailable = (evt) => chunks.push(evt.data);
   recorder.onstop = () => {
@@ -48,5 +51,5 @@ export function initAudio() {
     audio.src = URL.createObjectURL(blob);
   };
 
-  return { player, sampler, mic, micFFT, recorder, dest, actx, chunks, audio, beatEl, beatGain, beatPlayer };
+  return { player, sampler, mic, micFFT, recorder, dest, actx, chunks, audio, beatEl, beatGain, beatPlayer, samplerGain };
 }

@@ -240,10 +240,15 @@
 
           <div id="beat-pane-keys" class="beat-pane">
             <div class="audio-section">
-              <h3 class="ion-padding-start">Player</h3>
+              <h3 class="ion-padding-start">Sampler</h3>
               <div class="ion-padding">
                 <div class="item-row">MIDI IN:
                   <select id="midiIn"><option value="none">none</option></select>
+                </div>
+              </div>
+              <div class="ion-padding">
+                <div class="item-row">vol: <span id="samplerVolOut">100</span>
+                  <ion-range min="0" max="100" value="100" id="samplerVolRange" debounce="50"></ion-range>
                 </div>
               </div>
               <div class="ion-padding piano-wrap">
@@ -462,6 +467,7 @@
   </div>
 
   <script type="module" src="/src/main.js"></script>
+
 
 
 

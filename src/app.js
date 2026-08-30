@@ -555,7 +555,7 @@ octStart += 7;
 // ---------- Wire up all UI (called from Vue mounted) ----------
 function wireUI() {
   const audio = initAudio();
-  const { player, sampler, recorder, mic, beatGain, beatPlayer, beatEl } = audio;
+  const { player, sampler, recorder, mic, beatGain, beatPlayer, beatEl, samplerGain } = audio;
 
 // Pull the real sample lists from the host (falls back to bundled placeholders).
   const dirsPromise = loadSampleDirs();
@@ -702,12 +702,24 @@ const volslider = document.getElementById('volRange');
       beatGain.gain.value = (abVol.value || 100) / 100;
     });
   }
+
+  const samplerVol = document.getElementById('samplerVolRange');
+  const samplerVolOut = document.getElementById('samplerVolOut');
+  if (samplerVol && samplerVolOut) {
+    samplerVolOut.innerHTML = samplerVol.value || 100;
+    samplerGain.gain.value = (samplerVol.value || 100) / 100;
+    samplerVol.addEventListener('ionChange', () => {
+      samplerVolOut.innerHTML = samplerVol.value;
+      samplerGain.gain.value = (samplerVol.value || 100) / 100;
+    });
+  }
   window.__reprobe = () => {
     const el = document.getElementById('autoBeatAudio');
     return {
       beatSrc: el ? el.src : '',
       beatPlaying: el ? !el.paused : false,
       beatVol: beatGain.gain.value,
+      samplerVol: samplerGain.gain.value,
       recState: recorder.state
     };
   };
