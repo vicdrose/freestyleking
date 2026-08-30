@@ -671,7 +671,6 @@ ion-tab[tab="home"] ion-content {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0 10px 10px;
   padding: 8px 12px;
   background: #000;
   border-radius: 12px;
