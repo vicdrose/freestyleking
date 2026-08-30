@@ -341,11 +341,18 @@ const autorap = {
   },
 
   wire() {
+    try {
+      const savedSec = localStorage.getItem('fk-asSeconds');
+      if (savedSec && asSeconds) asSeconds.value = savedSec;
+      const savedMult = localStorage.getItem('fk-asMult');
+      if (savedMult && asMult) asMult.value = savedMult;
+    } catch (e) {}
     if (asSeconds) {
       asSeconds.addEventListener('change', () => {
         this.base = Math.max(1, parseInt(asSeconds.value, 10) || 8);
         this.updateClock();
         this.schedule();
+        try { localStorage.setItem('fk-asSeconds', asSeconds.value); } catch (err) {}
       });
     }
     if (asMult) {
@@ -353,6 +360,7 @@ const autorap = {
         this.mult = parseFloat(asMult.value) || 1;
         this.updateClock();
         this.schedule();
+        try { localStorage.setItem('fk-asMult', asMult.value); } catch (err) {}
       });
     }
     const skipBtn = document.getElementById('asSkip');
