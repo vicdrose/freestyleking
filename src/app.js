@@ -530,8 +530,8 @@ function wireUI() {
   const audio = initAudio();
   const { player, sampler, recorder, mic, beatGain, beatPlayer, beatEl } = audio;
 
-  // Pull the real sample lists from the host (falls back to bundled placeholders).
-  loadSampleDirs();
+// Pull the real sample lists from the host (falls back to bundled placeholders).
+  const dirsPromise = loadSampleDirs();
 
   // Word buttons
   document.getElementById('btn-roll').onclick = queueAutorapSource(random_item, items, roll, 'common');
@@ -786,8 +786,8 @@ const volslider = document.getElementById('volRange');
 // Beat view
   beatToggles();
   setupPiano(sampler);
-  // Auto-load a random pad at start so the piano keys are ready to play.
-  loadSample(getPad);
+  // Auto-load a random pad at start, once the live pad list has arrived.
+  dirsPromise.then(() => loadSample(getPad));
 
   // Autorap buttons
   autorap.wire();
