@@ -697,28 +697,39 @@ ion-tab[tab="home"] ion-content {
   align-items: stretch;
 }
 
-.fk-seek {
+.fk-face {
+  position: absolute;
+  inset: 0;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-  width: 100%;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.fk-face-back {
+  transform: rotateX(180deg);
+}
+
+.fk-seektimes {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
 }
 
 .fk-time {
   flex: none;
-  min-width: 34px;
   font-size: 0.72rem;
   color: #bbb;
   font-variant-numeric: tabular-nums;
 }
 
-.fk-time + .fk-range + .fk-time {
-  text-align: right;
+.fk-face-back .fk-range {
+  flex: none;
+  width: 100%;
 }
 
 .fk-range {
-  flex: 1 1 auto;
   -webkit-appearance: none;
   appearance: none;
   height: 4px;
@@ -767,6 +778,22 @@ ion-tab[tab="home"] ion-content {
 .fk-info {
   flex: 1 1 auto;
   min-width: 0;
+  position: relative;
+  height: 48px;
+  perspective: 600px;
+  cursor: pointer;
+}
+
+.fk-flip {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform .5s ease;
+}
+
+.fk-flip.flipped {
+  transform: rotateX(180deg);
 }
 
 .fk-title {

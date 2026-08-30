@@ -734,6 +734,7 @@ recState: recorder.state
 
   try { wirePlayerToggle(); } catch (e) {}
     try { wireSeek(); } catch (e) {}
+    try { wireInfoFlip(); } catch (e) {}
 
 // Player start/stop.
   const btnStart = document.getElementById('btn-playerStart');
@@ -976,6 +977,30 @@ function wireSeek() {
     refresh();
   });
   refresh();
+}
+
+// Tapping the track info flips it vertically (0.5s) onto the seeker face;
+// the seeker auto-flips back after ~1.5s of inactivity.
+function wireInfoFlip() {
+  const info = document.getElementById('fkInfo');
+  const flip = document.getElementById('fkFlip');
+  const seek = document.getElementById('fkSeek');
+  if (!info || !flip) return;
+  let timer = null;
+  const hideSeeker = () => flip.classList.remove('flipped');
+  info.addEventListener('click', () => {
+    flip.classList.toggle('flipped');
+  });
+  if (seek) {
+    const armAutoFlip = () => {
+      if (!flip.classList.contains('flipped')) flip.classList.add('flipped');
+      clearTimeout(timer);
+      timer = setTimeout(hideSeeker, 1500);
+    };
+    seek.addEventListener('input', armAutoFlip);
+    seek.addEventListener('change', armAutoFlip);
+    seek.addEventListener('touchstart', armAutoFlip, { passive: true });
+  }
 }
 
 // Re-shows the native <audio controls> reference band on demand (surgical debugging).

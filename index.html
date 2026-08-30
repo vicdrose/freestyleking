@@ -106,18 +106,24 @@
           <div class="feed-player-band fk-band">
             <div class="fk-player">
               <div class="fk-art"><ion-icon name="musical-notes"></ion-icon></div>
-              <div class="fk-info">
-                <div class="fk-title" id="fk-title">Nothing playing</div>
-                <div class="fk-artist" id="fk-artist">Press play on a track</div>
+              <div class="fk-info" id="fkInfo">
+                <div class="fk-flip" id="fkFlip">
+                  <div class="fk-face fk-face-front">
+                    <div class="fk-title" id="fk-title">Nothing playing</div>
+                    <div class="fk-artist" id="fk-artist">Press play on a track</div>
+                  </div>
+                  <div class="fk-face fk-face-back">
+                    <input type="range" class="fk-range" id="fkSeek" min="0" max="100" step="0.1" value="0" aria-label="Seek">
+                    <div class="fk-seektimes">
+                      <span class="fk-time" id="fkCur">0:00</span>
+                      <span class="fk-time" id="fkDur">0:00</span>
+                    </div>
+                  </div>
+                </div>
               </div>
               <button class="fk-toggle" id="fkToggle" aria-label="Play or pause">
                 <ion-icon name="play"></ion-icon>
               </button>
-            </div>
-            <div class="fk-seek">
-              <span class="fk-time" id="fkCur">0:00</span>
-              <input type="range" class="fk-range" id="fkSeek" min="0" max="100" step="0.1" value="0" aria-label="Seek">
-              <span class="fk-time" id="fkDur">0:00</span>
             </div>
           </div>
         </div>
