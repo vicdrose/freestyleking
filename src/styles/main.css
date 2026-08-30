@@ -673,11 +673,10 @@ ion-tab[tab="home"] ion-content {
   align-items: center;
   padding: 8px 12px;
   background: #fafafa;
-  border-radius: 12px;
+  border-radius: 12px 12px 0 0;
 }
 
 .feed-player-band audio {
-  width: 100%;
   background: #fafafa;
 }
 
