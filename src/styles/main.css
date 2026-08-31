@@ -237,7 +237,7 @@ ion-tab-bar {
   --color: white;
 }
 
-ion-fab {
+ion-content > ion-fab {
   margin-bottom: calc(var(--fk-widget-h, 0px) + 8px);
 }
 
@@ -384,6 +384,7 @@ ion-input {
 }
 
 .welcome {
+  position: relative;
   height: auto;
   min-height: 0;
   display: flex;
