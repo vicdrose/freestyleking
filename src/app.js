@@ -736,8 +736,7 @@ recState: recorder.state
     try { wireSeek(); } catch (e) {}
     try { wirePlayerPref(); } catch (e) {}
     try { wireInfoFlip(); } catch (e) {}
-    try { layoutFkWidget(); } catch (e) {}
-    window.addEventListener('resize', layoutFkWidget);
+    try { initFkLayout(); } catch (e) {}
 
 // Player start/stop.
   const btnStart = document.getElementById('btn-playerStart');
@@ -996,16 +995,38 @@ function bindSeeker(seekId, curId, durId) {
 const FK_ADVANCED_KEY = 'fkAdvancedPlayer';
 
 // Anchors the global player just above the bottom tab bar and measures its
-// height so tab content can clear it. JS-measured bottom is more reliable
-// than a hardcoded 50px across safe-area insets and tab bar variants.
+// height so tab content can clear it. Defensive about early measurement:
+// if the tab bar has no layout yet we keep a safe default instead of ever
+// collapsing the player below the bar (which hides it behind the bar).
 function layoutFkWidget() {
   const widget = document.getElementById('fkWidget');
   const bar = document.querySelector('ion-tab-bar');
   if (!widget) return;
-  const barH = bar ? bar.getBoundingClientRect().height : 50;
-  widget.style.bottom = barH + 'px';
+  let bottomPx = 50;
+  if (bar) {
+    const r = bar.getBoundingClientRect();
+    if (r.height > 20 && r.top > 0) {
+      bottomPx = window.innerHeight - r.top;
+    } else if (r.height > 20) {
+      bottomPx = r.height;
+    }
+  }
+  widget.style.bottom = Math.max(bottomPx, 40) + 'px';
   const h = widget.getBoundingClientRect().height || 0;
   if (h) document.documentElement.style.setProperty('--fk-widget-h', h + 'px');
+}
+
+function initFkLayout() {
+  layoutFkWidget();
+  window.addEventListener('resize', layoutFkWidget);
+  window.addEventListener('load', layoutFkWidget);
+  const bar = document.querySelector('ion-tab-bar');
+  if (bar && 'ResizeObserver' in window) {
+    new ResizeObserver(layoutFkWidget).observe(bar);
+  }
+  // Late geometry settles (fonts, safe-area, Ionic hydration) re-anchor.
+  setTimeout(layoutFkWidget, 800);
+  setTimeout(layoutFkWidget, 2500);
 }
 
 function applyPlayerMode(advanced) {

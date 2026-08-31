@@ -679,7 +679,7 @@ ion-tab[tab="home"] ion-content {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 50px;
+  bottom: calc(50px + env(safe-area-inset-bottom, 0px));
   z-index: 1200;
 }
 
