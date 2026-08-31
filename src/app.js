@@ -1087,8 +1087,9 @@ function wirePlayerPref() {
   }
 }
 
-// Tapping the track info flips it vertically (0.5s) onto the seeker face;
-// the seeker auto-flips back after ~1.5s of inactivity.
+// Tapping the track info flips it vertically (0.5s) onto the seeker face.
+// The seeker face auto-flips back after 4s with no seeking, or ~1.5s after
+// the last seek interaction, whichever applies.
 function wireInfoFlip() {
   const info = document.getElementById('fkInfo');
   const flip = document.getElementById('fkFlip');
@@ -1096,16 +1097,20 @@ function wireInfoFlip() {
   if (!info || !flip) return;
   let timer = null;
   const hideSeeker = () => flip.classList.remove('flipped');
+  const armReturn = (ms) => {
+    clearTimeout(timer);
+    timer = setTimeout(hideSeeker, ms);
+  };
   info.addEventListener('click', () => {
     const widget = document.getElementById('fkWidget');
     if (widget && widget.dataset.mode !== 'advanced') return;
     flip.classList.toggle('flipped');
+    if (flip.classList.contains('flipped')) armReturn(4000);
   });
   if (seek) {
     const armAutoFlip = () => {
       if (!flip.classList.contains('flipped')) flip.classList.add('flipped');
-      clearTimeout(timer);
-      timer = setTimeout(hideSeeker, 1500);
+      armReturn(1500);
     };
     seek.addEventListener('input', armAutoFlip);
     seek.addEventListener('change', armAutoFlip);
