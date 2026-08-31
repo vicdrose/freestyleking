@@ -32,6 +32,15 @@
   display: block;
 }
 
+ion-menu#menu-start ion-item {
+  --color: #fff;
+  --background: transparent;
+}
+
+ion-menu#menu-start ion-item ion-icon {
+  color: #fff;
+}
+
 body {
   background-color: black;
   color: white;

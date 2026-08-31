@@ -1129,24 +1129,6 @@ function wireMenuButtons() {
       if (menu && typeof menu.open === 'function') menu.open();
     });
   });
-  // Left menu items: Friends opens the right menu; Settings/Posts are still in
-  // development and flash an alert explaining so.
-  const friendsItem = document.querySelector('ion-menu#menu-start ion-item ion-label');
-  document.querySelectorAll('ion-menu#menu-start ion-item').forEach((item) => {
-    const label = item.querySelector('ion-label');
-    if (!label) return;
-    const text = label.textContent.trim();
-    if (text === 'Friends') {
-      item.addEventListener('click', () => {
-        const menu = document.getElementById('menu-end');
-        if (menu && typeof menu.open === 'function') menu.open();
-      });
-    } else {
-      item.addEventListener('click', () => {
-        alert('This is a development build of Freestyle King; some features are currently in development.');
-      });
-    }
-  });
 }
 
 // Re-shows the native <audio controls> reference band on demand (surgical debugging).
