@@ -1127,7 +1127,8 @@ function wireRepeatOnce() {
   if (!btn || !audio) return;
   let armed = false;
   const paint = () => btn.classList.toggle('active', armed);
-  btn.addEventListener('click', () => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
     armed = !armed;
     paint();
   });
