@@ -780,12 +780,8 @@ ion-content {
   width: auto;
 }
 
-.fk-widget[data-mode="basic"] .fk-flip {
-  display: none;
-}
-
 .fk-widget[data-mode="basic"] .fk-static {
-  display: flex;
+  display: none;
 }
 
 .fk-widget[data-mode="basic"] .fk-seekrow {
@@ -798,6 +794,20 @@ ion-content {
 
 .fk-widget[data-mode="advanced"] .fk-static {
   display: none;
+}
+
+.fk-fronttext {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.fk-face-front {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
 }
 
 .fk-face-back .fk-range {

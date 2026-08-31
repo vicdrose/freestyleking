@@ -380,8 +380,13 @@
             </div>
             <div class="fk-flip" id="fkFlip">
               <div class="fk-face fk-face-front">
-                <div class="fk-title" id="fk-title">Nothing playing</div>
-                <div class="fk-artist" id="fk-artist">Press play on a track</div>
+                <div class="fk-fronttext">
+                  <div class="fk-title" id="fk-title">Nothing playing</div>
+                  <div class="fk-artist" id="fk-artist">Press play on a track</div>
+                </div>
+                <button class="fk-repeat" id="fkRepeat" aria-label="Repeat one" title="Repeat one">
+                  <ion-icon name="repeat"></ion-icon>
+                </button>
               </div>
               <div class="fk-face fk-face-back">
                 <input type="range" class="fk-range" id="fkSeek" min="0" max="100" step="0.1" value="0" aria-label="Seek">
@@ -392,9 +397,6 @@
               </div>
             </div>
           </div>
-          <button class="fk-repeat" id="fkRepeat" aria-label="Repeat one" title="Repeat one">
-            <ion-icon name="repeat"></ion-icon>
-          </button>
           <button class="fk-toggle" id="fkToggle" aria-label="Play or pause">
             <ion-icon name="play"></ion-icon>
           </button>
