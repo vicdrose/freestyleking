@@ -1119,8 +1119,8 @@ window.__showNativeFeed = (show) => {
   if (band) band.classList.toggle('fk-hidden', !show);
 };
 
-// Repeat-once: tapping the repeat button arms it (highlighted); when the
-// track ends it replays from the top once, then disarms itself.
+// Repeat-one: tapping the repeat button arms it (highlighted); each time the
+// track ends it replays from the top, looping the same song until disarmed.
 function wireRepeatOnce() {
   const btn = document.getElementById('fkRepeat');
   const audio = document.getElementById('feedPlayer');
@@ -1133,8 +1133,6 @@ function wireRepeatOnce() {
   });
   audio.addEventListener('ended', () => {
     if (armed) {
-      armed = false;
-      paint();
       audio.currentTime = 0;
       audio.play();
     }
