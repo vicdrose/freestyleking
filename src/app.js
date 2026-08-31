@@ -734,6 +734,7 @@ recState: recorder.state
 
   try { wirePlayerToggle(); } catch (e) {}
     try { wireSeek(); } catch (e) {}
+    try { wirePlayerPref(); } catch (e) {}
     try { wireInfoFlip(); } catch (e) {}
 
 // Player start/stop.
@@ -910,10 +911,14 @@ let activeFeedBtn = null;
 
 function fkSet(track) {
   currentFeedTrack = track || null;
-  const titleEl = document.getElementById('fk-title');
-  const artistEl = document.getElementById('fk-artist');
-  if (titleEl) titleEl.textContent = track ? track.title : 'Nothing playing';
-  if (artistEl) artistEl.textContent = track ? track.author : 'Press play on a track';
+  const title = track ? track.title : 'Nothing playing';
+  const artist = track ? track.author : 'Press play on a track';
+  document.querySelectorAll('.fk-widget .fk-title').forEach((el) => {
+    if (el.textContent !== title) el.textContent = title;
+  });
+  document.querySelectorAll('.fk-widget .fk-artist').forEach((el) => {
+    if (el.textContent !== artist) el.textContent = artist;
+  });
 }
 
 function fkSetPlaying(playing) {
@@ -934,10 +939,15 @@ function fmtTime(secs) {
 }
 
 function wireSeek() {
+  bindSeeker('fkSeek', 'fkCur', 'fkDur');
+  bindSeeker('fkSeekBasic', 'fkCurBasic', 'fkDurBasic');
+}
+
+function bindSeeker(seekId, curId, durId) {
   const audio = document.getElementById('feedPlayer');
-  const seek = document.getElementById('fkSeek');
-  const cur = document.getElementById('fkCur');
-  const dur = document.getElementById('fkDur');
+  const seek = document.getElementById(seekId);
+  const cur = document.getElementById(curId);
+  const dur = document.getElementById(durId);
   if (!audio || !seek) return;
   let dragging = false;
   const paint = (pct) => {
@@ -979,6 +989,38 @@ function wireSeek() {
   refresh();
 }
 
+// Menu setting: advanced audio player animation (flip-to-seeker) vs the
+// basic persistent seeker row. Unchecked by default and persisted locally.
+const FK_ADVANCED_KEY = 'fkAdvancedPlayer';
+
+function applyPlayerMode(advanced) {
+  const widget = document.getElementById('fkWidget');
+  const chk = document.getElementById('fk-chk-advanced');
+  if (!widget) return;
+  widget.dataset.mode = advanced ? 'advanced' : 'basic';
+  if (!advanced) {
+    const flip = document.getElementById('fkFlip');
+    if (flip) flip.classList.remove('flipped');
+  }
+  if (chk) chk.checked = !!advanced;
+}
+
+function wirePlayerPref() {
+  let enabled = false;
+  try {
+    enabled = localStorage.getItem(FK_ADVANCED_KEY) === '1';
+  } catch (e) {}
+  applyPlayerMode(enabled);
+  const chk = document.getElementById('fk-chk-advanced');
+  if (chk) {
+    chk.addEventListener('ionChange', (e) => {
+      const on = !!e.detail.checked;
+      applyPlayerMode(on);
+      try { localStorage.setItem(FK_ADVANCED_KEY, on ? '1' : '0'); } catch (err) {}
+    });
+  }
+}
+
 // Tapping the track info flips it vertically (0.5s) onto the seeker face;
 // the seeker auto-flips back after ~1.5s of inactivity.
 function wireInfoFlip() {
@@ -989,6 +1031,8 @@ function wireInfoFlip() {
   let timer = null;
   const hideSeeker = () => flip.classList.remove('flipped');
   info.addEventListener('click', () => {
+    const widget = document.getElementById('fkWidget');
+    if (widget && widget.dataset.mode !== 'advanced') return;
     flip.classList.toggle('flipped');
   });
   if (seek) {

@@ -724,6 +724,55 @@ ion-tab[tab="home"] ion-content {
   font-variant-numeric: tabular-nums;
 }
 
+.fk-static {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.fk-seekrow {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.fk-seekrow .fk-time {
+  min-width: 34px;
+}
+
+.fk-seekrow .fk-time:last-child {
+  text-align: right;
+}
+
+.fk-seekrow .fk-range {
+  flex: 1 1 auto;
+  width: auto;
+}
+
+.fk-widget[data-mode="basic"] .fk-flip {
+  display: none;
+}
+
+.fk-widget[data-mode="basic"] .fk-static {
+  display: flex;
+}
+
+.fk-widget[data-mode="basic"] .fk-seekrow {
+  display: flex;
+}
+
+.fk-widget[data-mode="basic"] .fk-info {
+  cursor: default;
+}
+
+.fk-widget[data-mode="advanced"] .fk-static {
+  display: none;
+}
+
 .fk-face-back .fk-range {
   flex: none;
   width: 100%;
