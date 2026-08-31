@@ -1129,6 +1129,19 @@ function wireMenuButtons() {
       if (menu && typeof menu.open === 'function') menu.open();
     });
   });
+  // Tapping the left menu's Friends item opens the right side (Friends) menu
+  // and closes the left menu. Ionic auto-closes the open start menu when we
+  // open the end menu, matching pressing the top-right user button.
+  document.querySelectorAll('ion-menu#menu-start ion-item').forEach((item) => {
+    const label = item.querySelector('ion-label');
+    if (!label) return;
+    if (label.textContent.trim() === 'Friends') {
+      item.addEventListener('click', () => {
+        const end = document.getElementById('menu-end');
+        if (end && typeof end.open === 'function') end.open();
+      });
+    }
+  });
 }
 
 // Re-shows the native <audio controls> reference band on demand (surgical debugging).
