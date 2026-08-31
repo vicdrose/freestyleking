@@ -237,6 +237,11 @@ ion-tab-bar {
   --color: white;
 }
 
+.welcome ion-fab {
+  right: 10px;
+  bottom: 10px;
+}
+
 ion-content > ion-fab {
   margin-bottom: calc(var(--fk-widget-h, 0px) + 8px);
 }
