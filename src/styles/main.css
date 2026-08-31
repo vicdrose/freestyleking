@@ -241,6 +241,10 @@ ion-content > ion-fab {
   margin-bottom: calc(var(--fk-widget-h, 0px) + 8px);
 }
 
+.welcome ion-fab-list {
+  margin-bottom: 61px;
+}
+
 ion-fab-button {
   --background: rgb(0, 121, 107);
 }
