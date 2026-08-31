@@ -734,6 +734,7 @@ recState: recorder.state
 
   try { wirePlayerToggle(); } catch (e) {}
     try { wireRepeatOnce(); } catch (e) {}
+    try { wireMenuButtons(); } catch (e) {}
     try { wireSeek(); } catch (e) {}
     try { wirePlayerPref(); } catch (e) {}
     try { wireInfoFlip(); } catch (e) {}
@@ -1116,6 +1117,18 @@ function wireInfoFlip() {
     seek.addEventListener('change', armAutoFlip);
     seek.addEventListener('touchstart', armAutoFlip, { passive: true });
   }
+}
+
+// Open the left (hamburger) and right (user) menu buttons by directly opening
+// the named <ion-menu> element. Ionic's ion-menu-toggle auto-hides in this
+// tabs setup, so we drive the menus explicitly.
+function wireMenuButtons() {
+  document.querySelectorAll('button[data-open]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const menu = document.getElementById(btn.getAttribute('data-open'));
+      if (menu && typeof menu.open === 'function') menu.open();
+    });
+  });
 }
 
 // Re-shows the native <audio controls> reference band on demand (surgical debugging).
