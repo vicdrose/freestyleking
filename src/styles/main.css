@@ -242,7 +242,7 @@ ion-fab {
 }
 
 ion-fab-button {
-  --background: rgba(0, 121, 107, 0.75);
+  --background: rgb(0, 121, 107);
 }
 
 ion-item {
