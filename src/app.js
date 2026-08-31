@@ -736,6 +736,8 @@ recState: recorder.state
     try { wireSeek(); } catch (e) {}
     try { wirePlayerPref(); } catch (e) {}
     try { wireInfoFlip(); } catch (e) {}
+    try { layoutFkWidget(); } catch (e) {}
+    window.addEventListener('resize', layoutFkWidget);
 
 // Player start/stop.
   const btnStart = document.getElementById('btn-playerStart');
@@ -993,6 +995,19 @@ function bindSeeker(seekId, curId, durId) {
 // basic persistent seeker row. Unchecked by default and persisted locally.
 const FK_ADVANCED_KEY = 'fkAdvancedPlayer';
 
+// Anchors the global player just above the bottom tab bar and measures its
+// height so tab content can clear it. JS-measured bottom is more reliable
+// than a hardcoded 50px across safe-area insets and tab bar variants.
+function layoutFkWidget() {
+  const widget = document.getElementById('fkWidget');
+  const bar = document.querySelector('ion-tab-bar');
+  if (!widget) return;
+  const barH = bar ? bar.getBoundingClientRect().height : 50;
+  widget.style.bottom = barH + 'px';
+  const h = widget.getBoundingClientRect().height || 0;
+  if (h) document.documentElement.style.setProperty('--fk-widget-h', h + 'px');
+}
+
 function applyPlayerMode(advanced) {
   const widget = document.getElementById('fkWidget');
   const chk = document.getElementById('fk-chk-advanced');
@@ -1003,6 +1018,7 @@ function applyPlayerMode(advanced) {
     if (flip) flip.classList.remove('flipped');
   }
   if (chk) chk.checked = !!advanced;
+  setTimeout(layoutFkWidget, 60);
 }
 
 function wirePlayerPref() {

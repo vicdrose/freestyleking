@@ -670,6 +670,24 @@ ion-tab[tab="home"] ion-content {
   background: #222428;
 }
 
+/* The kicker player is a global overlay anchored just above the bottom tab bar */
+:root {
+  --fk-widget-h: 96px;
+}
+
+.fk-widget {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 50px;
+  z-index: 1200;
+}
+
+/* Keep tab content from hiding behind the fixed player */
+ion-content {
+  --padding-bottom: calc(var(--fk-widget-h, 90px) + 8px);
+}
+
 .feed-player-band {
   flex: none;
   display: flex;

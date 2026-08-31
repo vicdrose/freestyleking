@@ -106,45 +106,6 @@
             </div>
           </div>
         </ion-content>
-        <div class="feed-player-wrap fk-widget" id="fkWidget" data-mode="basic">
-          <div class="feed-player-band fk-band">
-            <div class="fk-player">
-              <div class="fk-art"><ion-icon name="musical-notes"></ion-icon></div>
-              <div class="fk-info" id="fkInfo">
-                <div class="fk-static">
-                  <div class="fk-title">Nothing playing</div>
-                  <div class="fk-artist">Press play on a track</div>
-                </div>
-                <div class="fk-flip" id="fkFlip">
-                  <div class="fk-face fk-face-front">
-                    <div class="fk-title" id="fk-title">Nothing playing</div>
-                    <div class="fk-artist" id="fk-artist">Press play on a track</div>
-                  </div>
-                  <div class="fk-face fk-face-back">
-                    <input type="range" class="fk-range" id="fkSeek" min="0" max="100" step="0.1" value="0" aria-label="Seek">
-                    <div class="fk-seektimes">
-                      <span class="fk-time" id="fkCur">0:00</span>
-                      <span class="fk-time" id="fkDur">0:00</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <button class="fk-toggle" id="fkToggle" aria-label="Play or pause">
-                <ion-icon name="play"></ion-icon>
-              </button>
-            </div>
-            <div class="fk-seekrow" id="fkSeekRow">
-              <span class="fk-time" id="fkCurBasic">0:00</span>
-              <input type="range" class="fk-range" id="fkSeekBasic" min="0" max="100" step="0.1" value="0" aria-label="Seek">
-              <span class="fk-time" id="fkDurBasic">0:00</span>
-            </div>
-          </div>
-        </div>
-        <div class="feed-player-wrap fk-hidden" id="fkLiveBand">
-          <div class="feed-player-band">
-            <audio controls id="feedPlayer"></audio>
-          </div>
-        </div>
       </ion-tab>
 
       <!-- ============ RAP (Default page: Randomizer + Quotes) ============ -->
@@ -373,6 +334,47 @@
         </ion-tab-button>
       </ion-tab-bar>
     </ion-tabs>
+
+    <!-- Global kicker player: fixed just above the bottom tab bar on every view -->
+    <div class="feed-player-wrap fk-widget" id="fkWidget" data-mode="basic">
+      <div class="feed-player-band fk-band">
+        <div class="fk-player">
+          <div class="fk-art"><ion-icon name="musical-notes"></ion-icon></div>
+          <div class="fk-info" id="fkInfo">
+            <div class="fk-static">
+              <div class="fk-title">Nothing playing</div>
+              <div class="fk-artist">Press play on a track</div>
+            </div>
+            <div class="fk-flip" id="fkFlip">
+              <div class="fk-face fk-face-front">
+                <div class="fk-title" id="fk-title">Nothing playing</div>
+                <div class="fk-artist" id="fk-artist">Press play on a track</div>
+              </div>
+              <div class="fk-face fk-face-back">
+                <input type="range" class="fk-range" id="fkSeek" min="0" max="100" step="0.1" value="0" aria-label="Seek">
+                <div class="fk-seektimes">
+                  <span class="fk-time" id="fkCur">0:00</span>
+                  <span class="fk-time" id="fkDur">0:00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="fk-toggle" id="fkToggle" aria-label="Play or pause">
+            <ion-icon name="play"></ion-icon>
+          </button>
+        </div>
+        <div class="fk-seekrow" id="fkSeekRow">
+          <span class="fk-time" id="fkCurBasic">0:00</span>
+          <input type="range" class="fk-range" id="fkSeekBasic" min="0" max="100" step="0.1" value="0" aria-label="Seek">
+          <span class="fk-time" id="fkDurBasic">0:00</span>
+        </div>
+      </div>
+    </div>
+    <div class="feed-player-wrap fk-hidden" id="fkLiveBand">
+      <div class="feed-player-band">
+        <audio controls id="feedPlayer"></audio>
+      </div>
+    </div>
   </div>
 
   <!-- Relationship stage: hold-to-open word explorer (current list | focus word + Hold/Close | section switch | phonetics) -->
