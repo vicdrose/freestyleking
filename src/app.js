@@ -733,6 +733,7 @@ recState: recorder.state
   };
 
   try { wirePlayerToggle(); } catch (e) {}
+    try { wireRepeatOnce(); } catch (e) {}
     try { wireSeek(); } catch (e) {}
     try { wirePlayerPref(); } catch (e) {}
     try { wireInfoFlip(); } catch (e) {}
@@ -1117,6 +1118,28 @@ window.__showNativeFeed = (show) => {
   const band = document.getElementById('fkLiveBand');
   if (band) band.classList.toggle('fk-hidden', !show);
 };
+
+// Repeat-once: tapping the repeat button arms it (highlighted); when the
+// track ends it replays from the top once, then disarms itself.
+function wireRepeatOnce() {
+  const btn = document.getElementById('fkRepeat');
+  const audio = document.getElementById('feedPlayer');
+  if (!btn || !audio) return;
+  let armed = false;
+  const paint = () => btn.classList.toggle('active', armed);
+  btn.addEventListener('click', () => {
+    armed = !armed;
+    paint();
+  });
+  audio.addEventListener('ended', () => {
+    if (armed) {
+      armed = false;
+      paint();
+      audio.currentTime = 0;
+      audio.play();
+    }
+  });
+}
 
 function wirePlayerToggle() {
   const toggle = document.getElementById('fkToggle');
