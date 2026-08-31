@@ -920,6 +920,7 @@ function fkSet(track) {
   document.querySelectorAll('.fk-widget .fk-artist').forEach((el) => {
     if (el.textContent !== artist) el.textContent = artist;
   });
+  updateFkGlobalVisibility();
 }
 
 function fkSetPlaying(playing) {
@@ -1012,17 +1013,44 @@ function layoutFkWidget() {
     }
   }
   widget.style.bottom = Math.max(bottomPx, 40) + 'px';
-  const h = widget.getBoundingClientRect().height || 0;
-  if (h) document.documentElement.style.setProperty('--fk-widget-h', h + 'px');
+  document.documentElement.style.setProperty('--fk-widget-h', widget.classList.contains('fk-hidden') ? '0px' : (widget.getBoundingClientRect().height || 0) + 'px');
+}
+
+// The player is shown on the first (home) tab always; on the other tabs only
+// once a track has been loaded. Call this whenever the tab or track changes.
+let fkCurTab = 'home';
+
+function updateFkGlobalVisibility() {
+  const widget = document.getElementById('fkWidget');
+  if (!widget) return;
+  const hasTrack = !!(currentFeedTrack && currentFeedTrack.audioUrl);
+  widget.classList.toggle('fk-hidden', !(fkCurTab === 'home' || hasTrack));
+  layoutFkWidget();
 }
 
 function initFkLayout() {
-  layoutFkWidget();
+  updateFkGlobalVisibility();
   window.addEventListener('resize', layoutFkWidget);
   window.addEventListener('load', layoutFkWidget);
-  const bar = document.querySelector('ion-tab-bar');
-  if (bar && 'ResizeObserver' in window) {
-    new ResizeObserver(layoutFkWidget).observe(bar);
+  const tabs = document.querySelector('ion-tabs');
+  if (tabs) {
+    tabs.addEventListener('ionTabsDidChange', (e) => {
+      const t = e && e.detail && e.detail.tab;
+      if (t) {
+        fkCurTab = t;
+        updateFkGlobalVisibility();
+      }
+    });
+    document.querySelectorAll('ion-tab-button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const t = btn.getAttribute('tab');
+        if (t) fkCurTab = t;
+      });
+    });
+    const bar = document.querySelector('ion-tab-bar');
+    if (bar && 'ResizeObserver' in window) {
+      new ResizeObserver(layoutFkWidget).observe(bar);
+    }
   }
   // Late geometry settles (fonts, safe-area, Ionic hydration) re-anchor.
   setTimeout(layoutFkWidget, 800);
