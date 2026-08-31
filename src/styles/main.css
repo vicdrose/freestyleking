@@ -237,6 +237,10 @@ ion-tab-bar {
   --color: white;
 }
 
+ion-fab {
+  margin-bottom: calc(var(--fk-widget-h, 0px) + 8px);
+}
+
 ion-fab-button {
   --background: rgba(0, 121, 107, 0.75);
 }
