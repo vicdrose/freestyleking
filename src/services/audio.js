@@ -24,7 +24,12 @@ export function initAudio() {
     loop: true,
     loopStart: 0,
     loopEnd: 230
-  }).toDestination();
+  });
+  // Dedicated gain for the beat player so the volume slider has a real,
+  // audible path (Tone.Player.volume is read-only in Tone 14).
+  const playerGain = new Tone.Gain(1);
+  player.connect(playerGain);
+  playerGain.toDestination();
 
   const sampler = new Tone.Sampler({
     release: 1
@@ -42,7 +47,7 @@ export function initAudio() {
 
   const beatEl = document.querySelector('#autoBeatAudio');
 
-  player.connect(dest);
+  playerGain.connect(dest);
   mic.connect(dest);
 
   recorder.ondataavailable = (evt) => chunks.push(evt.data);
@@ -51,5 +56,5 @@ export function initAudio() {
     audio.src = URL.createObjectURL(blob);
   };
 
-  return { player, sampler, mic, micFFT, recorder, dest, actx, chunks, audio, beatEl, beatGain, beatPlayer, samplerGain };
+  return { player, playerGain, sampler, mic, micFFT, recorder, dest, actx, chunks, audio, beatEl, beatGain, beatPlayer, samplerGain };
 }

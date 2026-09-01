@@ -563,7 +563,7 @@ octStart += 7;
 // ---------- Wire up all UI (called from Vue mounted) ----------
 function wireUI() {
   const audio = initAudio();
-  const { player, sampler, recorder, mic, beatGain, beatPlayer, beatEl, samplerGain } = audio;
+  const { player, playerGain, sampler, recorder, mic, beatGain, beatPlayer, beatEl, samplerGain } = audio;
 
 // Pull the real sample lists from the host (falls back to bundled placeholders).
   const dirsPromise = loadSampleDirs();
@@ -704,8 +704,9 @@ const stageCloseBtn = document.getElementById('stageCloseBtn');
       const syncVol = () => {
         const v = parseFloat(volSlider.value) || 100;
         volVal.textContent = v;
-        // Tone.js volume is in dB: map 100 -> 0 dB (full), 0 -> -24 dB.
-        player.volume = (v / 100) * 24 - 24;
+        // Drive the beat player's dedicated gain (linear 0-1). player.volume
+        // is read-only in Tone 14, so it never adjusted loudness before.
+        if (playerGain) playerGain.gain.value = v / 100;
       };
       volSlider.addEventListener('input', syncVol);
       syncVol();
@@ -874,13 +875,26 @@ recState: recorder.state
     }
   };
 
-  // Custom URL loader.
+  // Custom URL loader. Pasting a freestyleking theme URL works around the fact
+  // that raw .wav/.mp3 files are served without CORS headers (which Tone needs),
+  // so route URLs under wp-content/themes/thrive-nouveau/ through the same
+  // CORS-enabled list.php proxy the source buttons use.
+  const toProxy = (rawUrl) => {
+    const marker = 'wp-content/themes/thrive-nouveau/';
+    const i = rawUrl.indexOf(marker);
+    if (i < 0) return null;
+    let path = rawUrl.slice(i + marker.length);
+    try { path = decodeURIComponent(path); } catch (e) { /* leave as-is */ }
+    // list.php expects get=./wp-content/themes/thrive-nouveau/<path>
+    const rel = './wp-content/themes/thrive-nouveau/' + path;
+    return 'https://freestylekingapp.com/wp-content/themes/thrive-nouveau/list.php?get=' + encodeURIComponent(rel);
+  };
   document.getElementById('btn-sendUrl').onclick = () => {
-    const u = (document.querySelector('#audioUrl').value || '').trim();
-    if (u) {
-      setActiveSource(null);
-      loadPlayer(u, u);
-    }
+    const raw = (document.querySelector('#audioUrl').value || '').trim();
+    if (!raw) return;
+    setActiveSource(null);
+    const url = toProxy(raw) || raw;
+    loadPlayer(url, raw);
   };
 
   // Loop buttons load straight into the player; the play button then plays it.
@@ -896,10 +910,6 @@ recState: recorder.state
   wireSource('btn-rollBeats', getBeat, 'CLASSICS');
   wireSource('btn-rollBreak', getBreak, 'DRUM LOOP');
   wireSource('btn-rollFKBeats', getFKBeat, 'FK BEATS');
-  // Standard / Premium have no dedicated sample folders yet; fall back to the
-  // closest existing sources so the buttons are functional (player-only change).
-  wireSource('btn-rollStandard', getBeat, 'STANDARD');
-  wireSource('btn-rollPremium', getFKBeat, 'PREMIUM');
   } catch (e) {}
 
   // Sample buttons unlock audio with the tap so the keys are audible (no test tones).
