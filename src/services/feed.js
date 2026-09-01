@@ -108,13 +108,24 @@ export async function fetchFeed(categoryKey) {
     })
   );
   return Promise.all(
-    (Array.isArray(posts) ? posts : []).map(async (post) => ({
-      key: categoryKey,
-      title: (post.title && post.title.rendered) || '(untitled)',
-      author: authorFor(post),
-      link: post.link || '',
-      audioUrl: await resolveAudioUrl(post)
-    }))
+    (Array.isArray(posts) ? posts : []).map(async (post) => {
+      // Featured media is a real image (or audio) thumbnail; expose an image URL
+      // for the card art when the post actually has an uploaded image.
+      const media = post._embedded && post._embedded['wp:featuredmedia'];
+      let image = '';
+      const first = Array.isArray(media) ? media[0] : null;
+      if (first && first.source_url && !isAudioMedia(first)) {
+        image = first.source_url;
+      }
+      return {
+        key: categoryKey,
+        title: (post.title && post.title.rendered) || '(untitled)',
+        author: authorFor(post),
+        link: post.link || '',
+        audioUrl: await resolveAudioUrl(post),
+        image
+      };
+    })
   );
 }
 

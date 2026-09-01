@@ -1318,6 +1318,58 @@ function renderFeed(key, items) {
   items.forEach((post) => {
     const card = document.createElement('div');
     card.className = 'feed-card';
+
+    // Play button — far left.
+    const btn = document.createElement('ion-button');
+    btn.className = 'feed-play';
+    btn.setAttribute('fill', 'solid');
+    btn.setAttribute('shape', 'round');
+    const icon = () => btn.querySelector('ion-icon');
+    const setIcon = (name) => {
+      const el = icon();
+      if (el) el.setAttribute('name', name);
+    };
+    if (!post.audioUrl) {
+      btn.setAttribute('title', 'No audio available');
+    } else {
+      btn.setAttribute('title', 'Play');
+    }
+    btn.innerHTML = '<ion-icon name="play" slot="icon-only"></ion-icon>';
+    btn.addEventListener('click', async () => {
+      if (!post.audioUrl) return;
+      if (isFeedPlaying()) {
+        stopFeed();
+        setIcon('play');
+        btn.title = 'Play';
+        return;
+      }
+      activeFeedBtn = btn;
+      fkSet(post);
+      const ok = await playSong(post.audioUrl);
+      if (ok) {
+        btn.title = 'Pause';
+      } else {
+        fkSetPlaying(false);
+        btn.title = 'Could not play this track';
+      }
+    });
+    card.appendChild(btn);
+
+    // Circular art: uploaded image when available, else a CD-style placeholder.
+    const art = document.createElement('div');
+    art.className = 'feed-art';
+    if (post.image) {
+      const img = document.createElement('img');
+      img.className = 'feed-art-img';
+      img.src = post.image;
+      img.alt = '';
+      art.appendChild(img);
+    } else {
+      art.innerHTML = '<ion-icon name="musical-notes"></ion-icon>';
+    }
+    card.appendChild(art);
+
+    // Title + author (flexes to fill the middle).
     const info = document.createElement('div');
     info.className = 'feed-info';
     const title = document.createElement('p');
@@ -1338,40 +1390,25 @@ function renderFeed(key, items) {
     info.appendChild(title);
     info.appendChild(author);
     card.appendChild(info);
-    const btn = document.createElement('ion-button');
-    btn.className = 'feed-play';
-    btn.setAttribute('fill', 'solid');
-    btn.setAttribute('shape', 'round');
-    const icon = () => btn.querySelector('ion-icon');
-    const setIcon = (name) => {
-      const el = icon();
-      if (el) el.setAttribute('name', name);
-    };
-    if (!post.audioUrl) {
-      btn.setAttribute('title', 'No audio available');
-    } else {
-      btn.setAttribute('title', 'Play');
+
+    // Track length (mm:ss) — far right, filled once metadata loads.
+    const dur = document.createElement('span');
+    dur.className = 'feed-dur';
+    dur.textContent = '';
+    card.appendChild(dur);
+    if (post.audioUrl) {
+      const probe = new Audio();
+      probe.preload = 'metadata';
+      const showDuration = () => {
+        if (!isNaN(probe.duration) && probe.duration !== Infinity && probe.duration > 0) {
+          dur.textContent = fmtTime(probe.duration);
+        }
+      };
+      probe.addEventListener('loadedmetadata', showDuration);
+      probe.addEventListener('durationchange', showDuration);
+      probe.src = post.audioUrl;
     }
-    btn.innerHTML = '<ion-icon name="play" slot="icon-only"></ion-icon>';
-btn.addEventListener('click', async () => {
-      if (!post.audioUrl) return;
-      if (isFeedPlaying()) {
-        stopFeed();
-        setIcon('play');
-        btn.title = 'Play';
-        return;
-      }
-      activeFeedBtn = btn;
-      fkSet(post);
-      const ok = await playSong(post.audioUrl);
-      if (ok) {
-        btn.title = 'Pause';
-      } else {
-        fkSetPlaying(false);
-        btn.title = 'Could not play this track';
-      }
-    });
-    card.appendChild(btn);
+
     list.appendChild(card);
   });
 }

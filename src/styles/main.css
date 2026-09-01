@@ -559,6 +559,38 @@ ion-input {
   height: 44px;
 }
 
+/* Circular art: uploaded image fills a circle; otherwise a CD-style placeholder. */
+.feed-card .feed-art {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #c9c9c9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+}
+
+.feed-card .feed-art-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.feed-card .feed-dur {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  color: #888;
+  font-variant-numeric: tabular-nums;
+  min-width: 40px;
+  text-align: right;
+  white-space: nowrap;
+}
+
 .feed-hint {
   font-size: 0.85rem;
   color: #aaa;
