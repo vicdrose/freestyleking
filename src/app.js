@@ -683,22 +683,34 @@ const stageCloseBtn = document.getElementById('stageCloseBtn');
   };
   getNewQuote();
 
-  // Sliders (Ionic ion-range emits ionChange)
-  const slider = document.getElementById('myRange');
-  const output = document.getElementById('demo');
-  output.innerHTML = slider.value || 100;
-  slider.addEventListener('ionChange', () => {
-    output.innerHTML = slider.value;
-    player.playbackRate = slider.value / 100;
-  });
+  // Studio rack sliders: rate (0.5-1.5 centered at 1) and volume (0-100 -> dB).
+  // Wrapped so a hiccup in the player rack can never take down the rest of init.
+  try {
+    const rateSlider = document.getElementById('rateSlider');
+    const rateVal = document.getElementById('rateVal');
+    if (rateSlider && rateVal) {
+      const syncRate = () => {
+        const v = parseFloat(rateSlider.value) || 1;
+        rateVal.textContent = v.toFixed(2) + 'x';
+        player.playbackRate = v;
+      };
+      rateSlider.addEventListener('input', syncRate);
+      syncRate();
+    }
 
-const volslider = document.getElementById('volRange');
-  const volume = document.getElementById('vol');
-  volume.innerHTML = volslider.value || 100;
-  volslider.addEventListener('ionChange', () => {
-    volume.innerHTML = volslider.value;
-    player.volume = -(volslider.value / 100);
-  });
+    const volSlider = document.getElementById('volSlider');
+    const volVal = document.getElementById('volVal');
+    if (volSlider && volVal) {
+      const syncVol = () => {
+        const v = parseFloat(volSlider.value) || 100;
+        volVal.textContent = v;
+        // Tone.js volume is in dB: map 100 -> 0 dB (full), 0 -> -24 dB.
+        player.volume = (v / 100) * 24 - 24;
+      };
+      volSlider.addEventListener('input', syncVol);
+      syncVol();
+    }
+  } catch (e) {}
 
   const abVol = document.getElementById('autoBeatVolRange');
   const abOut = document.getElementById('autoBeatVolOut');
@@ -740,59 +752,155 @@ recState: recorder.state
     try { wireInfoFlip(); } catch (e) {}
     try { initFkLayout(); } catch (e) {}
 
-// Player start/stop.
-  const btnStart = document.getElementById('btn-playerStart');
-  const btnStop = document.getElementById('btn-playerStop');
-  const urlEl = document.getElementById('url');
-  let queuedUrl = null;
-
   // Browsers leave the AudioContext suspended until a user gesture unlocks it.
   const unlock = () => Tone.start().catch(() => {});
 
   const setState = (state) => { document.body.dataset.playerState = state; };
 
-  // Load a loop into the player and mirror its status onto the URL line.
+  // Studio rack player (play/pause toggle, static waveform, source selector, URL loader).
+  // Guarded so a player-rack error cannot break sampler/recorder/other init.
+  try {
+  const urlStatus = document.getElementById('url');
+  const waveCanvas = document.getElementById('waveCanvas');
+  const waveStatus = document.getElementById('waveStatus');
+  const playBtn = document.getElementById('btnPlayerPlay');
+  const playIcon = document.getElementById('playerPlayIcon');
+  const waveCtx = waveCanvas ? waveCanvas.getContext('2d') : null;
+  let queuedUrl = null;
+  let loadedLabel = '';
+
+  // Render a static waveform from an AudioBuffer, SP-404 style.
+  const renderWaveform = (buffer) => {
+    if (!waveCanvas || !waveCtx || !buffer) return;
+    const data = buffer.getChannelData(0);
+    const w = waveCanvas.clientWidth || waveCanvas.width;
+    const h = waveCanvas.height;
+    waveCanvas.width = w;
+    const step = Math.ceil(data.length / w);
+    const amp = h / 2;
+    waveCtx.clearRect(0, 0, w, h);
+    waveCtx.fillStyle = 'rgba(210, 180, 140, 0.06)';
+    waveCtx.fillRect(0, 0, w, h);
+    waveCtx.beginPath();
+    waveCtx.moveTo(0, amp);
+    for (let i = 0; i < w; i++) {
+      let mn = 1, mx = -1;
+      for (let j = 0; j < step; j++) {
+        const v = data[i * step + j];
+        if (v < mn) mn = v;
+        if (v > mx) mx = v;
+      }
+      waveCtx.lineTo(i, amp + mn * amp);
+      waveCtx.lineTo(i, amp + mx * amp);
+    }
+    waveCtx.strokeStyle = '#d2b48c';
+    waveCtx.lineWidth = 1.6;
+    waveCtx.stroke();
+    if (waveStatus) waveStatus.textContent = '· ' + (loadedLabel || 'loaded') + ' ·';
+  };
+
+  // Draw a flat baseline when nothing is loaded yet.
+  const clearWaveform = () => {
+    if (!waveCanvas || !waveCtx) return;
+    const w = waveCanvas.clientWidth || waveCanvas.width;
+    const h = waveCanvas.height;
+    waveCanvas.width = w;
+    waveCtx.clearRect(0, 0, w, h);
+    waveCtx.fillStyle = 'rgba(210, 180, 140, 0.06)';
+    waveCtx.fillRect(0, 0, w, h);
+    waveCtx.beginPath();
+    waveCtx.moveTo(0, h / 2);
+    waveCtx.lineTo(w, h / 2);
+    waveCtx.strokeStyle = 'rgba(210, 180, 140, 0.35)';
+    waveCtx.lineWidth = 1;
+    waveCtx.stroke();
+  };
+  clearWaveform();
+
+  const setActiveSource = (btn) => {
+    document.querySelectorAll('.source-btn').forEach((b) => b.classList.remove('source-active'));
+    if (btn) btn.classList.add('source-active');
+  };
+
+  // Load a loop into the player, mirror status onto the URL line, render waveform.
   const loadPlayer = (url, label) => {
     queuedUrl = url;
-    if (urlEl) urlEl.innerHTML = (label || url) + ' - loading';
+    loadedLabel = label || url;
+    if (urlStatus) urlStatus.innerHTML = (label || url) + ' - loading';
     player.stop();
     setState('loading');
+    if (playIcon) playIcon.setAttribute('name', 'play');
     return unlock()
       .then(() => player.load(url))
-      .then(() => {
+      .then((buf) => {
         document.body.dataset.bufferLoaded = '1';
         setState('loaded');
-        if (urlEl) urlEl.innerHTML = (label || url) + ' - ready';
+        if (urlStatus) urlStatus.innerHTML = (label || url) + ' - ready';
+        if (waveStatus) waveStatus.textContent = 'Loaded · ' + (label || '') + ' ·';
+        if (waveCanvas && buf && typeof buf.getChannelData === 'function') {
+          renderWaveform(buf);
+        } else if (player.buffer) {
+          renderWaveform(player.buffer.get());
+        }
         return true;
       })
       .catch(() => {
         setState('loadfailed');
-        if (urlEl) urlEl.innerHTML = (label || url) + ' - could not load';
+        if (urlStatus) urlStatus.innerHTML = (label || url) + ' - could not load';
         return false;
       });
   };
 
-  btnStart.onclick = async () => {
-    await unlock();
+  playBtn.onclick = async () => {
     if (queuedUrl && !(player.buffer && player.buffer.loaded)) {
-      const ok = await loadPlayer(queuedUrl, urlEl ? urlEl.textContent : queuedUrl);
+      await unlock();
+      const ok = await loadPlayer(queuedUrl, loadedLabel || queuedUrl);
       if (!ok) return;
     }
-    if (!(player.buffer && player.buffer.loaded)) return;
-    player.start();
-    setState('started');
-    if (urlEl) urlEl.innerHTML = (urlEl.innerHTML || '').replace(' - ready', ' - looping');
-  };
-  btnStop.onclick = () => {
-    player.stop();
-    setState('stopped');
+    if (!(player.buffer && player.buffer.loaded)) {
+      if (urlStatus) urlStatus.innerHTML = 'Load a sample first';
+      return;
+    }
+    await unlock();
+    if (player.state === 'started') {
+      player.stop();
+      setState('stopped');
+      if (playIcon) playIcon.setAttribute('name', 'play');
+    } else {
+      player.start();
+      setState('started');
+      if (playIcon) playIcon.setAttribute('name', 'pause');
+      if (urlStatus) urlStatus.innerHTML = (urlStatus.innerHTML || '').replace(' - ready', ' - looping');
+    }
   };
 
-  // Custom URL.
+  // Custom URL loader.
   document.getElementById('btn-sendUrl').onclick = () => {
     const u = (document.querySelector('#audioUrl').value || '').trim();
-    if (u) loadPlayer(u, u);
+    if (u) {
+      setActiveSource(null);
+      loadPlayer(u, u);
+    }
   };
+
+  // Loop buttons load straight into the player; the play button then plays it.
+  const wireSource = (id, get, label) => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.onclick = () => {
+      setActiveSource(btn);
+      const { rel, url } = get();
+      loadPlayer(url, label + ': ' + rel);
+    };
+  };
+  wireSource('btn-rollBeats', getBeat, 'CLASSICS');
+  wireSource('btn-rollBreak', getBreak, 'DRUM LOOP');
+  wireSource('btn-rollFKBeats', getFKBeat, 'FK BEATS');
+  // Standard / Premium have no dedicated sample folders yet; fall back to the
+  // closest existing sources so the buttons are functional (player-only change).
+  wireSource('btn-rollStandard', getBeat, 'STANDARD');
+  wireSource('btn-rollPremium', getFKBeat, 'PREMIUM');
+  } catch (e) {}
 
   // Sample buttons unlock audio with the tap so the keys are audible (no test tones).
   const loadSample = (get) => {
@@ -805,20 +913,6 @@ recState: recorder.state
   document.getElementById('btn-rollBass').onclick = () => loadSample(getBass);
   document.getElementById('btn-rollSFX').onclick = () => loadSample(getSFX);
   document.getElementById('btn-rollFills').onclick = () => loadSample(getFill);
-
-  // Loop buttons load straight into the player; Start then plays it.
-  document.getElementById('btn-rollBreak').onclick = () => {
-    const { rel, url } = getBreak();
-    loadPlayer(url, 'DRUM LOOP: ' + rel);
-  };
-  document.getElementById('btn-rollBeats').onclick = () => {
-    const { rel, url } = getBeat();
-    loadPlayer(url, 'CLASSICS: ' + rel);
-  };
-  document.getElementById('btn-rollFKBeats').onclick = () => {
-    const { rel, url } = getFKBeat();
-    loadPlayer(url, 'FK BEATS: ' + rel);
-  };
 
   // Recording
   document.getElementById('btn-record').onclick = () => { unlock(); recorder.start(); };
