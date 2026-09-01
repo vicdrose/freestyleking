@@ -884,18 +884,17 @@ ion-input {
   letter-spacing: .08em;
 }
 
-/* 2x2 trigger pads: two rows of two compact square taps, centered. */
+/* 2x2 trigger pads: full cell width, shortened height taps. */
 #beat-pane-keys.studio-rack .rack-sampler-pads {
   display: grid;
-  grid-template-columns: repeat(2, auto);
+  grid-template-columns: 1fr 1fr;
   grid-template-rows: auto auto;
-  justify-content: start;
   gap: 8px;
 }
 
 #beat-pane-keys.studio-rack .sampler-pad {
   font-family: inherit;
-  font-size: .66rem;
+  font-size: .7rem;
   letter-spacing: .06em;
   color: #fff;
   background: #141313;
@@ -904,8 +903,8 @@ ion-input {
   padding: 0;
   cursor: pointer;
   text-align: center;
-  width: 56px;
-  height: 56px;
+  width: 100%;
+  height: 42px;
   transition: background 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
 }
 
