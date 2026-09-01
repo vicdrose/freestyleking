@@ -642,8 +642,9 @@ ion-input {
   margin: 0;
 }
 
-/* ============ Studio rack: Player section only ============ */
-#beat-pane-player.studio-rack {
+/* ============ Studio rack: Player + Sampler sections ============ */
+#beat-pane-player.studio-rack,
+#beat-pane-keys.studio-rack {
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -651,8 +652,9 @@ ion-input {
 }
 
 /* One seamless card: the parent carries the single border + rounded corners,
-   and the inner modules are borderless and unrounded so the four read as one. */
-#beat-pane-player.studio-rack .rack-module {
+   and the inner modules are borderless and unrounded so they read as one. */
+#beat-pane-player.studio-rack .rack-module,
+#beat-pane-keys.studio-rack .rack-module {
   background: #141313;
   padding: 12px;
   border: 0;
@@ -660,20 +662,24 @@ ion-input {
   border-right: 1px solid rgba(210, 180, 140, .28);
 }
 
-#beat-pane-player.studio-rack .rack-source {
+#beat-pane-player.studio-rack .rack-source,
+#beat-pane-keys.studio-rack .rack-source {
   border-top: 1px solid rgba(210, 180, 140, .28);
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
 }
 
-#beat-pane-player.studio-rack .rack-url {
+#beat-pane-player.studio-rack .rack-url,
+#beat-pane-keys.studio-rack .rack-url {
   border-bottom: 1px solid rgba(210, 180, 140, .28);
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
 }
 
 #beat-pane-player.studio-rack .rack-label,
-#beat-pane-player.studio-rack .rack-url-label {
+#beat-pane-player.studio-rack .rack-url-label,
+#beat-pane-keys.studio-rack .rack-label,
+#beat-pane-keys.studio-rack .rack-url-label {
   font-size: .72rem;
   letter-spacing: .12em;
   color: #d2b48c;
@@ -761,19 +767,22 @@ ion-input {
   text-align: center;
 }
 
-#beat-pane-player.studio-rack .rack-params {
+#beat-pane-player.studio-rack .rack-params,
+#beat-pane-keys.studio-rack .rack-params {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-#beat-pane-player.studio-rack .rack-param-row {
+#beat-pane-player.studio-rack .rack-param-row,
+#beat-pane-keys.studio-rack .rack-param-row {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-#beat-pane-player.studio-rack .rack-param-label {
+#beat-pane-player.studio-rack .rack-param-label,
+#beat-pane-keys.studio-rack .rack-param-label {
   flex: 0 0 72px;
   font-size: .8rem;
   letter-spacing: .08em;
@@ -781,13 +790,15 @@ ion-input {
   text-transform: uppercase;
 }
 
-#beat-pane-player.studio-rack .rack-slider {
+#beat-pane-player.studio-rack .rack-slider,
+#beat-pane-keys.studio-rack .rack-slider {
   flex: 1 1 0;
   accent-color: #d2b48c;
   min-width: 0;
 }
 
-#beat-pane-player.studio-rack .rack-param-val {
+#beat-pane-player.studio-rack .rack-param-val,
+#beat-pane-keys.studio-rack .rack-param-val {
   flex: 0 0 56px;
   text-align: right;
   font-size: .85rem;
@@ -795,27 +806,31 @@ ion-input {
   font-variant-numeric: tabular-nums;
 }
 
-#beat-pane-player.studio-rack .rack-url-row {
+#beat-pane-player.studio-rack .rack-url-row,
+#beat-pane-keys.studio-rack .rack-url-row {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-#beat-pane-player.studio-rack .rack-url-input {
+#beat-pane-player.studio-rack .rack-url-input,
+#beat-pane-keys.studio-rack .rack-url-input {
   flex: 1 1 0;
   --background: #1f1f1f;
   --color: #fff;
   margin-bottom: 0;
 }
 
-#beat-pane-player.studio-rack .rack-url-submit {
+#beat-pane-player.studio-rack .rack-url-submit,
+#beat-pane-keys.studio-rack .rack-url-submit {
   --background: #d2b48c;
   --color: #141313;
   --border-radius: 6px;
   letter-spacing: .06em;
 }
 
-#beat-pane-player.studio-rack .rack-url-status {
+#beat-pane-player.studio-rack .rack-url-status,
+#beat-pane-keys.studio-rack .rack-url-status {
   margin-top: 10px;
   font-size: .78rem;
   color: #999;
@@ -823,7 +838,92 @@ ion-input {
 }
 
 @media (max-width: 400px) {
-  #beat-pane-player.studio-rack .rack-param-label { flex-basis: 60px; }
+  #beat-pane-player.studio-rack .rack-param-label,
+  #beat-pane-keys.studio-rack .rack-param-label { flex-basis: 60px; }
+}
+
+/* ============ Sampler rack specifics ============ */
+#beat-pane-keys.studio-rack .sampler-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#beat-pane-keys.studio-rack .sampler-title {
+  margin-bottom: 0;
+  font-size: .8rem;
+}
+
+#beat-pane-keys.studio-rack .sampler-midi {
+  flex: 0 0 auto;
+}
+
+/* Recessed pill for the MIDI status in the top-right of the header row. */
+#beat-pane-keys.studio-rack .sampler-midi {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#beat-pane-keys.studio-rack .sampler-midi-label {
+  font-size: .68rem;
+  letter-spacing: .08em;
+  color: #999;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+#beat-pane-keys.studio-rack .sampler-midi #midiIn {
+  background: #1f1f1f;
+  color: #d2b48c;
+  border: 1px solid rgba(210, 180, 140, .28);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: .72rem;
+  letter-spacing: .08em;
+}
+
+/* 2x2 trigger pads: two rows, two large square pads per row. */
+#beat-pane-keys.studio-rack .rack-sampler-pads {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 8px;
+}
+
+#beat-pane-keys.studio-rack .sampler-pad {
+  font-family: inherit;
+  font-size: .78rem;
+  letter-spacing: .06em;
+  color: #fff;
+  background: #141313;
+  border: 1px solid rgba(210, 180, 140, .45);
+  border-radius: 8px;
+  padding: 14px 6px;
+  cursor: pointer;
+  text-align: center;
+  aspect-ratio: 1;
+  transition: background 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+
+#beat-pane-keys.studio-rack .sampler-pad:active {
+  background: rgba(210, 180, 140, .22);
+  border-color: #d2b48c;
+  box-shadow: 0 0 10px rgba(210, 180, 140, .55);
+}
+
+#beat-pane-keys.studio-rack .rack-sampler-keys .piano-wrap {
+  padding: 0;
+}
+
+#beat-pane-keys.studio-rack .rack-sampler-keys .piano {
+  height: 150px;
+}
+
+/* Sampler volume slider: native range, matches the rack look. */
+#beat-pane-keys.studio-rack .sampler-vol-range {
+  accent-color: #d2b48c;
 }
 
 #midiIn {

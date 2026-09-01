@@ -297,30 +297,55 @@
 
           </div>
 
-          <div id="beat-pane-keys" class="beat-pane">
-            <div class="audio-section">
-              <h3 class="ion-padding-start">Sampler</h3>
-              <div class="ion-padding">
-                <div class="item-row">MIDI IN:
+          <div id="beat-pane-keys" class="beat-pane studio-rack">
+
+            <!-- Header: SAMPLER + MIDI status on the same line -->
+            <div class="rack-module rack-source">
+              <div class="sampler-head">
+                <div class="rack-label sampler-title">Sampler</div>
+                <div class="sampler-midi">
+                  <span class="sampler-midi-label">MIDI In</span>
                   <select id="midiIn"><option value="none">none</option></select>
                 </div>
               </div>
-              <div class="ion-padding">
-                <div class="item-row">vol: <span id="samplerVolOut">100</span>
-                  <ion-range min="0" max="100" value="100" id="samplerVolRange" debounce="50"></ion-range>
-                </div>
-              </div>
-              <div class="ion-padding piano-wrap">
+            </div>
+
+            <!-- Trigger pads: 2x2 (PAD+BASS top, SFX+Drum Fill bottom) -->
+            <div class="rack-module rack-sampler-pads">
+              <button type="button" class="sampler-pad" id="btn-rollSample">PAD</button>
+              <button type="button" class="sampler-pad" id="btn-rollBass">BASS</button>
+              <button type="button" class="sampler-pad" id="btn-rollSFX">SFX</button>
+              <button type="button" class="sampler-pad" id="btn-rollFills">Drum Fill</button>
+            </div>
+
+            <!-- Keyboard -->
+            <div class="rack-module rack-sampler-keys">
+              <div class="rack-label">Keyboard</div>
+              <div class="piano-wrap">
                 <div id="pianoKeys" class="piano"></div>
               </div>
-              <div class="btn-grid">
-                <ion-button color="primary" id="btn-rollSample">PAD</ion-button>
-                <ion-button color="tertiary" id="btn-rollBass">BASS</ion-button>
-                <ion-button color="warning" id="btn-rollSFX">SFX</ion-button>
-                <ion-button color="success" id="btn-rollFills">Drum Fill</ion-button>
-              </div>
-              <div class="ion-padding">URL: <span id="url2"></span></div>
             </div>
+
+            <!-- Performance controls: Volume -->
+            <div class="rack-module rack-params">
+              <div class="rack-param-row">
+                <div class="rack-param-label">Volume</div>
+                <input type="range" class="rack-slider sampler-vol-range" id="samplerVolRange" min="0" max="100" step="1" value="100">
+                <div class="rack-param-val" id="samplerVolOut">100</div>
+              </div>
+            </div>
+
+            <!-- Custom URL loader -->
+            <div class="rack-module rack-url">
+              <div class="rack-url-label">Load Custom URL</div>
+              <div class="rack-url-row">
+                <ion-input id="samplerUrl" class="rack-url-input" placeholder="Paste Audio URL"></ion-input>
+                <ion-button id="btn-samplerUrl" class="rack-url-submit">Submit</ion-button>
+              </div>
+              <div class="rack-url-status" id="samplerUrlStatus">Load a sample or paste a URL</div>
+              <div class="rack-url-status" id="url2" hidden></div>
+            </div>
+
           </div>
 
           <div id="beat-pane-recorder" class="beat-pane">
@@ -588,6 +613,8 @@
   </div>
 
   <script type="module" src="/src/main.js"></script>
+
+</body>
 
 
 

@@ -727,12 +727,14 @@ const stageCloseBtn = document.getElementById('stageCloseBtn');
   const samplerVol = document.getElementById('samplerVolRange');
   const samplerVolOut = document.getElementById('samplerVolOut');
   if (samplerVol && samplerVolOut) {
-    samplerVolOut.innerHTML = samplerVol.value || 100;
-    samplerGain.gain.value = (samplerVol.value || 100) / 100;
-    samplerVol.addEventListener('ionChange', () => {
-      samplerVolOut.innerHTML = samplerVol.value;
+    const syncSamplerVol = () => {
+      samplerVolOut.innerHTML = samplerVol.value || 100;
       samplerGain.gain.value = (samplerVol.value || 100) / 100;
-    });
+    };
+    syncSamplerVol();
+    // Native range fires 'input'; ion-range fires 'ionChange' - support both.
+    samplerVol.addEventListener('input', syncSamplerVol);
+    samplerVol.addEventListener('ionChange', syncSamplerVol);
   }
   window.__reprobe = () => {
     const el = document.getElementById('autoBeatAudio');
@@ -757,6 +759,21 @@ recState: recorder.state
   const unlock = () => Tone.start().catch(() => {});
 
   const setState = (state) => { document.body.dataset.playerState = state; };
+
+  // Custom URL loader shared by the player and sampler rack modules. Pasting a
+  // freestyleking theme URL works around the fact that raw .wav/.mp3 files are
+  // served without CORS headers (which Tone needs), so route URLs under
+  // wp-content/themes/thrive-nouveau/ through the CORS-enabled list.php proxy
+  // the source buttons use. Returns null for non-theme URLs (leave them as-is).
+  const toProxy = (rawUrl) => {
+    const marker = 'wp-content/themes/thrive-nouveau/';
+    const i = rawUrl.indexOf(marker);
+    if (i < 0) return null;
+    let path = rawUrl.slice(i + marker.length);
+    try { path = decodeURIComponent(path); } catch (e) { /* leave as-is */ }
+    const rel = './wp-content/themes/thrive-nouveau/' + path;
+    return 'https://freestylekingapp.com/wp-content/themes/thrive-nouveau/list.php?get=' + encodeURIComponent(rel);
+  };
 
   // Studio rack player (play/pause toggle, static waveform, source selector, URL loader).
   // Guarded so a player-rack error cannot break sampler/recorder/other init.
@@ -875,20 +892,7 @@ recState: recorder.state
     }
   };
 
-  // Custom URL loader. Pasting a freestyleking theme URL works around the fact
-  // that raw .wav/.mp3 files are served without CORS headers (which Tone needs),
-  // so route URLs under wp-content/themes/thrive-nouveau/ through the same
-  // CORS-enabled list.php proxy the source buttons use.
-  const toProxy = (rawUrl) => {
-    const marker = 'wp-content/themes/thrive-nouveau/';
-    const i = rawUrl.indexOf(marker);
-    if (i < 0) return null;
-    let path = rawUrl.slice(i + marker.length);
-    try { path = decodeURIComponent(path); } catch (e) { /* leave as-is */ }
-    // list.php expects get=./wp-content/themes/thrive-nouveau/<path>
-    const rel = './wp-content/themes/thrive-nouveau/' + path;
-    return 'https://freestylekingapp.com/wp-content/themes/thrive-nouveau/list.php?get=' + encodeURIComponent(rel);
-  };
+  // Custom URL loader (uses shared toProxy defined above).
   document.getElementById('btn-sendUrl').onclick = () => {
     const raw = (document.querySelector('#audioUrl').value || '').trim();
     if (!raw) return;
@@ -917,12 +921,34 @@ recState: recorder.state
     unlock();
     const { rel, url } = get();
     sampler.add('C4', url);
-    document.querySelector('#url2').innerHTML = rel;
+    const u2 = document.querySelector('#url2');
+    if (u2) u2.innerHTML = rel;
+    const st = document.getElementById('samplerUrlStatus');
+    if (st) st.textContent = 'Loaded: ' + rel;
   };
   document.getElementById('btn-rollSample').onclick = () => loadSample(getPad);
   document.getElementById('btn-rollBass').onclick = () => loadSample(getBass);
   document.getElementById('btn-rollSFX').onclick = () => loadSample(getSFX);
   document.getElementById('btn-rollFills').onclick = () => loadSample(getFill);
+
+  // Sampler rack custom URL loader: loads any pasted audio into the C4 slot so
+  // the piano keys play it, mirroring the source pads. Routes theme URLs through
+  // the shared CORS proxy so rare raw files decode.
+  const samplerUrlBtn = document.getElementById('btn-samplerUrl');
+  const samplerUrlInput = document.getElementById('samplerUrl');
+  const samplerUrlStatus = document.getElementById('samplerUrlStatus');
+  if (samplerUrlBtn && samplerUrlInput) {
+    samplerUrlBtn.onclick = () => {
+      const raw = (samplerUrlInput.value || '').trim();
+      if (!raw) return;
+      unlock();
+      const url = toProxy(raw) || raw;
+      sampler.add('C4', url);
+      if (samplerUrlStatus) samplerUrlStatus.textContent = raw;
+      const u2 = document.querySelector('#url2');
+      if (u2) u2.innerHTML = raw;
+    };
+  }
 
   // Recording
   document.getElementById('btn-record').onclick = () => { unlock(); recorder.start(); };
