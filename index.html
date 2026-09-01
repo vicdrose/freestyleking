@@ -348,36 +348,52 @@
 
           </div>
 
-          <div id="beat-pane-recorder" class="beat-pane">
-            <div class="audio-section">
-              <h3 class="ion-padding-start">Recorder</h3>
-              <div class="ion-padding">
+          <div id="beat-pane-recorder" class="beat-pane studio-rack">
+
+            <!-- Header: RECORDER -->
+            <div class="rack-module rack-source">
+              <div class="rack-label">Recorder</div>
+            </div>
+
+            <!-- Microphone: button + live Tone FFT visualizer -->
+            <div class="rack-module rack-rec-mic">
+              <div class="rack-param-row">
+                <div class="rack-param-label">Mic</div>
                 <ion-button id="micBtn" expand="block">Microphone</ion-button>
               </div>
-              <div class="ion-padding">
-                <div class="item-row">auto beat vol: <span id="autoBeatVolOut">100</span>
-                  <ion-range min="0" max="100" value="100" id="autoBeatVolRange" debounce="50"></ion-range>
-                </div>
-              </div>
-              <div class="ion-padding">
-                <ion-button id="btn-autobeats" expand="block">Auto Beats</ion-button>
-              </div>
-              <div class="ion-padding">
-                <audio controls autoplay crossorigin="anonymous" id="autoBeatAudio"></audio>
-              </div>
+              <canvas id="micCanvas" class="rack-mic-canvas"></canvas>
+            </div>
+
+            <!-- Record / Stop / Delete + replay -->
+            <div class="rack-module rack-params">
               <div class="btn-grid record-grid">
                 <ion-button color="danger" id="btn-record">RECORD</ion-button>
                 <ion-button color="primary" id="btn-stopRecord">STOP</ion-button>
                 <ion-button color="dark" id="btn-deleteRecord">DELETE</ion-button>
               </div>
-              <div class="ion-padding">
-                <audio controls id="recAudio"></audio>
-              </div>
-              <div class="ion-padding instructions">
-                instructions: turn on mic, load beat, break, or not, press record, start
-                beat or break, press stop when done, listen to replay or download
-              </div>
+              <audio controls id="recAudio"></audio>
             </div>
+
+            <!-- Auto beats + volume (below the record/stop/delete buttons) -->
+            <div class="rack-module rack-params">
+              <div class="rack-param-row">
+                <div class="rack-param-label">Auto Beat</div>
+                <ion-button id="btn-autobeats" expand="block">Auto Beats</ion-button>
+              </div>
+              <div class="rack-param-row">
+                <div class="rack-param-label">Volume</div>
+                <ion-range min="0" max="100" value="100" id="autoBeatVolRange" debounce="50"></ion-range>
+                <div class="rack-param-val" id="autoBeatVolOut">100</div>
+              </div>
+              <audio controls autoplay crossorigin="anonymous" id="autoBeatAudio"></audio>
+            </div>
+
+            <!-- Instructions -->
+            <div class="rack-module rack-url">
+              <div class="rack-url-status instructions">instructions: turn on mic, load beat, break, or not, press record, start
+                beat or break, press stop when done, listen to replay or download</div>
+            </div>
+
           </div>
 
 

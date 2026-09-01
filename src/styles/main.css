@@ -713,9 +713,10 @@ ion-input {
   margin: 0;
 }
 
-/* ============ Studio rack: Player + Sampler sections ============ */
+/* ============ Studio rack: Player + Sampler + Recorder sections ============ */
 #beat-pane-player.studio-rack,
-#beat-pane-keys.studio-rack {
+#beat-pane-keys.studio-rack,
+#beat-pane-recorder.studio-rack {
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -725,7 +726,8 @@ ion-input {
 /* One seamless card: the parent carries the single border + rounded corners,
    and the inner modules are borderless and unrounded so they read as one. */
 #beat-pane-player.studio-rack .rack-module,
-#beat-pane-keys.studio-rack .rack-module {
+#beat-pane-keys.studio-rack .rack-module,
+#beat-pane-recorder.studio-rack .rack-module {
   background: #141313;
   padding: 12px;
   border: 0;
@@ -734,14 +736,16 @@ ion-input {
 }
 
 #beat-pane-player.studio-rack .rack-source,
-#beat-pane-keys.studio-rack .rack-source {
+#beat-pane-keys.studio-rack .rack-source,
+#beat-pane-recorder.studio-rack .rack-source {
   border-top: 1px solid rgba(210, 180, 140, .28);
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
 }
 
 #beat-pane-player.studio-rack .rack-url,
-#beat-pane-keys.studio-rack .rack-url {
+#beat-pane-keys.studio-rack .rack-url,
+#beat-pane-recorder.studio-rack .rack-url {
   border-bottom: 1px solid rgba(210, 180, 140, .28);
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
@@ -750,7 +754,9 @@ ion-input {
 #beat-pane-player.studio-rack .rack-label,
 #beat-pane-player.studio-rack .rack-url-label,
 #beat-pane-keys.studio-rack .rack-label,
-#beat-pane-keys.studio-rack .rack-url-label {
+#beat-pane-keys.studio-rack .rack-url-label,
+#beat-pane-recorder.studio-rack .rack-label,
+#beat-pane-recorder.studio-rack .rack-url-label {
   font-size: .72rem;
   letter-spacing: .12em;
   color: #d2b48c;
@@ -846,14 +852,16 @@ ion-input {
 }
 
 #beat-pane-player.studio-rack .rack-param-row,
-#beat-pane-keys.studio-rack .rack-param-row {
+#beat-pane-keys.studio-rack .rack-param-row,
+#beat-pane-recorder.studio-rack .rack-param-row {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
 #beat-pane-player.studio-rack .rack-param-label,
-#beat-pane-keys.studio-rack .rack-param-label {
+#beat-pane-keys.studio-rack .rack-param-label,
+#beat-pane-recorder.studio-rack .rack-param-label {
   flex: 0 0 72px;
   font-size: .8rem;
   letter-spacing: .08em;
@@ -862,14 +870,16 @@ ion-input {
 }
 
 #beat-pane-player.studio-rack .rack-slider,
-#beat-pane-keys.studio-rack .rack-slider {
+#beat-pane-keys.studio-rack .rack-slider,
+#beat-pane-recorder.studio-rack .rack-slider {
   flex: 1 1 0;
   accent-color: #d2b48c;
   min-width: 0;
 }
 
 #beat-pane-player.studio-rack .rack-param-val,
-#beat-pane-keys.studio-rack .rack-param-val {
+#beat-pane-keys.studio-rack .rack-param-val,
+#beat-pane-recorder.studio-rack .rack-param-val {
   flex: 0 0 56px;
   text-align: right;
   font-size: .85rem;
@@ -878,14 +888,16 @@ ion-input {
 }
 
 #beat-pane-player.studio-rack .rack-url-row,
-#beat-pane-keys.studio-rack .rack-url-row {
+#beat-pane-keys.studio-rack .rack-url-row,
+#beat-pane-recorder.studio-rack .rack-url-row {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 #beat-pane-player.studio-rack .rack-url-input,
-#beat-pane-keys.studio-rack .rack-url-input {
+#beat-pane-keys.studio-rack .rack-url-input,
+#beat-pane-recorder.studio-rack .rack-url-input {
   flex: 1 1 0;
   --background: #1f1f1f;
   --color: #fff;
@@ -893,7 +905,8 @@ ion-input {
 }
 
 #beat-pane-player.studio-rack .rack-url-submit,
-#beat-pane-keys.studio-rack .rack-url-submit {
+#beat-pane-keys.studio-rack .rack-url-submit,
+#beat-pane-recorder.studio-rack .rack-url-submit {
   --background: #d2b48c;
   --color: #141313;
   --border-radius: 6px;
@@ -901,7 +914,8 @@ ion-input {
 }
 
 #beat-pane-player.studio-rack .rack-url-status,
-#beat-pane-keys.studio-rack .rack-url-status {
+#beat-pane-keys.studio-rack .rack-url-status,
+#beat-pane-recorder.studio-rack .rack-url-status {
   margin-top: 10px;
   font-size: .78rem;
   color: #999;
@@ -910,7 +924,44 @@ ion-input {
 
 @media (max-width: 400px) {
   #beat-pane-player.studio-rack .rack-param-label,
-  #beat-pane-keys.studio-rack .rack-param-label { flex-basis: 60px; }
+  #beat-pane-keys.studio-rack .rack-param-label,
+  #beat-pane-recorder.studio-rack .rack-param-label { flex-basis: 60px; }
+}
+
+/* ============ Recorder rack specifics ============ */
+#beat-pane-recorder.studio-rack .rack-rec-mic .rack-param-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#beat-pane-recorder.studio-rack .rack-mic-canvas {
+  display: block;
+  width: 100%;
+  height: 80px;
+  margin-top: 12px;
+  background: #0e0d0d;
+  border: 1px solid rgba(210, 180, 140, .28);
+  border-radius: 6px;
+}
+
+/* Record / Stop / Delete stay side by side */
+#beat-pane-recorder.studio-rack .record-grid {
+  display: flex;
+  gap: 8px;
+  padding: 0 0 10px 0;
+}
+
+#beat-pane-recorder.studio-rack .record-grid ion-button {
+  flex: 1 1 30%;
+  min-width: 0;
+  margin: 0;
+}
+
+/* Replay + auto-beat audio controls match the dark rack */
+#beat-pane-recorder.studio-rack audio {
+  width: 100%;
+  margin-top: 10px;
 }
 
 /* ============ Sampler rack specifics ============ */

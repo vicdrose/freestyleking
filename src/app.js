@@ -563,7 +563,7 @@ octStart += 7;
 // ---------- Wire up all UI (called from Vue mounted) ----------
 function wireUI() {
   const audio = initAudio();
-  const { player, playerGain, sampler, recorder, mic, beatGain, beatPlayer, beatEl, samplerGain } = audio;
+  const { player, playerGain, sampler, recorder, mic, micFFT, beatGain, beatPlayer, beatEl, samplerGain } = audio;
 
 // Pull the real sample lists from the host (falls back to bundled placeholders).
   const dirsPromise = loadSampleDirs();
@@ -967,6 +967,39 @@ recState: recorder.state
       mic.open();
     }
   });
+
+  // Live mic visualizer: draw the Tone FFT spectrum so the mic feeding Tone is
+  // visible before relying on it for recording.
+  const micCanvas = document.getElementById('micCanvas');
+  if (micCanvas && micFFT) {
+    const mctx = micCanvas.getContext('2d');
+    const drawMic = () => {
+      const w = (micCanvas.width = micCanvas.clientWidth || 300);
+      const h = (micCanvas.height = micCanvas.clientHeight || 80);
+      mctx.clearRect(0, 0, w, h);
+      if (mic.state === 'started') {
+        const freq = micFFT.getValue();
+        const len = freq.length;
+        const barW = 3;
+        const gap = 1;
+        const usable = Math.max(1, Math.floor(w / (barW + gap)));
+        const stride = Math.max(1, Math.floor(len / usable));
+        for (let i = 0; i < usable; i++) {
+          const v = freq[i * stride] || -100;
+          const norm = Math.pow(Math.max(0, Math.min(1, (v + 60) / 60)), 0.5);
+          const bh = Math.max(2, norm * h);
+          mctx.fillStyle = 'rgba(210,180,140,.9)';
+          mctx.fillRect(i * (barW + gap), h - bh, barW, bh);
+        }
+      } else {
+        mctx.fillStyle = 'rgba(255,255,255,.25)';
+        mctx.font = '12px sans-serif';
+        mctx.fillText('Mic off — tap Microphone', 8, h / 2 + 4);
+      }
+      requestAnimationFrame(drawMic);
+    };
+    drawMic();
+  }
 
 // Beat view
   beatToggles();
