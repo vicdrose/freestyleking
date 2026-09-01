@@ -1391,23 +1391,14 @@ function renderFeed(key, items) {
     info.appendChild(author);
     card.appendChild(info);
 
-    // Track length (mm:ss) — far right, filled once metadata loads.
-    const dur = document.createElement('span');
-    dur.className = 'feed-dur';
-    dur.textContent = '';
-    card.appendChild(dur);
-    if (post.audioUrl) {
-      const probe = new Audio();
-      probe.preload = 'metadata';
-      const showDuration = () => {
-        if (!isNaN(probe.duration) && probe.duration !== Infinity && probe.duration > 0) {
-          dur.textContent = fmtTime(probe.duration);
-        }
-      };
-      probe.addEventListener('loadedmetadata', showDuration);
-      probe.addEventListener('durationchange', showDuration);
-      probe.src = post.audioUrl;
-    }
+    // Like button (heart) — far right. Present for looks only; not wired yet.
+    const like = document.createElement('button');
+    like.type = 'button';
+    like.className = 'feed-like';
+    like.setAttribute('aria-label', 'Like');
+    like.title = 'Like';
+    like.innerHTML = '<ion-icon name="heart-outline"></ion-icon>';
+    card.appendChild(like);
 
     list.appendChild(card);
   });

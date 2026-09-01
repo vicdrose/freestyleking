@@ -559,12 +559,14 @@ ion-input {
   height: 44px;
 }
 
-/* Circular art: uploaded image fills a circle; otherwise a CD-style placeholder. */
+/* Square art with slightly rounded corners: uploaded image fills it, else a
+   music placeholder. Kept square (not circular) so it reads as album art next
+   to the round play button. */
 .feed-card .feed-art {
   flex-shrink: 0;
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: 8px;
   overflow: hidden;
   background: #c9c9c9;
   display: flex;
@@ -581,14 +583,29 @@ ion-input {
   display: block;
 }
 
-.feed-card .feed-dur {
+/* Like (heart) button, far right. Present for looks only for now (not wired). */
+.feed-card .feed-like {
   flex-shrink: 0;
-  font-size: 0.8rem;
-  color: #888;
-  font-variant-numeric: tabular-nums;
-  min-width: 40px;
-  text-align: right;
-  white-space: nowrap;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 24px;
+  color: #fff;
+  transition: color 120ms ease, transform 120ms ease;
+}
+
+.feed-card .feed-like:active {
+  transform: scale(0.9);
+}
+
+.feed-card .feed-like.liked {
+  color: #f53d3d;
 }
 
 .feed-hint {
