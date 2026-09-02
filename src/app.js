@@ -454,16 +454,38 @@ function beatToggles() {
 // release both the accordion rows and the matching panes are reordered.
 function sectionDragReorder() {
   const PANES = { player: 'beat-pane-player', keys: 'beat-pane-keys', recorder: 'beat-pane-recorder' };
+  const STORAGE_KEY = 'fk.sectionOrder';
   const accordion = document.querySelector('.beat-accordion');
   const content = accordion ? accordion.querySelector('ion-accordion [slot="content"]') : null;
   const firstPane = document.getElementById('beat-pane-player');
   const paneParent = firstPane ? firstPane.parentElement : null;
   if (!content || !paneParent) return;
 
+  // Restore the saved section order (rows + panes) from local storage.
+  let stored = null;
+  try { stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (err) { stored = null; }
+  if (Array.isArray(stored)) {
+    const valid = stored.filter((s) => PANES[s]).slice(0, 3);
+    if (valid.length === 3) {
+      valid.forEach((sec) => {
+        const row = content.querySelector('.beat-acc-row[data-section="' + sec + '"]');
+        if (row) content.appendChild(row);
+      });
+      valid.forEach((sec) => {
+        const pane = document.getElementById(PANES[sec]);
+        if (pane) paneParent.appendChild(pane);
+      });
+    }
+  }
+
   let drag = null;
 
   const rows = () => Array.prototype.slice.call(content.querySelectorAll('.beat-acc-row'));
   const panes = () => ['player', 'keys', 'recorder'].map((key) => document.getElementById(PANES[key]));
+
+  const saveOrder = () => {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(rows().map((r) => r.dataset.section))); } catch (err) {}
+  };
 
   // Move section "fromSec" to a target slot in the accordion list, and mirror
   // the exact same ordering across the physical panes.
@@ -497,6 +519,7 @@ function sectionDragReorder() {
     if (over && over !== drag.el) {
       const i = rows().indexOf(over);
       applyOrder(drag.sec, before ? i : i + 1);
+      saveOrder();
     }
     drag = null;
   };
