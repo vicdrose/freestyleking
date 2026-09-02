@@ -963,10 +963,7 @@ ion-input {
 }
 
 /* Chevron (header item end slot) picks up its tan from the inline color on
-   the ion-icon; this only spaces it off the edge */
-#beat-pane-recorder.studio-rack .acc-chevron {
-  margin-right: 12px;
-}
+   the ion-icon and sits right-aligned via ion-item's native end padding */
 
 #beat-pane-recorder.studio-rack ion-accordion [slot="content"] {
   background: #0e0d0d;
