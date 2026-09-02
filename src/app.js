@@ -1205,17 +1205,6 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
     loadBeat();
   };
 
-  const accToggle = document.getElementById('accToggle');
-  const accBody = document.getElementById('accBody');
-  if (accToggle && accBody) {
-    accToggle.onclick = () => {
-      const open = !accBody.hasAttribute('hidden');
-      accBody.toggleAttribute('hidden');
-      const ic = accToggle.querySelector('ion-icon');
-      if (ic) ic.setAttribute('name', open ? 'chevron-down' : 'chevron-up');
-    };
-  }
-
   autoBeatEl.onplay = () => {
     unlock();
     tonePending = !beatPlayer.loaded;

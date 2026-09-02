@@ -936,36 +936,9 @@ ion-input {
   font-size: 14px;
 }
 
-/* Auto beat accordion */
-#beat-pane-recorder.studio-rack .rack-auto-beat .acc-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-#beat-pane-recorder.studio-rack .acc-title {
-  flex: 1 1 0;
-  font-size: .8rem;
-  letter-spacing: .08em;
-  color: #d2b48c;
-  text-transform: uppercase;
-}
-
-#beat-pane-recorder.studio-rack .acc-toggle {
-  flex: 0 0 34px;
-  width: 34px;
-  height: 34px;
+/* Auto beat native accordion sits flush inside the rack module */
+#beat-pane-recorder.studio-rack .beat-accordion {
   margin: 0;
-  --border-radius: 50%;
-  --color: #fff;
-}
-
-#beat-pane-recorder.studio-rack .acc-body[hidden] {
-  display: none;
-}
-
-#beat-pane-recorder.studio-rack .acc-body {
-  margin-top: 4px;
 }
 #beat-pane-recorder.studio-rack .rack-rec-mic .rack-param-row {
   display: flex;
