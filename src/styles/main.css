@@ -936,9 +936,38 @@ ion-input {
   font-size: 14px;
 }
 
-/* Auto beat native accordion sits flush inside the rack module */
+/* Auto Beat native accordion, themed to the rack: brand tan border (same as
+   the mic canvas), near-black body, tan uppercase header — not Sections gray */
 #beat-pane-recorder.studio-rack .beat-accordion {
   margin: 0;
+  border: 1px solid rgba(210, 180, 140, .28);
+  border-radius: 6px;
+  overflow: hidden;
+  background: #0e0d0d;
+}
+
+#beat-pane-recorder.studio-rack .beat-acc-header {
+  --background: #0e0d0d;
+  --background-activated: #161515;
+  --color: #d2b48c;
+  font-size: .72rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  --min-height: 46px;
+  border-bottom: 1px solid rgba(210, 180, 140, .22);
+}
+
+#beat-pane-recorder.studio-rack .beat-acc-header ion-label {
+  padding-left: 4px;
+}
+
+#beat-pane-recorder.studio-rack ion-accordion {
+  --color: #d2b48c;
+}
+
+#beat-pane-recorder.studio-rack ion-accordion [slot="content"] {
+  background: #0e0d0d;
+  padding: 12px 12px 14px;
 }
 #beat-pane-recorder.studio-rack .rack-rec-mic .rack-param-row {
   display: flex;
