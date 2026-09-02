@@ -693,15 +693,8 @@ ion-input {
 .beat-acc-row {
   --background: #4a4a4a;
   --color: #e0e0e0;
+  --border-color: rgba(255, 255, 255, .14);
   font-weight: 600;
-  /* Full-width divider: draw the line on the ion-item native element (::part)
-     so it spans the whole row (under the start glyph and the reorder handle),
-     instead of the default .item-inner-only hairline which stops short of the
-     slotted icons. */
-  --inner-border-width: 0;
-}
-.beat-acc-row::part(native) {
-  border-bottom: 1px solid rgba(255, 255, 255, .14);
 }
 
 /* Drag handle for reordering Sections — far right of each row */
