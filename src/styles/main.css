@@ -968,16 +968,10 @@ ion-input {
    can't drift with ion-item slot layout: flush to the right edge, vertically
    centered via inset-top/bottom auto margins. Fixed 18x18 raw SVG + explicit
    stroke attribute = no ion-icon sizing or color cascade involvement. */
-/* Kill any native chevron the accordion might draw inside its shadow so only
-   our tan SVG shows: neutral --color (which the built-in toggle strokes with)
-   plus display:none on the toggle/header parts and any icon inside the header. */
-#beat-pane-recorder.studio-rack ion-accordion {
-  --color: transparent;
-}
-#beat-pane-recorder.studio-rack ion-accordion::part(toggle-icon) {
-  display: none;
-}
-#beat-pane-recorder.studio-rack ion-accordion::part(header) ion-icon {
+/* The accordion injects its own dark chevron (an ion-icon with class
+   .ion-accordion-toggle-icon) into the header item's end slot on load.
+   Hide it so only our tan SVG shows. */
+#beat-pane-recorder.studio-rack .beat-acc-header .ion-accordion-toggle-icon {
   display: none;
 }
 
