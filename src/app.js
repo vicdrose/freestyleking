@@ -953,11 +953,18 @@ recState: recorder.state
   // Recording — starts/stops the two-track take (beat bus + vox bus).
   // Auto-opens the mic first so both buses have live tracks before the
   // recorders start (also fires the permission prompt at the right gesture).
+  const recBtnEl = document.getElementById('btn-record');
   document.getElementById('btn-record').onclick = () => {
     unlock();
-    mic.open().then(() => recorder.start()).catch(() => {});
+    mic.open().then(() => {
+      recorder.start();
+      recBtnEl.classList.add('recording');
+    }).catch(() => {});
   };
-  document.getElementById('btn-stopRecord').onclick = () => recorder.stop();
+  document.getElementById('btn-stopRecord').onclick = () => {
+    recorder.stop();
+    recBtnEl.classList.remove('recording');
+  };
 
   // ---- Surgery: align the vox take to the beat take, then combine ----
   const surgeryUI = (() => {
@@ -1126,15 +1133,14 @@ recState: recorder.state
     };
   }
 
-  // Microphone toggle
-  const micBtn = document.getElementById('micBtn');
-  micBtn.addEventListener('click', () => {
-    if (mic.state === 'started') {
-      mic.close();
-    } else {
-      mic.open();
-    }
-  });
+  // Microphone toggle (checkbox)
+  const micCheckbox = document.getElementById('micCheckbox');
+  if (micCheckbox) {
+    micCheckbox.addEventListener('ionChange', (ev) => {
+      if (ev.detail.checked) mic.open();
+      else mic.close();
+    });
+  }
 
   // Live mic visualizer: draw the Tone FFT spectrum so the mic feeding Tone is
   // visible before relying on it for recording.
@@ -1162,7 +1168,7 @@ recState: recorder.state
       } else {
         mctx.fillStyle = 'rgba(255,255,255,.25)';
         mctx.font = '12px sans-serif';
-        mctx.fillText('Mic off — tap Microphone', 8, h / 2 + 4);
+        mctx.fillText('Mic off — enable mic', 8, h / 2 + 4);
       }
       requestAnimationFrame(drawMic);
     };
@@ -1204,6 +1210,17 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
     unlock();
     loadBeat();
   };
+
+  const accToggle = document.getElementById('accToggle');
+  const accBody = document.getElementById('accBody');
+  if (accToggle && accBody) {
+    accToggle.onclick = () => {
+      const open = !accBody.hasAttribute('hidden');
+      accBody.toggleAttribute('hidden');
+      const ic = accToggle.querySelector('ion-icon');
+      if (ic) ic.setAttribute('name', open ? 'chevron-down' : 'chevron-up');
+    };
+  }
 
   autoBeatEl.onplay = () => {
     unlock();
