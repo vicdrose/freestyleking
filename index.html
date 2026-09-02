@@ -250,7 +250,7 @@
 
             <!-- Module 1: Sample source selector -->
             <div class="rack-module rack-source">
-              <div class="rack-label">Random Beat / Sample</div>
+              <div class="rack-label"><ion-icon name="musical-note"></ion-icon> Random Beat / Sample</div>
               <div class="source-grid">
                 <button type="button" class="source-btn" id="btn-rollBeats">Classics</button>
                 <button type="button" class="source-btn" id="btn-rollBreak">Drum Loop</button>
@@ -302,7 +302,7 @@
             <!-- Header: SAMPLER + MIDI status on the same line -->
             <div class="rack-module rack-source">
               <div class="sampler-head">
-                <div class="rack-label sampler-title">Sampler</div>
+                <div class="rack-label sampler-title"><ion-icon name="apps-sharp"></ion-icon> Sampler</div>
                 <div class="sampler-midi">
                   <span class="sampler-midi-label">MIDI In</span>
                   <select id="midiIn"><option value="none">none</option></select>
@@ -352,7 +352,7 @@
 
             <!-- Header: RECORDER -->
             <div class="rack-module rack-source">
-              <div class="rack-label">Recorder</div>
+              <div class="rack-label"><ion-icon name="mic"></ion-icon> Recorder</div>
             </div>
 
             <!-- Microphone: button + live Tone FFT visualizer -->
@@ -373,18 +373,24 @@
               </div>
             </div>
 
-            <!-- Auto beats + volume (below the record/stop/delete buttons) -->
-            <div class="rack-module rack-params">
-              <div class="rack-param-row">
-                <div class="rack-param-label">Auto Beat</div>
-                <ion-button id="btn-autobeats" expand="block">Auto Beats</ion-button>
+            <!-- Auto beats: accordion (all content unchanged, revealed on expand) -->
+            <div class="rack-module rack-params rack-auto-beat">
+              <div class="acc-head">
+                <span class="acc-title">Auto Beat</span>
+                <ion-button id="accToggle" class="acc-toggle" aria-label="expand auto beat"><ion-icon name="chevron-down"></ion-icon></ion-button>
               </div>
-              <div class="rack-param-row">
-                <div class="rack-param-label">Volume</div>
-                <ion-range min="0" max="100" value="100" id="autoBeatVolRange" debounce="50"></ion-range>
-                <div class="rack-param-val" id="autoBeatVolOut">100</div>
+              <div class="acc-body" id="accBody" hidden>
+                <div class="rack-param-row">
+                  <div class="rack-param-label">Auto Beat</div>
+                  <ion-button id="btn-autobeats" expand="block">Auto Beats</ion-button>
+                </div>
+                <div class="rack-param-row">
+                  <div class="rack-param-label">Volume</div>
+                  <ion-range min="0" max="100" value="100" id="autoBeatVolRange" debounce="50"></ion-range>
+                  <div class="rack-param-val" id="autoBeatVolOut">100</div>
+                </div>
+                <audio controls autoplay crossorigin="anonymous" id="autoBeatAudio"></audio>
               </div>
-              <audio controls autoplay crossorigin="anonymous" id="autoBeatAudio"></audio>
             </div>
 
             <!-- Surgery: align the vox track to the beat track, then combine -->
