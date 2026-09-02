@@ -41,6 +41,7 @@
         <ion-item><ion-icon slot="start" name="people-outline"></ion-icon><ion-label>Friends</ion-label></ion-item>
         <ion-item><ion-icon slot="start" name="settings-outline"></ion-icon><ion-label>Settings</ion-label></ion-item>
         <ion-item><ion-icon slot="start" name="document-outline"></ion-icon><ion-label>Posts</ion-label></ion-item>
+        <ion-item id="lib-menu-item"><ion-icon slot="start" name="library-outline"></ion-icon><ion-label>Library</ion-label></ion-item>
         <ion-item>
           <ion-checkbox slot="start" id="fk-chk-advanced"></ion-checkbox>
           <ion-label>Advanced audio player animation</ion-label>
@@ -421,6 +422,7 @@
             <div class="rack-module rack-params">
               <div class="rack-label">Output (combined)</div>
               <audio controls id="recAudio"></audio>
+              <ion-button id="btn-saveTrack" expand="block" class="save-lib-btn">Save to Library</ion-button>
             </div>
 
             <!-- Instructions -->
@@ -662,26 +664,31 @@
       </div>
     </div>
   </div>
+<script type="module" src="/src/main.js"></script>
 
-  <script type="module" src="/src/main.js"></script>
+  <!-- Name your track modal -->
+  <div id="saveModal" class="fk-modal" hidden>
+    <div class="fk-modal-card">
+      <h2 class="fk-modal-title">Name your track</h2>
+      <input id="saveTrackName" class="fk-modal-input" type="text" maxlength="60" placeholder="Track name">
+      <div class="fk-modal-actions">
+        <button type="button" id="btn-saveCancel" class="fk-btn-ghost">Cancel</button>
+        <button type="button" id="btn-saveConfirm" class="fk-btn-ghost">Save</button>
+      </div>
+    </div>
+  </div>
 
-</body>
+  <!-- Library: my saved tracks -->
+  <div id="libraryOverlay" class="fk-overlay" hidden>
+    <div class="fk-panel">
+      <div class="rack-label">My Tracks</div>
+      <div id="libraryList" class="lib-list"></div>
+      <audio id="libAudio" hidden></audio>
+      <button type="button" id="btn-libClose" class="fk-btn-ghost">Close</button>
+    </div>
+  </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  <!-- Toast -->
+  <div id="fkToast" class="fk-toast" role="status"></div>
 </body>
 </html>

@@ -1075,6 +1075,186 @@ ion-input {
   margin-top: 10px;
 }
 
+/* Save to Library button under the combined output */
+#beat-pane-recorder.studio-rack .save-lib-btn {
+  --background: #1f1f1f;
+  --color: #d2b48c;
+  --border-color: rgba(210, 180, 140, .45);
+  --border-width: 1px;
+  --border-radius: 6px;
+  margin-top: 12px;
+  font-size: .72rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+/* Name-your-track modal + Library overlay */
+.fk-modal,
+.fk-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, .66);
+}
+.fk-modal[hidden],
+.fk-overlay[hidden] {
+  display: none;
+}
+
+.fk-modal-card {
+  width: min(360px, 100%);
+  background: #0e0d0d;
+  border: 1px solid rgba(210, 180, 140, .28);
+  border-radius: 6px;
+  padding: 18px;
+  color: #e0e0e0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+}
+
+.fk-modal-title {
+  margin: 0 0 12px;
+  color: #d2b48c;
+  font-size: .8rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.fk-modal-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: #1f1f1f;
+  color: #fff;
+  border: 1px solid rgba(210, 180, 140, .28);
+  border-radius: 6px;
+  padding: 10px;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.fk-modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.fk-btn-ghost {
+  flex: 1;
+  background: transparent;
+  border: 1px solid rgba(210, 180, 140, .45);
+  color: #d2b48c;
+  border-radius: 6px;
+  padding: 10px;
+  font-family: inherit;
+  font-size: .72rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.fk-panel {
+  width: min(500px, 100%);
+  max-height: 86vh;
+  overflow-y: auto;
+  background: #0e0d0d;
+  border: 1px solid rgba(210, 180, 140, .28);
+  border-radius: 6px;
+  padding: 18px;
+  color: #e0e0e0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+}
+
+.lib-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.lib-empty {
+  color: #999;
+  font-size: .82rem;
+  padding: 8px 2px;
+}
+
+.lib-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #1f1f1f;
+  border: 1px solid rgba(210, 180, 140, .15);
+  border-radius: 6px;
+  padding: 10px;
+}
+
+.lib-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.lib-name {
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lib-meta {
+  font-size: .72rem;
+  color: #d2b48c;
+  letter-spacing: .06em;
+}
+
+.lib-play {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(210, 180, 140, .45);
+  background: transparent;
+  color: #d2b48c;
+  cursor: pointer;
+}
+
+.lib-del {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #ff8f8f;
+  cursor: pointer;
+}
+
+/* Toast */
+.fk-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 5000;
+  background: #0e0d0d;
+  border: 1px solid rgba(210, 180, 140, .45);
+  color: #d2b48c;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-size: .8rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+}
+.fk-toast.show {
+  opacity: 1;
+}
+
 /* Surgery: align vox to beat, then combine */
 #beat-pane-recorder.studio-rack .surgery-row {
   display: flex;

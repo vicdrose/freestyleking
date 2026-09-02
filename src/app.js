@@ -18,6 +18,7 @@ import { initAudio } from './services/audio.js';
 import * as Tone from 'tone';
 import { getBeatShuffler, getPad, getBreak, getBeat, getFKBeat, getBass, getSFX, getFill, loadSampleDirs } from './services/samples.js';
 import { fetchFeed, playSong, isFeedPlaying, stopFeed } from './services/feed.js';
+import { saveTrack, listTracks, getTrack, deleteTrack } from './library.js';
 
 const Vue = window.Vue;
 
@@ -1248,6 +1249,8 @@ recState: recorder.state
       try {
         const rendered = await offline.startRendering();
         const wav = audioBufferToWav(rendered);
+        lastCombinedWavBlob = wav;
+        lastCombinedDur = rendered.duration;
         document.getElementById('recAudio').src = URL.createObjectURL(wav);
         setStatus('Combined at ' + ms + ' ms — output ready below.');
       } catch (e) {
@@ -1258,6 +1261,8 @@ recState: recorder.state
     document.getElementById('btn-deleteRecord').onclick = () => {
       audio.chunks.length = 0;
       document.getElementById('recAudio').src = '';
+      lastCombinedWavBlob = null;
+      lastCombinedDur = 0;
       takeBeatBuf = null;
       takeMicBuf = null;
       stopPreview();
@@ -1779,6 +1784,180 @@ window.fkRetry = function (key) {
   loadFeed(key);
 };
 
+// ---------- Library: save combined takes to IndexedDB, replay them ----------
+let lastCombinedWavBlob = null;
+let lastCombinedDur = 0;
+
+function showToast(message) {
+  const el = document.getElementById('fkToast');
+  if (!el) return;
+  el.textContent = message;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+function formatTrackTime(sec) {
+  sec = Math.max(0, Math.round(sec || 0));
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return m + ':' + String(s).padStart(2, '0');
+}
+
+function renderLibrary() {
+  const list = document.getElementById('libraryList');
+  if (!list) return;
+  listTracks().then((tracks) => {
+    list.textContent = '';
+    if (!tracks.length) {
+      const empty = document.createElement('div');
+      empty.className = 'lib-empty';
+      empty.textContent = 'No tracks yet — record, stop, combine, then Save to Library.';
+      list.appendChild(empty);
+      return;
+    }
+    tracks.forEach((tr) => {
+      const row = document.createElement('div');
+      row.className = 'lib-row';
+      row.dataset.id = tr.id;
+
+      const info = document.createElement('div');
+      info.className = 'lib-info';
+      const name = document.createElement('div');
+      name.className = 'lib-name';
+      name.textContent = tr.name;
+      const meta = document.createElement('div');
+      meta.className = 'lib-meta';
+      const when = new Date(tr.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+      meta.textContent = when + ' · ' + formatTrackTime(tr.duration) + ' · ' + Math.max(1, Math.round(tr.size / 1048576)) + ' MB';
+      info.appendChild(name);
+      info.appendChild(meta);
+
+      const play = document.createElement('button');
+      play.type = 'button';
+      play.className = 'lib-play';
+      play.setAttribute('aria-label', 'Play ' + tr.name);
+      play.innerHTML = '<ion-icon name="play"></ion-icon>';
+
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'lib-del';
+      del.setAttribute('aria-label', 'Delete ' + tr.name);
+      del.innerHTML = '<ion-icon name="trash-outline"></ion-icon>';
+
+      row.appendChild(play);
+      row.appendChild(info);
+      row.appendChild(del);
+      list.appendChild(row);
+    });
+  }).catch(() => {
+    list.textContent = 'Library unavailable.';
+  });
+}
+
+function wireLibrary() {
+  const modal = document.getElementById('saveModal');
+  const nameInput = document.getElementById('saveTrackName');
+  const overlay = document.getElementById('libraryOverlay');
+  const libAudio = document.getElementById('libAudio');
+
+  const closeModal = () => { if (modal) modal.hidden = true; };
+  const closeLibrary = () => {
+    if (overlay) overlay.hidden = true;
+    if (libAudio) { libAudio.pause(); libAudio.removeAttribute('src'); libAudio.removeAttribute('data-id'); }
+  };
+
+  const syncPlayIcons = () => {
+    if (!overlay) return;
+    overlay.querySelectorAll('.lib-row').forEach((row) => {
+      const ic = row.querySelector('.lib-play ion-icon');
+      const active = !!ic && row.dataset.id === libAudio.getAttribute('data-id') && !libAudio.paused;
+      if (ic) ic.setAttribute('name', active ? 'pause' : 'play');
+    });
+  };
+
+  // Save to Library → name modal
+  const saveBtn = document.getElementById('btn-saveTrack');
+  if (saveBtn && modal) {
+    saveBtn.addEventListener('click', () => {
+      if (!lastCombinedWavBlob) { showToast('Combine a take first.'); return; }
+      listTracks().then((tracks) => {
+        nameInput.value = 'Freestyle ' + ((tracks ? tracks.length : 0) + 1);
+        modal.hidden = false;
+        setTimeout(() => { if (nameInput && nameInput.focus) nameInput.focus(); }, 50);
+      }).catch(() => {});
+    });
+  }
+
+  const cancelBtn = document.getElementById('btn-saveCancel');
+  if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+  if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+  if (nameInput) {
+    nameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const save = document.getElementById('btn-saveConfirm');
+        if (save) save.click();
+      }
+    });
+  }
+
+  const confirmBtn = document.getElementById('btn-saveConfirm');
+  if (confirmBtn && modal) {
+    confirmBtn.addEventListener('click', () => {
+      const name = nameInput ? nameInput.value : '';
+      saveTrack(name, lastCombinedWavBlob, lastCombinedDur)
+        .then(() => { closeModal(); showToast('Saved to Library'); })
+        .catch(() => showToast('Save failed — try again.'));
+    });
+  }
+
+  // Menu → Library panel
+  const libItem = document.getElementById('lib-menu-item');
+  if (libItem && overlay) {
+    libItem.addEventListener('click', () => {
+      const menu = document.getElementById('menu-start');
+      if (menu && typeof menu.close === 'function') menu.close();
+      overlay.hidden = false;
+      renderLibrary();
+    });
+  }
+  const closeBtn = document.getElementById('btn-libClose');
+  if (closeBtn) closeBtn.addEventListener('click', closeLibrary);
+  if (overlay) overlay.addEventListener('click', (e) => { if (e.target === overlay) closeLibrary(); });
+
+  // Play / delete (delegated)
+  if (overlay && libAudio) {
+    libAudio.addEventListener('play', syncPlayIcons);
+    libAudio.addEventListener('pause', syncPlayIcons);
+    libAudio.addEventListener('ended', syncPlayIcons);
+    overlay.addEventListener('click', (e) => {
+      const btn = e.target.closest('.lib-play, .lib-del');
+      if (!btn) return;
+      const row = btn.closest('.lib-row');
+      if (!row) return;
+      const id = row.dataset.id;
+      if (btn.classList.contains('lib-play')) {
+        if (libAudio.getAttribute('data-id') === id && !libAudio.paused) {
+          libAudio.pause();
+          syncPlayIcons();
+          return;
+        }
+        getTrack(id).then((tr) => {
+          if (!tr || !tr.blob) { showToast('Track data missing.'); return; }
+          libAudio.setAttribute('data-id', id);
+          libAudio.src = URL.createObjectURL(tr.blob);
+          libAudio.play().then(syncPlayIcons, () => showToast('Play failed.'));
+        }).catch(() => showToast('Could not load track.'));
+      } else if (btn.classList.contains('lib-del')) {
+        const name = row.querySelector('.lib-name') ? row.querySelector('.lib-name').textContent : 'this track';
+        if (window.confirm('Delete "' + name + '" from your library?')) {
+          deleteTrack(id).then(() => { renderLibrary(); showToast('Deleted'); }).catch(() => showToast('Delete failed.'));
+        }
+      }
+    });
+  }
+}
+
 function wireFeeds() {
   loadFeed('raps');
   loadFeed('beats');
@@ -1827,6 +2006,7 @@ export function boot() {
     wired = true;
     try { wireUI(); } catch (e) {}
     try { wireFeeds(); } catch (e) {}
+    try { wireLibrary(); } catch (e) {}
   };
   if (customElements && customElements.whenDefined) {
     customElements.whenDefined('ion-content').then(doWire).catch(doWire);
