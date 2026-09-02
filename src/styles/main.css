@@ -950,19 +950,22 @@ ion-input {
   --background: #0e0d0d;
   --background-activated: #161515;
   --color: #d2b48c;
+  --border-width: 0;
+  --border-color: transparent;
   font-size: .72rem;
   letter-spacing: .12em;
   text-transform: uppercase;
   --min-height: 46px;
-  border-bottom: 1px solid rgba(210, 180, 140, .22);
 }
 
 #beat-pane-recorder.studio-rack .beat-acc-header ion-label {
   padding-left: 4px;
 }
 
-#beat-pane-recorder.studio-rack ion-accordion {
-  --color: #d2b48c;
+/* Chevron matches the brand border, not the header text */
+#beat-pane-recorder.studio-rack .acc-chevron {
+  color: rgba(210, 180, 140, .28);
+  margin-right: 12px;
 }
 
 #beat-pane-recorder.studio-rack ion-accordion [slot="content"] {

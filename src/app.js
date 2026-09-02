@@ -957,7 +957,11 @@ recState: recorder.state
     unlock();
     mic.open().then(() => recorder.start()).catch(() => {});
   };
-  document.getElementById('btn-stopRecord').onclick = () => recorder.stop();
+  document.getElementById('btn-stopRecord').onclick = () => {
+    recorder.stop();
+    const ab = document.getElementById('autoBeatAudio');
+    if (ab) ab.pause();
+  };
 
   // ---- Surgery: align the vox take to the beat take, then combine ----
   const surgeryUI = (() => {
