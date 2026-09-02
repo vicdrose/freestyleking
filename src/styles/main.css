@@ -947,6 +947,7 @@ ion-input {
 }
 
 #beat-pane-recorder.studio-rack .beat-acc-header {
+  position: relative;
   --background: #0e0d0d;
   --background-activated: #161515;
   --color: #d2b48c;
@@ -960,10 +961,19 @@ ion-input {
 
 #beat-pane-recorder.studio-rack .beat-acc-header ion-label {
   padding-left: 4px;
+  padding-right: 32px;
 }
 
-/* Chevron (header item end slot) picks up its tan from the inline color on
-   the ion-icon and sits right-aligned via ion-item's native end padding */
+/* Chevron is positioned explicitly against the header item so its placement
+   can't drift with ion-item slot layout: flush to the right edge, vertically
+   centered. Its tan comes from the inline color on the ion-icon. */
+#beat-pane-recorder.studio-rack .acc-chevron {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+}
 
 #beat-pane-recorder.studio-rack ion-accordion [slot="content"] {
   background: #0e0d0d;
