@@ -968,6 +968,24 @@ ion-input {
    can't drift with ion-item slot layout: flush to the right edge, vertically
    centered via inset-top/bottom auto margins. Fixed 18x18 raw SVG + explicit
    stroke attribute = no ion-icon sizing or color cascade involvement. */
+/* Kill any native chevron the accordion might draw inside its shadow so only
+   our tan SVG shows: neutral --color (which the built-in toggle strokes with)
+   plus display:none on the toggle/header parts and any icon inside the header. */
+#beat-pane-recorder.studio-rack ion-accordion {
+  --color: transparent;
+}
+#beat-pane-recorder.studio-rack ion-accordion::part(toggle-icon) {
+  display: none;
+}
+#beat-pane-recorder.studio-rack ion-accordion::part(header) ion-icon {
+  display: none;
+}
+
+/* Chevron is positioned explicitly against the header item so its placement
+   can't drift with ion-item slot layout: flush to the right edge, vertically
+   centered via inset-top/bottom auto margins. Fixed 18x18 raw SVG + explicit
+   stroke attribute = no ion-icon sizing or color cascade involvement.
+   Rotation flips instantly on tap (no transition). */
 #beat-pane-recorder.studio-rack .acc-chevron {
   position: absolute;
   right: 14px;
@@ -978,8 +996,6 @@ ion-input {
   margin-top: auto;
   margin-bottom: auto;
   display: block;
-  transition: transform .18s ease;
-  transform: rotate(0deg);
 }
 
 /* The accordion reflects open/close via accordion-collapsed /
