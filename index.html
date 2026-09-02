@@ -364,14 +364,13 @@
               <canvas id="micCanvas" class="rack-mic-canvas"></canvas>
             </div>
 
-            <!-- Record / Stop / Delete + replay -->
+            <!-- Record / Stop / Delete -->
             <div class="rack-module rack-params">
               <div class="btn-grid record-grid">
                 <ion-button color="danger" id="btn-record">RECORD</ion-button>
                 <ion-button color="primary" id="btn-stopRecord">STOP</ion-button>
                 <ion-button color="dark" id="btn-deleteRecord">DELETE</ion-button>
               </div>
-              <audio controls id="recAudio"></audio>
             </div>
 
             <!-- Auto beats + volume (below the record/stop/delete buttons) -->
@@ -386,6 +385,22 @@
                 <div class="rack-param-val" id="autoBeatVolOut">100</div>
               </div>
               <audio controls autoplay crossorigin="anonymous" id="autoBeatAudio"></audio>
+            </div>
+
+            <!-- Surgery: align the vox track to the beat track, then combine -->
+            <div class="rack-module rack-params rack-surgery">
+              <div class="surgery-row">
+                <ion-button id="btn-surgeryPlay" class="surgery-play" color="dark"><ion-icon name="play"></ion-icon></ion-button>
+                <input type="number" id="surgeryOffsetInput" class="surgery-input" min="-500" max="500" step="1" value="0" placeholder="0 ms">
+                <input type="range" id="surgeryOffsetSlider" class="rack-slider surgery-slider" min="-500" max="500" step="1" value="0">
+                <ion-button id="btn-surgeryCombine" class="surgery-combine">Combine</ion-button>
+              </div>
+              <div class="rack-url-status surgery-status" id="surgeryStatus">Press RECORD, play a beat, rap, STOP — this section fills with the take.</div>
+            </div>
+
+            <!-- Final output player -->
+            <div class="rack-module rack-params">
+              <audio controls id="recAudio"></audio>
             </div>
 
             <!-- Instructions -->

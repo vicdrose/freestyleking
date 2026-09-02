@@ -964,6 +964,48 @@ ion-input {
   margin-top: 10px;
 }
 
+/* Surgery: align vox to beat, then combine */
+#beat-pane-recorder.studio-rack .surgery-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#beat-pane-recorder.studio-rack .surgery-play {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  --color: #fff;
+}
+
+#beat-pane-recorder.studio-rack .surgery-input {
+  flex: 0 0 84px;
+  min-width: 0;
+  background: #1f1f1f;
+  color: #fff;
+  border: 1px solid rgba(210, 180, 140, .28);
+  border-radius: 6px;
+  padding: 9px 8px;
+  font-size: 0.95rem;
+  width: 84px;
+}
+
+#beat-pane-recorder.studio-rack .surgery-slider {
+  flex: 1 1 0;
+  accent-color: #d2b48c;
+  min-width: 0;
+}
+
+#beat-pane-recorder.studio-rack .surgery-combine {
+  flex: 0 0 auto;
+  margin: 0;
+  --background: #d2b48c;
+  --color: #141313;
+  --border-radius: 6px;
+  letter-spacing: .06em;
+}
+
 /* ============ Sampler rack specifics ============ */
 #beat-pane-keys.studio-rack .sampler-head {
   display: flex;

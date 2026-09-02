@@ -950,13 +950,181 @@ recState: recorder.state
     };
   }
 
-  // Recording
-  document.getElementById('btn-record').onclick = () => { unlock(); recorder.start(); };
-  document.getElementById('btn-stopRecord').onclick = () => recorder.stop();
-  document.getElementById('btn-deleteRecord').onclick = () => {
-    audio.chunks.length = 0;
-    document.getElementById('recAudio').src = '';
+  // Recording — starts/stops the two-track take (beat bus + vox bus).
+  // Auto-opens the mic first so both buses have live tracks before the
+  // recorders start (also fires the permission prompt at the right gesture).
+  document.getElementById('btn-record').onclick = () => {
+    unlock();
+    mic.open().then(() => recorder.start()).catch(() => {});
   };
+  document.getElementById('btn-stopRecord').onclick = () => recorder.stop();
+
+  // ---- Surgery: align the vox take to the beat take, then combine ----
+  const surgeryUI = (() => {
+    const el = (id) => document.getElementById(id);
+    return {
+      play: el('btn-surgeryPlay'),
+      input: el('surgeryOffsetInput'),
+      slider: el('surgeryOffsetSlider'),
+      combine: el('btn-surgeryCombine'),
+      status: el('surgeryStatus')
+    };
+  })();
+
+  if (surgeryUI.play) {
+    let takeBeatBuf = null;
+    let takeMicBuf = null;
+    let prCtx = null;
+    let prSources = [];
+    let playing = false;
+    const offset = { value: 0 };
+    const clamp = (v) => Math.max(-500, Math.min(500, Math.round(Number(v) || 0)));
+    const setStatus = (m) => { if (surgeryUI.status) surgeryUI.status.textContent = m; };
+    const setEnabled = (v) => {
+      [surgeryUI.play, surgeryUI.input, surgeryUI.slider, surgeryUI.combine].forEach((el2) => { if (el2) el2.disabled = !v; });
+    };
+    setEnabled(false); // no take yet at load — controls light up after STOP
+
+    const stopPreview = () => {
+      playing = false;
+      const ic = surgeryUI.play.querySelector('ion-icon');
+      if (ic) ic.setAttribute('name', 'play');
+      prSources.forEach((s) => { try { s.stop(); } catch (e) {} });
+      prSources = [];
+    };
+
+    const startPreview = () => {
+      if (!takeBeatBuf || !takeMicBuf) return;
+      stopPreview();
+      if (!prCtx) prCtx = new AudioContext();
+      if (prCtx.state === 'suspended') prCtx.resume();
+      playing = true;
+      const ic = surgeryUI.play.querySelector('ion-icon');
+      if (ic) ic.setAttribute('name', 'pause');
+      const ms = offset.value;
+      const dur = takeBeatBuf.duration;
+      const t = prCtx.currentTime + 0.05;
+      const mk = (buf, when, off) => {
+        const s = prCtx.createBufferSource();
+        s.buffer = buf;
+        s.loop = true;
+        s.loopStart = 0;
+        s.loopEnd = dur;
+        s.connect(prCtx.destination);
+        if (off) s.start(when, off);
+        else s.start(when);
+        return s;
+      };
+      const beat = mk(takeBeatBuf, t);
+      const mic = ms < 0 ? mk(takeMicBuf, t, -ms / 1000) : mk(takeMicBuf, t + ms / 1000);
+      prSources = [beat, mic];
+    };
+
+    const applyOffset = (v) => {
+      offset.value = clamp(v);
+      surgeryUI.input.value = offset.value;
+      surgeryUI.slider.value = offset.value;
+      if (playing) startPreview(); // instantly re-cue with the new timing
+    };
+
+    surgeryUI.play.addEventListener('click', () => (playing ? stopPreview() : startPreview()));
+    surgeryUI.slider.addEventListener('input', () => applyOffset(surgeryUI.slider.value));
+    surgeryUI.input.addEventListener('change', () => applyOffset(surgeryUI.input.value));
+
+    const decodeTake = async (beatBlob, micBlob) => {
+      if (!prCtx) prCtx = new AudioContext();
+      const beatBuf = await prCtx.decodeAudioData(await beatBlob.arrayBuffer());
+      const micBuf = await prCtx.decodeAudioData(await micBlob.arrayBuffer());
+      takeBeatBuf = beatBuf;
+      takeMicBuf = micBuf;
+    };
+
+    recorder.onstop = async (beatBlob, micBlob) => {
+      if (!beatBlob || !micBlob) {
+        stopPreview();
+        setEnabled(false);
+        setStatus('Take empty — try again.');
+        return;
+      }
+      stopPreview();
+      applyOffset(0);
+      setEnabled(true);
+      setStatus('Decoding take…');
+      try {
+        await decodeTake(beatBlob, micBlob);
+        setStatus('Take ready — nudge the offset, test it, then Combine.');
+      } catch (e) {
+        setEnabled(false);
+        setStatus('Could not decode take (' + e.message + ') — re-record.');
+      }
+    };
+
+    const audioBufferToWav = (buf) => {
+      const ch = buf.numberOfChannels;
+      const sr = buf.sampleRate;
+      const len = buf.length;
+      const bytes = 44 + len * ch * 2;
+      const ab = new ArrayBuffer(bytes);
+      const dv = new DataView(ab);
+      const wstr = (o, s) => { for (let i = 0; i < s.length; i++) dv.setUint8(o + i, s.charCodeAt(i)); };
+      wstr(0, 'RIFF'); dv.setUint32(4, bytes - 8, true); wstr(8, 'WAVE');
+      wstr(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true);
+      dv.setUint16(22, ch, true); dv.setUint32(24, sr, true);
+      dv.setUint32(28, sr * ch * 2, true); dv.setUint16(32, ch * 2, true); dv.setUint16(34, 16, true);
+      wstr(36, 'data'); dv.setUint32(40, len * ch * 2, true);
+      const chans = [];
+      for (let i = 0; i < ch; i++) chans.push(buf.getChannelData(i));
+      let off = 44;
+      for (let i = 0; i < len; i++) {
+        for (let c = 0; c < ch; c++) {
+          const s = Math.max(-1, Math.min(1, chans[c][i]));
+          dv.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+          off += 2;
+        }
+      }
+      return new Blob([ab], { type: 'audio/wav' });
+    };
+
+    surgeryUI.combine.addEventListener('click', async () => {
+      if (!takeBeatBuf || !takeMicBuf) {
+        setStatus('No decoded take yet — record and stop first.');
+        return;
+      }
+      const ms = offset.value;
+      const sr = prCtx ? prCtx.sampleRate : 44100;
+      const dur = takeBeatBuf.duration;
+      const offline = new OfflineAudioContext(2, Math.ceil(sr * dur), sr);
+      const bsrc = offline.createBufferSource();
+      bsrc.buffer = takeBeatBuf;
+      bsrc.connect(offline.destination);
+      bsrc.start(0);
+      const msrc = offline.createBufferSource();
+      msrc.buffer = takeMicBuf;
+      msrc.connect(offline.destination);
+      if (ms < 0) msrc.start(0, -ms / 1000);
+      else msrc.start(ms / 1000);
+      setStatus('Rendering…');
+      try {
+        const rendered = await offline.startRendering();
+        const wav = audioBufferToWav(rendered);
+        document.getElementById('recAudio').src = URL.createObjectURL(wav);
+        setStatus('Combined at ' + ms + ' ms — output ready below.');
+      } catch (e) {
+        setStatus('Combine failed (' + e.message + ').');
+      }
+    });
+
+    document.getElementById('btn-deleteRecord').onclick = () => {
+      audio.chunks.length = 0;
+      document.getElementById('recAudio').src = '';
+      takeBeatBuf = null;
+      takeMicBuf = null;
+      stopPreview();
+      setEnabled(false);
+      applyOffset(0);
+      setStatus('Press RECORD, play a beat, rap, STOP — this section fills with the take.');
+    };
+  }
 
   // Microphone toggle
   const micBtn = document.getElementById('micBtn');
