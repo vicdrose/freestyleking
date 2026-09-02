@@ -830,6 +830,8 @@ const stageCloseBtn = document.getElementById('stageCloseBtn');
       };
       rateSlider.addEventListener('input', syncRate);
       syncRate();
+      const rateReset = document.getElementById('btn-rateReset');
+      if (rateReset) rateReset.addEventListener('click', () => { rateSlider.value = 1; syncRate(); });
     }
 
     const volSlider = document.getElementById('volSlider');
@@ -856,6 +858,34 @@ const stageCloseBtn = document.getElementById('stageCloseBtn');
       abOut.innerHTML = abVol.value;
       beatGain.gain.value = (abVol.value || 100) / 100;
     });
+  }
+
+  // Auto beat playback rate — shifts speed and pitch together (analog feel).
+  // Persisted in localStorage so the rate sticks across sessions and random beat swaps.
+  const RATE_KEY = 'fk.autoBeatRate';
+  const abRate = document.getElementById('autoBeatRateRange');
+  const abRateOut = document.getElementById('autoBeatRateOut');
+  const abRateReset = document.getElementById('btn-abRateReset');
+  if (abRate) {
+    const clamp = (v) => Math.max(0.5, Math.min(2, Number(v) || 1));
+    const applyRate = (v) => {
+      v = clamp(v);
+      abRate.value = v;
+      abRateOut.textContent = v.toFixed(2) + 'x';
+      beatPlayer.playbackRate = v;
+      document.getElementById('autoBeatAudio').playbackRate = v;
+    };
+    applyRate(parseFloat(localStorage.getItem(RATE_KEY)) || 1);
+    abRate.addEventListener('ionChange', () => {
+      applyRate(abRate.value);
+      try { localStorage.setItem(RATE_KEY, String(clamp(abRate.value))); } catch (e) {}
+    });
+    if (abRateReset) {
+      abRateReset.addEventListener('click', () => {
+        applyRate(1);
+        try { localStorage.setItem(RATE_KEY, '1'); } catch (e) {}
+      });
+    }
   }
 
   const samplerVol = document.getElementById('samplerVolRange');

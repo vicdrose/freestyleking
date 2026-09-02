@@ -1075,6 +1075,21 @@ ion-input {
   margin-top: 10px;
 }
 
+/* Playback rate reset button (shared by Player and Auto Beats rate rows) */
+.rate-reset {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(210, 180, 140, .45);
+  border-radius: 50%;
+  background: transparent;
+  color: #d2b48c;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  margin-left: 6px;
+}
+
 /* Save to Library button under the combined output */
 #beat-pane-recorder.studio-rack .save-lib-btn {
   --background: #1f1f1f;

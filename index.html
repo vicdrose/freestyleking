@@ -284,6 +284,7 @@
                 <div class="rack-param-label">Rate</div>
                 <input type="range" class="rack-slider" id="rateSlider" min="0.5" max="1.5" step="0.01" value="1">
                 <div class="rack-param-val" id="rateVal">1.00x</div>
+                <button type="button" class="rate-reset" id="btn-rateReset" aria-label="Reset rate">↺</button>
               </div>
               <div class="rack-param-row">
                 <div class="rack-param-label">Volume</div>
@@ -401,6 +402,12 @@
                     <div class="rack-param-label">Volume</div>
                     <ion-range min="0" max="100" value="100" id="autoBeatVolRange" debounce="50"></ion-range>
                     <div class="rack-param-val" id="autoBeatVolOut">100</div>
+                  </div>
+                  <div class="rack-param-row">
+                    <div class="rack-param-label">Rate</div>
+                    <ion-range min="0.5" max="2" step="0.01" value="1" id="autoBeatRateRange" debounce="50"></ion-range>
+                    <div class="rack-param-val" id="autoBeatRateOut">1.00x</div>
+                    <button type="button" class="rate-reset" id="btn-abRateReset" aria-label="Reset rate">↺</button>
                   </div>
                   <audio controls autoplay crossorigin="anonymous" id="autoBeatAudio"></audio>
                 </div>
