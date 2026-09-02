@@ -1052,6 +1052,23 @@ ion-input {
   margin: 0;
 }
 
+/* Auto start on stop — same tan uppercase treatment as the rack labels */
+#beat-pane-recorder.studio-rack .autostart-check {
+  --checkbox-background: #1f1f1f;
+  --checkbox-background-checked: #d2b48c;
+  --checkbox-border-color: rgba(210, 180, 140, .28);
+  --checkbox-border-color-checked: #d2b48c;
+  --checkmark-color: #0e0d0d;
+  --border-radius: 4px;
+  --size: 18px;
+  --padding-start: 0;
+  margin-top: 10px;
+  color: #d2b48c;
+  font-size: .72rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
 /* Replay + auto-beat audio controls match the dark rack */
 #beat-pane-recorder.studio-rack audio {
   width: 100%;

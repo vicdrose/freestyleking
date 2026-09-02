@@ -377,6 +377,7 @@
                 <ion-button color="primary" id="btn-stopRecord">STOP</ion-button>
                 <ion-button color="dark" id="btn-deleteRecord">DELETE</ion-button>
               </div>
+              <ion-checkbox id="chk-autostart" class="autostart-check" label-placement="end">Auto start on stop</ion-checkbox>
             </div>
 
             <!-- Auto beats: plain HTML disclosure, styled to the rack -->
@@ -418,6 +419,7 @@
 
             <!-- Final output player -->
             <div class="rack-module rack-params">
+              <div class="rack-label">Output (combined)</div>
               <audio controls id="recAudio"></audio>
             </div>
 

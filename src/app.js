@@ -1190,6 +1190,10 @@ recState: recorder.state
       try {
         await decodeTake(beatBlob, micBlob);
         setStatus('Take ready — nudge the offset, test it, then Combine.');
+        // Auto start on stop: if enabled, kick off surgery playback right away
+        // so the app never goes silent after STOP.
+        const autoStart = document.getElementById('chk-autostart');
+        if (autoStart && autoStart.checked) startPreview();
       } catch (e) {
         setEnabled(false);
         setStatus('Could not decode take (' + e.message + ') — re-record.');
