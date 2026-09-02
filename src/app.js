@@ -449,6 +449,9 @@ function beatToggles() {
 }
 
 // ---------- Sections accordion: drag to reorder (accordion rows + panes) ----------
+// Pointer-event drag works with both touch and mouse: grab the row's handle,
+// a ghost follows the finger/pointer, dashed bars show the drop spot, and on
+// release both the accordion rows and the matching panes are reordered.
 function sectionDragReorder() {
   const PANES = { player: 'beat-pane-player', keys: 'beat-pane-keys', recorder: 'beat-pane-recorder' };
   const accordion = document.querySelector('.beat-accordion');
@@ -457,58 +460,100 @@ function sectionDragReorder() {
   const paneParent = firstPane ? firstPane.parentElement : null;
   if (!content || !paneParent) return;
 
-  let dragged = null;
+  let drag = null;
 
-  const currentRows = () => Array.prototype.slice.call(content.querySelectorAll('.beat-acc-row'));
-  const currentPanes = () => ['player', 'keys', 'recorder'].map((key) => document.getElementById(PANES[key]));
+  const rows = () => Array.prototype.slice.call(content.querySelectorAll('.beat-acc-row'));
+  const panes = () => ['player', 'keys', 'recorder'].map((key) => document.getElementById(PANES[key]));
 
-  const clear = () => {
-    dragged = null;
-    content.querySelectorAll('.beat-acc-row.dragging, .beat-acc-row.drag-over').forEach((el) => {
-      el.classList.remove('dragging', 'drag-over');
-    });
+  // Move section "fromSec" to a target slot in the accordion list, and mirror
+  // the exact same ordering across the physical panes.
+  const applyOrder = (fromSec, target) => {
+    const list = rows();
+    const at = list.findIndex((r) => r.dataset.section === fromSec);
+    if (at === -1) return;
+    const el = list[at];
+    let t = target;
+    if (at < t) t -= 1; // account for el being removed first
+    const ordered = list.filter((r) => r !== el);
+    ordered.splice(t, 0, el);
+    ordered.forEach((r) => content.appendChild(r));
+    const ps = panes();
+    const pe = ps.find((p) => p && p.id === PANES[fromSec]);
+    const po = ps.filter((p) => p !== pe);
+    po.splice(t, 0, pe);
+    po.forEach((p) => paneParent.appendChild(p));
   };
 
-  const moveSection = (fromSec, overSec) => {
-    const rows = currentRows();
-    const fromIdx = rows.findIndex((r) => r.dataset.section === fromSec);
-    const toIdx = rows.findIndex((r) => r.dataset.section === overSec);
-    if (fromIdx === -1 || toIdx === -1) return false;
-    const after = fromIdx < toIdx;
-    const fromRow = rows[fromIdx];
-    const toRow = rows[toIdx];
-    if (after) { toRow.after(fromRow); } else { toRow.before(fromRow); }
-    // Mirror the same move in the physical panes.
-    const panes = currentPanes();
-    const fromPane = panes.find((p) => p && p.id === PANES[fromSec]);
-    const overPane = panes.find((p) => p && p.id === PANES[overSec]);
-    if (fromPane && overPane) {
-      if (after) { overPane.after(fromPane); } else { overPane.before(fromPane); }
+  const clearMarks = () => {
+    rows().forEach((r) => r.classList.remove('dragging', 'drop-before', 'drop-after'));
+  };
+
+  const finish = () => {
+    if (!drag) return;
+    const over = rows().find((r) => r.classList.contains('drop-before') || r.classList.contains('drop-after'));
+    const before = over ? over.classList.contains('drop-before') : null;
+    if (drag.ghost) drag.ghost.remove();
+    clearMarks();
+    if (over && over !== drag.el) {
+      const i = rows().indexOf(over);
+      applyOrder(drag.sec, before ? i : i + 1);
     }
-    return true;
+    drag = null;
   };
 
-  currentRows().forEach((row) => {
+  const markTarget = (y) => {
+    rows().forEach((r) => r.classList.remove('drop-before', 'drop-after'));
+    if (!drag) return;
+    for (const r of rows()) {
+      if (r === drag.el) continue;
+      const b = r.getBoundingClientRect();
+      if (y >= b.top && y <= b.bottom) {
+        r.classList.add(y < b.top + b.height / 2 ? 'drop-before' : 'drop-after');
+        drag.overRow = r;
+        return;
+      }
+    }
+    drag.overRow = null;
+  };
+
+  rows().forEach((row) => {
     const handle = row.querySelector('.acc-drag-handle');
     if (!handle) return;
-    handle.addEventListener('dragstart', (e) => {
-      dragged = String(row.dataset.section || '');
-      e.dataTransfer.effectAllowed = 'move';
-      try { e.dataTransfer.setData('text/plain', dragged); } catch (err) {}
+
+    handle.addEventListener('pointerdown', (e) => {
+      if (drag) return;
+      if (e.button !== undefined && e.button !== 0) return;
+      e.preventDefault();
+      const rect = row.getBoundingClientRect();
+      drag = { sec: String(row.dataset.section || ''), el: row, ghost: null, gx: rect.left, gy: rect.top, overRow: null };
+      try { handle.setPointerCapture(e.pointerId); } catch (err) {}
       row.classList.add('dragging');
+      const ghost = row.cloneNode(true);
+      ghost.classList.remove('dragging', 'drop-before', 'drop-after');
+      ghost.classList.add('drag-ghost');
+      ghost.style.width = rect.width + 'px';
+      ghost.style.left = rect.left + 'px';
+      ghost.style.top = rect.top + 'px';
+      document.body.appendChild(ghost);
+      drag.ghost = ghost;
     });
-    handle.addEventListener('dragend', clear);
-    row.addEventListener('dragover', (e) => {
-      if (!dragged || dragged === row.dataset.section) return;
-      e.preventDefault();
-      row.classList.add('drag-over');
+
+    handle.addEventListener('pointermove', (e) => {
+      if (!drag) return;
+      const g = drag.ghost;
+      if (g) {
+        g.style.transform = 'translate(' + (e.clientX - drag.gx) + 'px,' + (e.clientY - drag.gy) + 'px)';
+      }
+      // Aim the drop with the pointer's tip, not the ghost center.
+      const aimY = e.clientY + 24;
+      markTarget(aimY);
     });
-    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
-    row.addEventListener('drop', (e) => {
-      e.preventDefault();
-      if (!dragged) return;
-      moveSection(dragged, String(row.dataset.section || ''));
-      clear();
+
+    handle.addEventListener('pointerup', finish);
+    handle.addEventListener('pointercancel', () => {
+      if (drag && drag.ghost) drag.ghost.remove();
+      clearMarks();
+      drag = null;
     });
   });
 }

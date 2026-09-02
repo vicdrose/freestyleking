@@ -715,9 +715,22 @@ ion-input {
 .beat-acc-row.dragging {
   opacity: .45;
 }
-.beat-acc-row.drag-over {
-  outline: 1px dashed #d2b48c;
-  outline-offset: -3px;
+.beat-acc-row.drop-before {
+  box-shadow: inset 0 3px 0 #d2b48c;
+}
+.beat-acc-row.drop-after {
+  box-shadow: inset 0 -3px 0 #d2b48c;
+}
+
+/* Floating copy of the row that follows the finger/pointer while dragging */
+.drag-ghost {
+  position: fixed;
+  z-index: 2000;
+  pointer-events: none;
+  margin: 0;
+  opacity: .92;
+  transform: rotate(2deg);
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .45));
 }
 
 
