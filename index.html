@@ -352,13 +352,14 @@
 
             <!-- Header: RECORDER -->
             <div class="rack-module rack-source">
-              <div class="rack-label"><ion-icon name="mic" class="rack-label-icon"></ion-icon> Recorder</div>
+              <div class="rack-label">Recorder</div>
             </div>
 
-            <!-- Microphone: enable checkbox + live Tone FFT visualizer -->
+            <!-- Microphone: button + live Tone FFT visualizer -->
             <div class="rack-module rack-rec-mic">
               <div class="rack-param-row">
-                <ion-checkbox id="micCheckbox" color="primary">enable mic</ion-checkbox>
+                <div class="rack-param-label">Mic</div>
+                <ion-button id="micBtn" expand="block">Microphone</ion-button>
               </div>
               <canvas id="micCanvas" class="rack-mic-canvas"></canvas>
             </div>
@@ -366,27 +367,24 @@
             <!-- Record / Stop / Delete -->
             <div class="rack-module rack-params">
               <div class="btn-grid record-grid">
-                <ion-button id="btn-record" class="rec-btn" aria-label="record"><ion-icon name="radio-button-on"></ion-icon></ion-button>
-                <ion-button id="btn-stopRecord" class="rec-btn rec-stop" aria-label="stop"><ion-icon name="square"></ion-icon></ion-button>
-                <ion-button id="btn-deleteRecord" class="rec-btn" aria-label="delete"><ion-icon name="trash"></ion-icon></ion-button>
+                <ion-button color="danger" id="btn-record">RECORD</ion-button>
+                <ion-button color="primary" id="btn-stopRecord">STOP</ion-button>
+                <ion-button color="dark" id="btn-deleteRecord">DELETE</ion-button>
               </div>
             </div>
 
-            <!-- Auto beats: collapsible with a play button that works closed -->
-            <div class="rack-module rack-params rack-auto-beat">
-              <div class="acc-head">
-                <span class="acc-title">Auto Beat</span>
-                <ion-button id="btn-autobeats" class="acc-play" aria-label="play auto beats"><ion-icon name="play"></ion-icon></ion-button>
-                <ion-button id="accToggle" class="acc-toggle" aria-label="expand auto beat"><ion-icon name="chevron-down"></ion-icon></ion-button>
+            <!-- Auto beats + volume (below the record/stop/delete buttons) -->
+            <div class="rack-module rack-params">
+              <div class="rack-param-row">
+                <div class="rack-param-label">Auto Beat</div>
+                <ion-button id="btn-autobeats" expand="block">Auto Beats</ion-button>
               </div>
-              <div class="acc-body" id="accBody" hidden>
-                <div class="rack-param-row">
-                  <div class="rack-param-label">Volume</div>
-                  <ion-range min="0" max="100" value="100" id="autoBeatVolRange" debounce="50"></ion-range>
-                  <div class="rack-param-val" id="autoBeatVolOut">100</div>
-                </div>
-                <audio controls autoplay crossorigin="anonymous" id="autoBeatAudio"></audio>
+              <div class="rack-param-row">
+                <div class="rack-param-label">Volume</div>
+                <ion-range min="0" max="100" value="100" id="autoBeatVolRange" debounce="50"></ion-range>
+                <div class="rack-param-val" id="autoBeatVolOut">100</div>
               </div>
+              <audio controls autoplay crossorigin="anonymous" id="autoBeatAudio"></audio>
             </div>
 
             <!-- Surgery: align the vox track to the beat track, then combine -->

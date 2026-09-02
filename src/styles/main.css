@@ -929,28 +929,10 @@ ion-input {
 }
 
 /* ============ Recorder rack specifics ============ */
-#beat-pane-recorder.studio-rack .rack-label-icon {
-  vertical-align: -2px;
-  margin-right: 6px;
-}
-
 #beat-pane-recorder.studio-rack .rack-rec-mic .rack-param-row {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-#beat-pane-recorder.studio-rack .rack-rec-mic ion-checkbox {
-  --background: #1f1f1f;
-  --background-checked: #d2b48c;
-  --border-color: rgba(210, 180, 140, .4);
-  --border-color-checked: #d2b48c;
-  --checkmark-color: #141313;
-  font-size: .8rem;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: #d2b48c;
-  --color: #d2b48c;
 }
 
 #beat-pane-recorder.studio-rack .rack-mic-canvas {
@@ -963,97 +945,17 @@ ion-input {
   border-radius: 6px;
 }
 
-/* Record / Stop / Delete — compact circular transport icons */
+/* Record / Stop / Delete stay side by side */
 #beat-pane-recorder.studio-rack .record-grid {
   display: flex;
-  justify-content: center;
-  gap: 18px;
-  padding: 2px 0 4px 0;
+  gap: 8px;
+  padding: 0 0 10px 0;
 }
 
 #beat-pane-recorder.studio-rack .record-grid ion-button {
-  flex: 0 0 46px;
-  width: 46px;
-  height: 46px;
+  flex: 1 1 30%;
   min-width: 0;
   margin: 0;
-  --border-radius: 8px;
-}
-
-/* Record stays a circle; stop + delete are rounded squares. */
-
-#beat-pane-recorder.studio-rack .record-grid ion-button ion-icon {
-  font-size: 20px;
-}
-
-/* Record: white ring around a red dot; bright red center while rolling */
-#beat-pane-recorder.studio-rack #btn-record {
-  --border-radius: 50%;
-  --color: #f53d3d;
-  --background: transparent;
-  --background-activated: transparent;
-  --border-color: #fff;
-  --border-style: solid;
-  --border-width: 2px;
-}
-
-#beat-pane-recorder.studio-rack #btn-record.recording {
-  --color: #fff;
-  --background: #f53d3d;
-}
-
-/* Stop: white square */
-#beat-pane-recorder.studio-rack #btn-stopRecord {
-  --color: #fff;
-  --background: #2a2a2a;
-  --background-activated: #383838;
-  --border-width: 2px;
-  --border-style: solid;
-  --border-color: #fff;
-}
-
-/* Delete: trash */
-#beat-pane-recorder.studio-rack #btn-deleteRecord {
-  --color: #fff;
-  --background: #2a2a2a;
-  --background-activated: #383838;
-}
-
-/* Auto beat accordion */
-#beat-pane-recorder.studio-rack .rack-auto-beat .acc-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-#beat-pane-recorder.studio-rack .acc-title {
-  flex: 1 1 0;
-  font-size: .8rem;
-  letter-spacing: .08em;
-  color: #d2b48c;
-  text-transform: uppercase;
-}
-
-#beat-pane-recorder.studio-rack .acc-play,
-#beat-pane-recorder.studio-rack .acc-toggle {
-  flex: 0 0 38px;
-  width: 38px;
-  height: 38px;
-  margin: 0;
-  --border-radius: 50%;
-  --color: #fff;
-}
-
-#beat-pane-recorder.studio-rack .acc-toggle ion-icon {
-  transition: transform .15s ease;
-}
-
-#beat-pane-recorder.studio-rack .acc-body[hidden] {
-  display: none;
-}
-
-#beat-pane-recorder.studio-rack .acc-body {
-  margin-top: 12px;
 }
 
 /* Replay + auto-beat audio controls match the dark rack */
