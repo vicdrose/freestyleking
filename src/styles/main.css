@@ -966,13 +966,18 @@ ion-input {
 
 /* Chevron is positioned explicitly against the header item so its placement
    can't drift with ion-item slot layout: flush to the right edge, vertically
-   centered. Its tan comes from the inline color on the ion-icon. */
+   centered via inset-top/bottom auto margins. Fixed 18x18 raw SVG + explicit
+   stroke attribute = no ion-icon sizing or color cascade involvement. */
 #beat-pane-recorder.studio-rack .acc-chevron {
   position: absolute;
   right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 18px;
+  top: 0;
+  bottom: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: auto;
+  margin-bottom: auto;
+  display: block;
 }
 
 #beat-pane-recorder.studio-rack ion-accordion [slot="content"] {
