@@ -978,6 +978,14 @@ ion-input {
   margin-top: auto;
   margin-bottom: auto;
   display: block;
+  transition: transform .18s ease;
+  transform: rotate(0deg);
+}
+
+/* The accordion reflects open/close via accordion-collapsed /
+   accordion-expanded on its host; flip the chevron when open */
+#beat-pane-recorder.studio-rack ion-accordion.accordion-expanded .acc-chevron {
+  transform: rotate(180deg);
 }
 
 #beat-pane-recorder.studio-rack ion-accordion [slot="content"] {
