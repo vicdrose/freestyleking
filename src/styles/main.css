@@ -969,6 +969,7 @@ ion-input {
   width: 18px;
   height: 18px;
   color: #d2b48c;
+  transition: transform .3s ease;
 }
 
 #beat-pane-recorder.studio-rack .beat-acc-header .acc-chevron svg {
