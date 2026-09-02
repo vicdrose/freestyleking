@@ -977,8 +977,10 @@ ion-input {
   height: 46px;
   min-width: 0;
   margin: 0;
-  --border-radius: 50%;
+  --border-radius: 8px;
 }
+
+/* Record stays a circle; stop + delete are rounded squares. */
 
 #beat-pane-recorder.studio-rack .record-grid ion-button ion-icon {
   font-size: 20px;
@@ -986,6 +988,7 @@ ion-input {
 
 /* Record: white ring around a red dot; bright red center while rolling */
 #beat-pane-recorder.studio-rack #btn-record {
+  --border-radius: 50%;
   --color: #f53d3d;
   --background: transparent;
   --background-activated: transparent;
