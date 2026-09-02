@@ -448,6 +448,71 @@ function beatToggles() {
   });
 }
 
+// ---------- Sections accordion: drag to reorder (accordion rows + panes) ----------
+function sectionDragReorder() {
+  const PANES = { player: 'beat-pane-player', keys: 'beat-pane-keys', recorder: 'beat-pane-recorder' };
+  const accordion = document.querySelector('.beat-accordion');
+  const content = accordion ? accordion.querySelector('ion-accordion [slot="content"]') : null;
+  const firstPane = document.getElementById('beat-pane-player');
+  const paneParent = firstPane ? firstPane.parentElement : null;
+  if (!content || !paneParent) return;
+
+  let dragged = null;
+
+  const currentRows = () => Array.prototype.slice.call(content.querySelectorAll('.beat-acc-row'));
+  const currentPanes = () => ['player', 'keys', 'recorder'].map((key) => document.getElementById(PANES[key]));
+
+  const clear = () => {
+    dragged = null;
+    content.querySelectorAll('.beat-acc-row.dragging, .beat-acc-row.drag-over').forEach((el) => {
+      el.classList.remove('dragging', 'drag-over');
+    });
+  };
+
+  const moveSection = (fromSec, overSec) => {
+    const rows = currentRows();
+    const fromIdx = rows.findIndex((r) => r.dataset.section === fromSec);
+    const toIdx = rows.findIndex((r) => r.dataset.section === overSec);
+    if (fromIdx === -1 || toIdx === -1) return false;
+    const after = fromIdx < toIdx;
+    const fromRow = rows[fromIdx];
+    const toRow = rows[toIdx];
+    if (after) { toRow.after(fromRow); } else { toRow.before(fromRow); }
+    // Mirror the same move in the physical panes.
+    const panes = currentPanes();
+    const fromPane = panes.find((p) => p && p.id === PANES[fromSec]);
+    const overPane = panes.find((p) => p && p.id === PANES[overSec]);
+    if (fromPane && overPane) {
+      if (after) { overPane.after(fromPane); } else { overPane.before(fromPane); }
+    }
+    return true;
+  };
+
+  currentRows().forEach((row) => {
+    const handle = row.querySelector('.acc-drag-handle');
+    if (!handle) return;
+    handle.addEventListener('dragstart', (e) => {
+      dragged = String(row.dataset.section || '');
+      e.dataTransfer.effectAllowed = 'move';
+      try { e.dataTransfer.setData('text/plain', dragged); } catch (err) {}
+      row.classList.add('dragging');
+    });
+    handle.addEventListener('dragend', clear);
+    row.addEventListener('dragover', (e) => {
+      if (!dragged || dragged === row.dataset.section) return;
+      e.preventDefault();
+      row.classList.add('drag-over');
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
+    row.addEventListener('drop', (e) => {
+      e.preventDefault();
+      if (!dragged) return;
+      moveSection(dragged, String(row.dataset.section || ''));
+      clear();
+    });
+  });
+}
+
 // ---------- Piano (Keys & Sounds) ----------
 function setupPiano(sampler) {
   const el = document.getElementById('pianoKeys');
@@ -1175,6 +1240,7 @@ recState: recorder.state
 
 // Beat view
   beatToggles();
+  sectionDragReorder();
   setupPiano(sampler);
   // Auto-load a random pad at start, once the live pad list has arrived.
   dirsPromise.then(() => loadSample(getPad));

@@ -230,20 +230,23 @@
                 <ion-label>Sections</ion-label>
               </ion-item>
               <div slot="content">
-                <ion-item class="beat-acc-row">
+                <ion-item class="beat-acc-row" data-section="player">
                   <ion-icon slot="start" name="musical-note" style="color:#d2b48c"></ion-icon>
                   <ion-label>Player</ion-label>
                   <ion-toggle id="chk-beat-player" checked></ion-toggle>
+                  <div class="acc-drag-handle" slot="end" draggable="true" role="button" aria-label="Drag to reorder Player"><ion-icon name="reorder-three" style="color:#d2b48c"></ion-icon></div>
                 </ion-item>
-                <ion-item class="beat-acc-row">
+                <ion-item class="beat-acc-row" data-section="keys">
                   <ion-icon slot="start" name="apps-sharp" style="color:#d2b48c"></ion-icon>
                   <ion-label>Sampler</ion-label>
                   <ion-toggle id="chk-beat-keys" checked></ion-toggle>
+                  <div class="acc-drag-handle" slot="end" draggable="true" role="button" aria-label="Drag to reorder Sampler"><ion-icon name="reorder-three" style="color:#d2b48c"></ion-icon></div>
                 </ion-item>
-                <ion-item class="beat-acc-row">
+                <ion-item class="beat-acc-row" data-section="recorder">
                   <ion-icon slot="start" name="mic" style="color:#d2b48c"></ion-icon>
                   <ion-label>Recorder</ion-label>
                   <ion-toggle id="chk-beat-recorder" checked></ion-toggle>
+                  <div class="acc-drag-handle" slot="end" draggable="true" role="button" aria-label="Drag to reorder Recorder"><ion-icon name="reorder-three" style="color:#d2b48c"></ion-icon></div>
                 </ion-item>
               </div>
             </ion-accordion>

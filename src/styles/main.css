@@ -697,6 +697,29 @@ ion-input {
   font-weight: 600;
 }
 
+/* Drag handle for reordering Sections — far right of each row */
+.acc-drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  padding: 6px 0 6px 8px;
+  color: #d2b48c;
+  cursor: grab;
+  touch-action: none;
+}
+.acc-drag-handle:active {
+  cursor: grabbing;
+}
+.beat-acc-row.dragging {
+  opacity: .45;
+}
+.beat-acc-row.drag-over {
+  outline: 1px dashed #d2b48c;
+  outline-offset: -3px;
+}
+
 
 .beat-acc-row ion-toggle {
   --track-background: #7a7a7a;
