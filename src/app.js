@@ -1217,6 +1217,20 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
   autoBeatEl.onpause = () => beatPlayer.stop();
   autoBeatEl.onended = loadBeat;
 
+  // Auto Beats disclosure (plain HTML) — the header button toggles the content
+  // panel; the chevron flip is driven by the data-open attribute.
+  const accRoot = document.getElementById('autobeats-acc');
+  const accBtn = document.getElementById('btn-autobeats-acc');
+  const accBody = document.getElementById('autobeats-acc-body');
+  if (accRoot && accBtn && accBody) {
+    accBtn.onclick = () => {
+      const open = accRoot.getAttribute('data-open') === 'true';
+      accRoot.setAttribute('data-open', String(!open));
+      accBtn.setAttribute('aria-expanded', String(!open));
+      accBody.hidden = open;
+    };
+  }
+
   // Initial behavior parity
   roll();
 }

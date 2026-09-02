@@ -938,7 +938,7 @@ ion-input {
 
 /* Auto Beat native accordion, themed to the rack: brand tan border (same as
    the mic canvas), near-black body, tan uppercase header — not Sections gray */
-#beat-pane-recorder.studio-rack .beat-accordion {
+#beat-pane-recorder.studio-rack .beat-acc {
   margin: 0;
   border: 1px solid rgba(210, 180, 140, .28);
   border-radius: 6px;
@@ -947,60 +947,44 @@ ion-input {
 }
 
 #beat-pane-recorder.studio-rack .beat-acc-header {
-  position: relative;
-  --background: #0e0d0d;
-  --background-activated: #161515;
-  --color: #d2b48c;
-  --border-width: 0;
-  --border-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  border: 0;
+  background: transparent;
+  color: #d2b48c;
+  font-family: inherit;
   font-size: .72rem;
   letter-spacing: .12em;
   text-transform: uppercase;
-  --min-height: 46px;
+  cursor: pointer;
 }
 
-#beat-pane-recorder.studio-rack .beat-acc-header ion-label {
-  padding-left: 4px;
-  padding-right: 32px;
-}
-
-/* Chevron is positioned explicitly against the header item so its placement
-   can't drift with ion-item slot layout: flush to the right edge, vertically
-   centered via inset-top/bottom auto margins. Fixed 18x18 raw SVG + explicit
-   stroke attribute = no ion-icon sizing or color cascade involvement. */
-/* The accordion injects its own dark chevron (an ion-icon with class
-   .ion-accordion-toggle-icon) into the header item's end slot on load.
-   Hide it so only our tan SVG shows. */
-#beat-pane-recorder.studio-rack .beat-acc-header .ion-accordion-toggle-icon {
-  display: none;
-}
-
-/* Chevron is positioned explicitly against the header item so its placement
-   can't drift with ion-item slot layout: flush to the right edge, vertically
-   centered via inset-top/bottom auto margins. Fixed 18x18 raw SVG + explicit
-   stroke attribute = no ion-icon sizing or color cascade involvement.
-   Rotation flips instantly on tap (no transition). */
-#beat-pane-recorder.studio-rack .acc-chevron {
-  position: absolute;
-  right: 14px;
-  top: 0;
-  bottom: 0;
+#beat-pane-recorder.studio-rack .beat-acc-header .acc-chevron {
+  flex: none;
   width: 18px;
   height: 18px;
-  margin-top: auto;
-  margin-bottom: auto;
-  display: block;
+  color: #d2b48c;
 }
 
-/* The accordion reflects open/close via accordion-collapsed /
-   accordion-expanded on its host; flip the chevron when open */
-#beat-pane-recorder.studio-rack ion-accordion.accordion-expanded .acc-chevron {
+#beat-pane-recorder.studio-rack .beat-acc-header .acc-chevron svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#beat-pane-recorder.studio-rack .beat-acc[data-open="true"] .acc-chevron {
   transform: rotate(180deg);
 }
 
-#beat-pane-recorder.studio-rack ion-accordion [slot="content"] {
-  background: #0e0d0d;
+#beat-pane-recorder.studio-rack .beat-acc-body {
+  border-top: 1px solid rgba(210, 180, 140, .28);
   padding: 12px 12px 14px;
+  background: #0e0d0d;
 }
 #beat-pane-recorder.studio-rack .rack-rec-mic .rack-param-row {
   display: flex;
