@@ -962,9 +962,9 @@ ion-input {
   padding-left: 4px;
 }
 
-/* Chevron matches the brand border hue but stays clearly visible */
+/* Chevron (header item end slot) picks up its tan from the inline color on
+   the ion-icon; this only spaces it off the edge */
 #beat-pane-recorder.studio-rack .acc-chevron {
-  color: rgba(210, 180, 140, .75) !important;
   margin-right: 12px;
 }
 
