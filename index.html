@@ -231,17 +231,17 @@
               </ion-item>
               <div slot="content">
                 <ion-item class="beat-acc-row">
-                  <ion-icon slot="start" name="musical-note"></ion-icon>
+                  <ion-icon slot="start" name="musical-note" style="color:#d2b48c"></ion-icon>
                   <ion-label>Player</ion-label>
                   <ion-toggle id="chk-beat-player" checked></ion-toggle>
                 </ion-item>
                 <ion-item class="beat-acc-row">
-                  <ion-icon slot="start" name="apps-sharp"></ion-icon>
+                  <ion-icon slot="start" name="apps-sharp" style="color:#d2b48c"></ion-icon>
                   <ion-label>Sampler</ion-label>
                   <ion-toggle id="chk-beat-keys" checked></ion-toggle>
                 </ion-item>
                 <ion-item class="beat-acc-row">
-                  <ion-icon slot="start" name="mic"></ion-icon>
+                  <ion-icon slot="start" name="mic" style="color:#d2b48c"></ion-icon>
                   <ion-label>Recorder</ion-label>
                   <ion-toggle id="chk-beat-recorder" checked></ion-toggle>
                 </ion-item>
@@ -380,7 +380,9 @@
             <div class="rack-module rack-params">
               <ion-accordion-group class="beat-accordion">
                 <ion-accordion value="autobeats">
-                  <ion-icon slot="toggle-icon" name="chevron-down" class="acc-chevron"></ion-icon>
+                  <svg slot="toggle-icon" class="acc-chevron" viewBox="0 0 512 512" width="24" height="24" aria-hidden="true">
+                    <path d="m112 184 144 144 144-144" fill="none" stroke="#d2b48c" stroke-width="48" stroke-linecap="round" stroke-linejoin="round"></path>
+                  </svg>
                   <ion-item slot="header" class="beat-acc-header">
                     <ion-label>Auto Beats</ion-label>
                   </ion-item>
