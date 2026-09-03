@@ -482,7 +482,9 @@ function sectionDragReorder() {
   let drag = null;
 
   const rows = () => Array.prototype.slice.call(content.querySelectorAll('.beat-acc-row'));
-  const panes = () => ['player', 'keys', 'recorder'].map((key) => document.getElementById(PANES[key]));
+  // Return the panes in the SAME order as the current rows, so the insertion
+  // index computed from the row list maps correctly onto the pane list.
+  const panes = () => rows().map((r) => document.getElementById(PANES[r.dataset.section]));
 
   const saveOrder = () => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(rows().map((r) => r.dataset.section))); } catch (err) {}
@@ -511,45 +513,64 @@ function sectionDragReorder() {
     rows().forEach((r) => r.classList.remove('dragging', 'drop-before', 'drop-after'));
   };
 
-  const finish = () => {
+  // Drop position, decided by the row the pointer is actually over (no hidden
+  // offset). Always yields a valid target — even when the pointer is over the
+  // dragged row's own slot — so a drag can never silently no-op.
+  const markTarget = (y) => {
+    const list = rows();
+    list.forEach((r) => r.classList.remove('drop-before', 'drop-after'));
     if (!drag) return;
-    const over = rows().find((r) => r.classList.contains('drop-before') || r.classList.contains('drop-after'));
-    const before = over ? over.classList.contains('drop-before') : null;
-    if (drag.ghost) drag.ghost.remove();
-    clearMarks();
-    if (over && over !== drag.el) {
-      const i = rows().indexOf(over);
-      applyOrder(drag.sec, before ? i : i + 1);
-      saveOrder();
+    for (let i = 0; i < list.length; i++) {
+      const r = list[i];
+      const b = r.getBoundingClientRect();
+      if (!b || (b.height === 0 && b.width === 0)) continue;
+      if (y < b.top || y > b.bottom) continue;
+      const before = y < b.top + b.height / 2;
+      let insertAt = i + (before ? 0 : 1);
+      if (r === drag.el) insertAt = i; // over its own slot → stays put
+      drag.over = r;
+      drag.before = before;
+      drag.insertAt = insertAt;
+      r.classList.add(before ? 'drop-before' : 'drop-after');
+      return;
     }
-    drag = null;
+    drag.over = null;
+    drag.before = null;
+    drag.insertAt = null;
   };
 
-  const markTarget = (y) => {
-    rows().forEach((r) => r.classList.remove('drop-before', 'drop-after'));
+  const finish = () => {
     if (!drag) return;
-    for (const r of rows()) {
-      if (r === drag.el) continue;
-      const b = r.getBoundingClientRect();
-      if (y >= b.top && y <= b.bottom) {
-        r.classList.add(y < b.top + b.height / 2 ? 'drop-before' : 'drop-after');
-        drag.overRow = r;
-        return;
+    if (drag.ghost) drag.ghost.remove();
+    clearMarks();
+    if (drag.over && drag.insertAt !== null) {
+      const at = rows().findIndex((r) => r.dataset.section === drag.sec);
+      if (at !== drag.insertAt && at !== -1) {
+        applyOrder(drag.sec, drag.insertAt);
+        saveOrder();
       }
     }
-    drag.overRow = null;
+    drag = null;
   };
 
   rows().forEach((row) => {
     const handle = row.querySelector('.acc-drag-handle');
     if (!handle) return;
 
+    // Stop the tap from bubbling to Ionic's ion-item, which would otherwise
+    // treat it as a tap on the adjacent ion-toggle and hide the section/recorder.
+    handle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+    });
+
     handle.addEventListener('pointerdown', (e) => {
       if (drag) return;
       if (e.button !== undefined && e.button !== 0) return;
       e.preventDefault();
+      e.stopPropagation();
       const rect = row.getBoundingClientRect();
-      drag = { sec: String(row.dataset.section || ''), el: row, ghost: null, gx: rect.left, gy: rect.top, overRow: null };
+      drag = { sec: String(row.dataset.section || ''), el: row, ghost: null, gx: rect.left, gy: rect.top, over: null, before: null, insertAt: null };
       try { handle.setPointerCapture(e.pointerId); } catch (err) {}
       row.classList.add('dragging');
       const ghost = row.cloneNode(true);
@@ -568,9 +589,8 @@ function sectionDragReorder() {
       if (g) {
         g.style.transform = 'translate(' + (e.clientX - drag.gx) + 'px,' + (e.clientY - drag.gy) + 'px)';
       }
-      // Aim the drop with the pointer's tip, not the ghost center.
-      const aimY = e.clientY + 24;
-      markTarget(aimY);
+      // Judge the drop by the pointer's actual position on the rows.
+      markTarget(e.clientY);
     });
 
     handle.addEventListener('pointerup', finish);
