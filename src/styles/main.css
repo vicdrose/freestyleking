@@ -870,6 +870,11 @@ ion-input {
 
 #beat-pane-player.studio-rack .wave-canvas {
   width: 100%;
+  /* Keep the height fixed at its loaded size. Without an explicit CSS height,
+     the canvas scales its intrinsic 300:140 ratio with the width, stretching
+     tall on wide/tablet screens. A fixed height caps the module's size. */
+  height: 140px;
+  max-height: 140px;
   display: block;
   background: transparent;
 }
