@@ -1382,30 +1382,45 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
     if (!beatPlayer.loaded) return;
     beatPlayer.start(undefined, autoBeatEl.currentTime);
   };
-  let tonePending = false;
+
+  // Auto Beats sequencing. The audible voice is the Tone player; the muted
+  // <audio> element is only a timing clock (its ended event advances to the
+  // next random beat). We start the tone from the load-completion callback
+  // gated on autoOn — NOT from an onplay-driven flag — because mobile autoplay
+  // often won't re-fire onplay after an ended tick. Relying on onplay wedged
+  // the sequence on whatever buffer was last loaded, so the same beat repeated
+  // instead of advancing.
+  let autoOn = false;
+  let loading = false;
+
   const loadBeat = () => {
     beatPlayer.stop();
+    loading = true;
     const { url } = getBeatShuffler();
     autoBeatEl.src = url;
     autoBeatEl.muted = true;
-    beatPlayer.load(url).then(() => {
-      if (tonePending) playBeatTone();
-    }).catch(() => {
-      autoBeatEl.muted = false;
-    }).finally(() => {
-      tonePending = false;
-    });
+    beatPlayer.load(url)
+      .then(() => {
+        if (autoOn) playBeatTone();
+      })
+      .catch(() => {
+        // Tone couldn't decode this one — fall back to the raw <audio> clock
+        // so the user still hears something.
+        autoBeatEl.muted = false;
+      })
+      .finally(() => {
+        loading = false;
+      });
   };
 
   document.getElementById('btn-autobeats').onclick = () => {
     unlock();
+    autoOn = true;
     loadBeat();
   };
 
   autoBeatEl.onplay = () => {
     unlock();
-    tonePending = !beatPlayer.loaded;
-    playBeatTone();
   };
   autoBeatEl.onpause = () => beatPlayer.stop();
   autoBeatEl.onended = loadBeat;
