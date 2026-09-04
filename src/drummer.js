@@ -125,16 +125,18 @@ export function loadSample(rowId, folder, file) {
 }
 
 function preloadAll() {
-  state.rows.forEach((r) => {
+  return Promise.all(state.rows.map((r) => {
     if (r.folder && r.file) {
-      loadBuffer(r.folder, r.file).then((buf) => {
+      return loadBuffer(r.folder, r.file).then((buf) => {
         const rec = rows.get(r.id);
         if (buf && rec) {
           try { rec.player.buffer = buf; } catch (e) {}
         }
+        return !!buf;
       });
     }
-  });
+    return Promise.resolve(false);
+  }));
 }
 
 // ── Note -> playbackRate ────────────────────────────────────────────────────
@@ -146,52 +148,45 @@ function noteToRate(note) {
 }
 
 // ── Scheduling ──────────────────────────────────────────────────────────────
+// Tick-based step sequencer: one Transport repeat per 16th note, and on each
+// tick we trigger whichever rows are active on that step. This avoids the
+// fragile position-string api for scheduling individual cells.
 
-function scheduleRow(row) {
-  const rec = rows.get(row.id);
-  if (!rec) return;
-  const steps = row.steps;
-
-  for (let s = 0; s < STEPS; s++) {
-    if (steps[s] === 1) {
-      // Stab: one-shot at this step.
-      const pos = (s / 4) + 'n';
-      Tone.Transport.schedule((time) => {
-        if (row.mute || !rec.player.buffer) return;
-        rec.player.playbackRate = noteToRate(row.note);
-        rec.player.start(time);
-      }, pos);
-    }
-  }
-
-  // Sustain blocks: consecutive green cells = one held note across those steps.
-  let i = 0;
-  while (i < STEPS) {
-    if (steps[i] === 2) {
-      let runLen = 1;
-      while (i + runLen < STEPS && steps[i + runLen] === 2) runLen++;
-      const pos = (i / 4) + 'n';
-      const dur = runLen * sixteenthDur();
-      Tone.Transport.schedule((time) => {
-        if (row.mute || !rec.player.buffer) return;
-        rec.player.playbackRate = noteToRate(row.note);
-        rec.player.start(time, 0, dur);
-      }, pos);
-      i += runLen;
-    } else {
-      i++;
-    }
-  }
-}
+let currentStep = 0;
 
 function sixteenthDur() {
   return 60 / state.bpm / 4;
 }
 
+function triggerRow(row, time, val) {
+  const rec = rows.get(row.id);
+  if (!rec || row.mute || !rec.player.buffer) return;
+  try {
+    rec.player.playbackRate = noteToRate(row.note);
+    if (val === 2) {
+      // Sustain: determine run length of consecutive hold cells from this step.
+      let runLen = 1;
+      while (row.steps[(currentStep + runLen) % STEPS] === 2) runLen++;
+      rec.player.start(time, 0, runLen * sixteenthDur());
+    } else {
+      rec.player.start(time);
+    }
+  } catch (e) {}
+}
+
+function stepTick(time) {
+  onSixteenth(currentStep, time);
+  state.rows.forEach((row) => {
+    const val = row.steps[currentStep];
+    if (val !== 0) triggerRow(row, time, val);
+  });
+  currentStep = (currentStep + 1) % STEPS;
+}
+
 function scheduleAll() {
   Tone.Transport.cancel();
-  state.rows.forEach((row) => scheduleRow(row));
-  Tone.Transport.scheduleRepeat(onSixteenth, '16n');
+  currentStep = 0;
+  Tone.Transport.scheduleRepeat(stepTick, '16n');
 }
 
 // Visual callback — overridden by UI via onStep().
@@ -214,10 +209,16 @@ export function play() {
   if (_started) return;
   unlockTone();
   Tone.Transport.bpm.value = state.bpm;
-  preloadAll();
-  scheduleAll();
-  Tone.Transport.start();
-  _started = true;
+  // Load buffers first so the first step isn't silently missed, but fall back
+  // to starting after ~2s regardless (loads may be slow on first visit).
+  let started = false;
+  const start = () => { if (started) return; started = true; scheduleAll(); Tone.Transport.start(); _started = true; };
+  const t = setTimeout(start, 2000);
+  preloadAll().then((ok) => {
+    clearTimeout(t);
+    if (ok.every(Boolean)) start();
+    else setTimeout(start, 800);
+  });
 }
 
 export function stop() {
