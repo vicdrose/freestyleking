@@ -129,11 +129,15 @@ export function getSampleFiles(folder) {
 }
 
 /**
- * Build a playable URL from a folder name + relative file path.
+ * Build a playable URL from a folder category + file path.
+ *
+ * NOTE: `file` is already a full relative path emitted by list.php / the
+ * registry (e.g. "./wp-content/themes/thrive-nouveau/pads/x.wav"). `folder` is
+ * only the category key used to look it up — it is NOT part of the on-disk
+ * path, so we must NOT prepend it (doing so produced a bogus URL and silence).
  */
 export function sampleUrl(folder, file) {
-  const rel = folder + '/' + file;
-  return toUrl(rel);
+  return toUrl(file);
 }
 
 const LIST_URL = `${HOST}/wp-content/themes/thrive-nouveau/list.php`;
