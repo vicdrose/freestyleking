@@ -16,9 +16,10 @@ import {
 import { getSynonyms, getSoundsLike, getRhymes, getForismaticQuote } from './services/api.js';
 import { initAudio } from './services/audio.js';
 import * as Tone from 'tone';
-import { getBeatShuffler, getPad, getBreak, getBeat, getFKBeat, getBass, getSFX, getFill, loadSampleDirs } from './services/samples.js';
+import { getBeatShuffler, getPad, getBreak, getBeat, getFKBeat, getBass, getSFX, getFill, loadSampleDirs, getSampleFolders, getSampleFiles } from './services/samples.js';
 import { fetchFeed, playSong, isFeedPlaying, stopFeed } from './services/feed.js';
 import { saveTrack, listTracks, getTrack, deleteTrack } from './library.js';
+import * as drummer from './drummer.js';
 
 const Vue = window.Vue;
 
@@ -428,7 +429,8 @@ function beatToggles() {
   const groups = [
     ['chk-beat-player', 'beat-pane-player'],
     ['chk-beat-keys', 'beat-pane-keys'],
-    ['chk-beat-recorder', 'beat-pane-recorder']
+    ['chk-beat-recorder', 'beat-pane-recorder'],
+    ['chk-beat-drummer', 'beat-pane-drummer']
   ];
   groups.forEach(([chkId, paneId]) => {
     const chk = document.getElementById(chkId);
@@ -439,9 +441,11 @@ function beatToggles() {
     chk.addEventListener('ionChange', (e) => apply(!!e.detail.checked));
   });
 
-  // Keep the gold "on" tint on a row while its section is enabled.
+  // Keep the gold "on" tint on a row while its section is enabled. Use the
+  // section's show/hide toggle (not "arm" toggles, which some rows have).
   document.querySelectorAll('.beat-acc-row').forEach((row) => {
-    const chk = row.querySelector('ion-toggle');
+    const chkId = groups.find(([cid]) => document.getElementById(cid) && row.contains(document.getElementById(cid)));
+    const chk = chkId ? document.getElementById(chkId[0]) : row.querySelector('.arm-toggle');
     if (!chk) return;
     const sync = () => row.classList.toggle('on', !!chk.checked);
     sync();
@@ -454,11 +458,12 @@ function beatToggles() {
 // a ghost follows the finger/pointer, dashed bars show the drop spot, and on
 // release both the accordion rows and the matching panes are reordered.
 function sectionDragReorder() {
-  const PANES = { player: 'beat-pane-player', keys: 'beat-pane-keys', recorder: 'beat-pane-recorder' };
+  const PANES = { player: 'beat-pane-player', keys: 'beat-pane-keys', recorder: 'beat-pane-recorder', drummer: 'beat-pane-drummer' };
+  const PANES_COUNT = Object.keys(PANES).length;
   const STORAGE_KEY = 'fk.sectionOrder';
   const accordion = document.querySelector('.beat-accordion');
   const content = accordion ? accordion.querySelector('ion-accordion [slot="content"]') : null;
-  const firstPane = document.getElementById('beat-pane-player');
+  const firstPane = document.querySelector('.beat-pane');
   const paneParent = firstPane ? firstPane.parentElement : null;
   if (!content || !paneParent) return;
 
@@ -466,8 +471,8 @@ function sectionDragReorder() {
   let stored = null;
   try { stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (err) { stored = null; }
   if (Array.isArray(stored)) {
-    const valid = stored.filter((s) => PANES[s]).slice(0, 3);
-    if (valid.length === 3) {
+    const valid = stored.filter((s) => PANES[s]).slice(0, PANES_COUNT);
+    if (valid.length === PANES_COUNT) {
       valid.forEach((sec) => {
         const row = content.querySelector('.beat-acc-row[data-section="' + sec + '"]');
         if (row) content.appendChild(row);
@@ -717,10 +722,12 @@ octStart += 7;
 // ---------- Wire up all UI (called from Vue mounted) ----------
 function wireUI() {
   const audio = initAudio();
-  const { player, playerGain, sampler, recorder, mic, micFFT, beatGain, beatPlayer, beatEl, samplerGain } = audio;
+  const { player, playerGain, sampler, recorder, mic, micFFT, beatGain, beatPlayer, beatEl, samplerGain, drummerGain } = audio;
 
 // Pull the real sample lists from the host (falls back to bundled placeholders).
   const dirsPromise = loadSampleDirs();
+  window.getSampleFolders = () => getSampleFolders();
+  window.getSampleFiles = (f) => getSampleFiles(f);
 
   // Word buttons
   document.getElementById('btn-roll').onclick = queueAutorapSource(random_item, items, roll, 'common');
@@ -1435,6 +1442,240 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
       accBtn.setAttribute('aria-expanded', String(!open));
       accBody.hidden = open;
     };
+  }
+
+  // ── Drummer+ Mini wiring ─────────────────────────────────────────────────
+  drummer.init(drummerGain);
+
+  // Persist on unload.
+  window.addEventListener('beforeunload', () => drummer.save());
+
+  const drummerPlayBtn = document.getElementById('btn-drummerPlay');
+  const drummerBpmRange = document.getElementById('drummerBpmRange');
+  const drummerBpmVal = document.getElementById('drummerBpmVal');
+  const drummerVolRange = document.getElementById('drummerVolRange');
+  const drummerVolVal = document.getElementById('drummerVolVal');
+
+  const drummerSyncPlayBtn = () => {
+    drummerPlayBtn.textContent = drummer.isPlaying() ? 'STOP' : 'PLAY';
+  };
+
+  drummerPlayBtn.onclick = () => {
+    unlock();
+    drummer.togglePlay();
+    drummerSyncPlayBtn();
+    drummer.save();
+  };
+
+  drummerBpmRange.oninput = () => {
+    drummer.setBpm(drummerBpmRange.value);
+    drummerBpmVal.textContent = drummer.state.bpm;
+    drummer.save();
+  };
+
+  drummerVolRange.oninput = () => {
+    drummer.setVol(drummerVolRange.value / 100);
+    drummerVolVal.textContent = drummerVolRange.value;
+    drummer.save();
+  };
+
+  // Defaults per kind.
+  const DRUMMER_DEFAULTS = {
+    drum: { folder: 'kicks' },
+    pad: { folder: 'pads' },
+    bass: { folder: 'bass' },
+  };
+
+  function firstFile(folder) {
+    const files = getSampleFiles(folder);
+    return files.length ? files[0] : '';
+  }
+
+  function kindContainer(kind) {
+    if (kind === 'pad') return document.getElementById('drummerPads');
+    if (kind === 'bass') return document.getElementById('drummerBass');
+    return document.getElementById('drummerDrums');
+  }
+
+  function renderCellState(cell, val) {
+    cell.classList.remove('stab', 'sustain');
+    if (val === 1) cell.classList.add('stab');
+    else if (val === 2) cell.classList.add('sustain');
+  }
+
+  function renderDrummerRow(row) {
+    const cont = kindContainer(row.kind);
+    if (!cont) return;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'drummer-row';
+    wrap.dataset.id = row.id;
+
+    const icons = { drum: 'volume-high', pad: 'musical-notes', bass: 'pulse' };
+    const icon = icons[row.kind] || 'musical-notes';
+    const baseLabel = (row.file || '').split('/').pop().replace(/\.[^.]+$/, '') || 'No sample';
+
+    wrap.innerHTML =
+      '<div class="drummer-row-head">' +
+        '<ion-icon name="' + icon + '" class="drummer-row-icon"></ion-icon>' +
+        '<span class="drummer-row-label" title="' + (row.file || '') + '">' + baseLabel + '</span>' +
+        '<div class="drummer-row-head-mid">' +
+          '<span class="drummer-row-note">' + (row.note || '') + '</span>' +
+          '<input type="range" class="drummer-vol" min="0" max="100" value="' + Math.round(row.vol * 100) + '">' +
+        '</div>' +
+        '<button type="button" class="drummer-mute' + (row.mute ? ' active' : '') + '" title="Mute">M</button>' +
+        '<button type="button" class="drummer-del" title="Remove row">&times;</button>' +
+      '</div>' +
+      '<div class="drummer-steps"></div>' +
+      '<div class="drummer-opts" hidden></div>';
+
+    // ── Step grid ──────────────────────────────────────────────────────
+    const stepsEl = wrap.querySelector('.drummer-steps');
+    for (let s = 0; s < drummer.STEPS; s++) {
+      const cell = document.createElement('button');
+      cell.type = 'button';
+      cell.className = 'drum-cell';
+      cell.dataset.step = s;
+      cell.textContent = String(s + 1);
+      cell.onclick = () => {
+        unlock();
+        const next = (row.steps[s] + 1) % 3;
+        drummer.setStep(row.id, s, next);
+        renderCellState(cell, next);
+        drummer.save();
+      };
+      stepsEl.appendChild(cell);
+      renderCellState(cell, row.steps[s]);
+    }
+
+    // ── Head buttons ───────────────────────────────────────────────────
+    wrap.querySelector('.drummer-del').onclick = () => {
+      drummer.removeRow(row.id);
+      wrap.remove();
+      drummer.save();
+    };
+
+    const muteBtn = wrap.querySelector('.drummer-mute');
+    muteBtn.onclick = () => {
+      const m = !row.mute;
+      drummer.setRowMute(row.id, m);
+      muteBtn.classList.toggle('active', m);
+      drummer.save();
+    };
+
+    const volSlider = wrap.querySelector('.drummer-vol');
+    volSlider.oninput = () => {
+      drummer.setRowVol(row.id, volSlider.value / 100);
+      drummer.save();
+    };
+
+    // ── Options panel (folder/note) toggled by tapping the head ────────
+    const optsEl = wrap.querySelector('.drummer-opts');
+    const headEl = wrap.querySelector('.drummer-row-head');
+    headEl.style.cursor = 'pointer';
+    headEl.onclick = () => {
+      buildOptsPanel(optsEl, row, wrap);
+      optsEl.hidden = !optsEl.hidden;
+    };
+
+    cont.appendChild(wrap);
+  }
+
+  function buildOptsPanel(optsEl, row, wrap) {
+    if (optsEl.children.length) return;
+    const folders = getSampleFolders();
+    const currentFolder = row.folder && folders.includes(row.folder) ? row.folder : (folders[0] || '');
+
+    let html = '<div class="drummer-opts-inner">';
+    html += '<label>Folder <select class="drummer-folder">';
+    folders.forEach((f) => {
+      html += '<option value="' + f + '"' + (f === currentFolder ? ' selected' : '') + '>' + f + '</option>';
+    });
+    html += '</select></label>';
+    html += '<label>File <select class="drummer-file"></select></label>';
+    if (row.kind !== 'drum') {
+      html += '<label>Note <input type="text" class="drummer-note" value="' + (row.note || '') + '" placeholder="e.g. C4, B6"></label>';
+    }
+    html += '</div>';
+    optsEl.innerHTML = html;
+
+    const folderSel = optsEl.querySelector('.drummer-folder');
+    const fileSel = optsEl.querySelector('.drummer-file');
+
+    const populateFiles = () => {
+      const files = getSampleFiles(folderSel.value);
+      const keep = row.file && row.folder === folderSel.value ? row.file : (firstFile(folderSel.value));
+      fileSel.innerHTML = '';
+      files.forEach((f) => {
+        const opt = document.createElement('option');
+        opt.value = f;
+        opt.textContent = f.split('/').pop();
+        if (f === keep) opt.selected = true;
+        fileSel.appendChild(opt);
+      });
+      if (!files.length) {
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = '(no files)';
+        fileSel.appendChild(opt);
+      }
+      return keep;
+    };
+
+    // Apply the folder + selected file to the row and player.
+    const apply = (folder, file) => {
+      row.folder = folder;
+      row.file = file || '';
+      drummer.loadSample(row.id, row.folder, row.file);
+      const lbl = wrap.querySelector('.drummer-row-label');
+      if (lbl) lbl.textContent = (row.file || '').split('/').pop().replace(/\.[^.]+$/, '') || 'No sample';
+      drummer.save();
+    };
+
+    folderSel.onchange = () => {
+      const file = populateFiles();
+      apply(folderSel.value, file);
+    };
+
+    fileSel.onchange = () => {
+      apply(folderSel.value, fileSel.value);
+    };
+
+    populateFiles();
+
+    if (row.kind !== 'drum') {
+      const noteInput = optsEl.querySelector('.drummer-note');
+      noteInput.onchange = () => {
+        drummer.setRowNote(row.id, noteInput.value);
+        const noteEl = wrap.querySelector('.drummer-row-note');
+        if (noteEl) noteEl.textContent = row.note || '';
+        drummer.save();
+      };
+    }
+  }
+
+  function addDrummerRow(kind) {
+    unlock();
+    const def = DRUMMER_DEFAULTS[kind] || DRUMMER_DEFAULTS.drum;
+    const folder = def.folder;
+    const file = firstFile(folder);
+    const row = drummer.addRow(kind, folder, file);
+    drummer.loadSample(row.id, folder, file);
+    renderDrummerRow(row);
+    drummer.save();
+  }
+
+  document.getElementById('btn-addDrumRow').onclick = () => addDrummerRow('drum');
+  document.getElementById('btn-addPadRow').onclick = () => addDrummerRow('pad');
+  document.getElementById('btn-addBassRow').onclick = () => addDrummerRow('bass');
+
+  // Restore persisted state.
+  if (drummer.restore()) {
+    drummerBpmRange.value = drummer.state.bpm;
+    drummerBpmVal.textContent = drummer.state.bpm;
+    drummerVolRange.value = Math.round(drummer.state.vol * 100);
+    drummerVolVal.textContent = Math.round(drummer.state.vol * 100);
+    drummer.state.rows.forEach((row) => renderDrummerRow(row));
   }
 
   // Initial behavior parity

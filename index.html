@@ -249,6 +249,13 @@
                   <ion-toggle id="chk-beat-recorder" checked></ion-toggle>
                   <div class="acc-drag-handle" slot="end" role="button" aria-label="Drag to reorder Recorder"><ion-icon name="reorder-three" style="color:#d2b48c"></ion-icon></div>
                 </ion-item>
+                <ion-item class="beat-acc-row" data-section="drummer">
+                  <ion-icon slot="start" name="paw" style="color:#d2b48c"></ion-icon>
+                  <ion-label>Drummer+</ion-label>
+                  <ion-toggle id="arm-beat-drummer" class="arm-toggle" title="Arm for input"></ion-toggle>
+                  <ion-toggle id="chk-beat-drummer"></ion-toggle>
+                  <div class="acc-drag-handle" slot="end" role="button" aria-label="Drag to reorder Drummer+"><ion-icon name="reorder-three" style="color:#d2b48c"></ion-icon></div>
+                </ion-item>
               </div>
             </ion-accordion>
           </ion-accordion-group>
@@ -436,6 +443,52 @@
             <div class="rack-module rack-url">
               <div class="rack-url-status instructions">instructions: turn on mic, load beat, break, or not, press record, start
                 beat or break, press stop when done, listen to replay or download</div>
+            </div>
+
+          </div>
+
+          <div id="beat-pane-drummer" class="beat-pane studio-rack">
+
+            <div class="rack-module rack-source">
+              <div class="rack-label"><ion-icon name="paw"></ion-icon> Drummer+</div>
+            </div>
+
+            <div class="rack-module rack-params">
+              <div class="rack-param-row">
+                <ion-button id="btn-drummerPlay" expand="block" color="dark">PLAY</ion-button>
+                <div class="rack-param-label">BPM</div>
+                <input type="range" class="rack-slider" id="drummerBpmRange" min="40" max="400" step="1" value="110">
+                <div class="rack-param-val" id="drummerBpmVal">110</div>
+              </div>
+              <div class="rack-param-row">
+                <div class="rack-param-label">Vol</div>
+                <input type="range" class="rack-slider" id="drummerVolRange" min="0" max="100" step="1" value="85">
+                <div class="rack-param-val" id="drummerVolVal">85</div>
+              </div>
+            </div>
+
+            <div class="rack-module rack-drummer-kind">
+              <div class="drummer-kind-head">
+                <div class="rack-label"><ion-icon name="volume-high"></ion-icon> Drums</div>
+                <button type="button" id="btn-addDrumRow" class="drummer-add" title="Add drum row">+</button>
+              </div>
+              <div id="drummerDrums" class="drummer-rows"></div>
+            </div>
+
+            <div class="rack-module rack-drummer-kind">
+              <div class="drummer-kind-head">
+                <div class="rack-label"><ion-icon name="musical-notes"></ion-icon> Pads</div>
+                <button type="button" id="btn-addPadRow" class="drummer-add" title="Add pad row">+</button>
+              </div>
+              <div id="drummerPads" class="drummer-rows"></div>
+            </div>
+
+            <div class="rack-module rack-drummer-kind">
+              <div class="drummer-kind-head">
+                <div class="rack-label"><ion-icon name="pulse"></ion-icon> Bass</div>
+                <button type="button" id="btn-addBassRow" class="drummer-add" title="Add bass row">+</button>
+              </div>
+              <div id="drummerBass" class="drummer-rows"></div>
             </div>
 
           </div>

@@ -95,6 +95,47 @@ export function getBeatShuffler() {
   return { rel, url: toUrl(rel) };
 }
 
+export function getKick() {
+  const rel = randomPath(kicks);
+  return { rel, url: toUrl(rel) };
+}
+
+export function getClap() {
+  const rel = randomPath(claps);
+  return { rel, url: toUrl(rel) };
+}
+
+export function getHiHat() {
+  const rel = randomPath(hihats);
+  return { rel, url: toUrl(rel) };
+}
+
+/**
+ * Return all folders currently in the registry that have at least one sample.
+ * Used by the Drummer+ folder dropdown.
+ */
+export function getSampleFolders() {
+  return Object.entries(registry)
+    .filter(([, arr]) => arr.length > 0)
+    .map(([name]) => name);
+}
+
+/**
+ * Return the file list for a given folder name, or [] if unknown/empty.
+ */
+export function getSampleFiles(folder) {
+  const arr = registry[folder];
+  return Array.isArray(arr) ? arr.slice() : [];
+}
+
+/**
+ * Build a playable URL from a folder name + relative file path.
+ */
+export function sampleUrl(folder, file) {
+  const rel = folder + '/' + file;
+  return toUrl(rel);
+}
+
 const LIST_URL = `${HOST}/wp-content/themes/thrive-nouveau/list.php`;
 
 // Maps each app array to the on-disk directory (relative to the theme root)

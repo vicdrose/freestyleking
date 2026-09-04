@@ -44,12 +44,17 @@ export function initAudio() {
   beatPlayer.connect(beatGain);
   beatGain.toDestination();
 
+  // Drummer+ sequencer bus — carries all Drummer+ rows to speakers + recording.
+  const drummerGain = new Tone.Gain(1);
+  drummerGain.toDestination();
+
   const beatEl = document.querySelector('#autoBeatAudio');
 
   // Monitor bus — everything the performer hears while recording, unchanged.
   playerGain.connect(dest);
   samplerGain.connect(dest);
   beatGain.connect(dest);
+  drummerGain.connect(dest);
   mic.connect(dest);
 
   // Separate silent taps for the two-track take. The beat bus carries the
@@ -60,6 +65,7 @@ export function initAudio() {
   playerGain.connect(beatDest);
   samplerGain.connect(beatDest);
   beatGain.connect(beatDest);
+  drummerGain.connect(beatDest);
   mic.connect(micDest);
 
   const take = { beat: null, mic: null, pending: 0, onready: null };
@@ -104,5 +110,5 @@ export function initAudio() {
     }
   };
 
-  return { player, playerGain, sampler, mic, micFFT, recorder, dest, actx, chunks, audio, beatEl, beatGain, beatPlayer, samplerGain };
+  return { player, playerGain, sampler, mic, micFFT, recorder, dest, actx, chunks, audio, beatEl, beatGain, beatPlayer, samplerGain, drummerGain };
 }
