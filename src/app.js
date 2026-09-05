@@ -1907,19 +1907,18 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
   // Clip switching always re-renders the section's rows (patterns live in the
   // active clip). The engine also fires this when + / playback jumps clips.
   drummer.onClipChange((kind, idx) => {
-    const sel = clipSel(kind);
-    if (sel) sel.value = String(idx);
+    syncClipControls();
     rerenderSectionRows(kind);
     syncPatternIndicators();
   });
 
   PAT_KINDS.forEach((kind) => {
-    const nav = document.querySelector('.drummer-pat-nav[data-kind="' + kind + '"]');
     const sel = clipSel(kind);
-    const addBtn = nav ? nav.querySelector('.drummer-clip-add') : null;
-    const clearBtn = nav ? nav.querySelector('.drummer-clip-clear') : null;
-    const upBtn = nav ? nav.querySelector('.drummer-clip-up') : null;
-    const downBtn = nav ? nav.querySelector('.drummer-clip-down') : null;
+    const row = sel ? sel.closest('.drummer-clip-row') : null;
+    const addBtn = row ? row.querySelector('.drummer-clip-add') : null;
+    const clearBtn = row ? row.querySelector('.drummer-clip-clear') : null;
+    const upBtn = row ? row.querySelector('.drummer-clip-up') : null;
+    const downBtn = row ? row.querySelector('.drummer-clip-down') : null;
 
     const switchClip = (idx) => {
       unlock();
