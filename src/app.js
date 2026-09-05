@@ -1768,6 +1768,18 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
   document.getElementById('btn-addBassRow').onclick = () => addDrummerRow('bass');
   document.getElementById('btn-addSfxRow').onclick = () => addDrummerRow('sfx');
 
+  // Clear All: stop playback, remove every row (state + DOM + playhead registry).
+  document.getElementById('btn-drummerClear').onclick = () => {
+    unlock();
+    drummer.clear();
+    document.querySelectorAll('#beat-pane-drummer .drummer-row').forEach((r) => r.remove());
+    drumCells.forEach((arr) => arr.length = 0);
+    phStep = -1;
+    setDrummerPlayIcon(false);
+    movePlayhead(-1);
+    drummer.save();
+  };
+
   // Restore persisted state.
   if (drummer.restore()) {
     drummerBpmRange.value = drummer.state.bpm;

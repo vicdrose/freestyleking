@@ -2167,6 +2167,38 @@ ion-content {
   padding: 6px 0 0;
 }
 
+#beat-pane-drummer .rack-label svg {
+  vertical-align: middle;
+}
+
+.beat-acc-row svg[slot="start"] {
+  align-self: center;
+  vertical-align: middle;
+}
+
+.drummer-source-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.drummer-clear {
+  border: 1px solid rgba(210, 180, 140, .4);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, .3);
+  color: #d2b48c;
+  font-size: .68rem;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+.drummer-clear:hover {
+  background: rgba(210, 180, 140, .2);
+}
+.drummer-clear:active {
+  transform: scale(.96);
+}
+
 #beat-pane-drummer .drummer-kind-head .rack-label {
   margin-bottom: 0;
 }
@@ -2430,10 +2462,10 @@ ion-content {
 }
 
 .drummer-opts-inner select {
-  background: #ffce00;
-  border: 1px solid #ffce00;
+  background: rgba(0, 0, 0, .45);
+  border: 1px solid rgba(210, 180, 140, .35);
   border-radius: 4px;
-  color: #000;
+  color: #fff;
   font-size: .7rem;
   padding: 2px 4px;
   max-width: 120px;
