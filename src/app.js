@@ -1900,6 +1900,8 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
     PAT_KINDS.forEach((k) => {
       const sel = clipSel(k);
       if (!sel) return;
+      const row = sel.closest('.drummer-clip-row');
+      const del = row ? row.querySelector('.drummer-clip-del') : null;
       const count = drummer.getClips(k);
       const prev = sel.value;
       sel.innerHTML = '';
@@ -1911,6 +1913,7 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
       }
       sel.value = String(drummer.getClip(k));
       if (!sel.value && prev) sel.value = prev;
+      if (del) del.disabled = count <= 1;
     });
   }
 
@@ -1927,6 +1930,7 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
     const row = sel ? sel.closest('.drummer-clip-row') : null;
     const addBtn = row ? row.querySelector('.drummer-clip-add') : null;
     const clearBtn = row ? row.querySelector('.drummer-clip-clear') : null;
+    const delBtn = row ? row.querySelector('.drummer-clip-del') : null;
     const upBtn = row ? row.querySelector('.drummer-clip-up') : null;
     const downBtn = row ? row.querySelector('.drummer-clip-down') : null;
 
@@ -1951,6 +1955,11 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
       drummer.clearClip(kind);
       rerenderSectionRows(kind);
       drummer.save();
+    };
+    if (delBtn) delBtn.onclick = () => {
+      unlock();
+      // Engine refuses to remove the last clip; the button is disabled there.
+      if (drummer.removeClip(kind)) drummer.save();
     };
     if (upBtn) upBtn.onclick = () => switchClip(drummer.getClip(kind) - 1);
     if (downBtn) downBtn.onclick = () => switchClip(drummer.getClip(kind) + 1);

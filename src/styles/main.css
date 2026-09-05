@@ -2291,6 +2291,19 @@ ion-content {
   color: #e07070;
   border-color: rgba(224, 112, 112, .4);
 }
+.drummer-clip-btn.drummer-clip-del {
+  width: auto;
+  min-width: 20px;
+  color: #f0a0a0;
+  border-color: rgba(240, 160, 160, .4);
+}
+.drummer-clip-btn.drummer-clip-del:disabled {
+  opacity: .3;
+  cursor: default;
+}
+.drummer-clip-btn.drummer-clip-del:disabled:hover {
+  background: rgba(0, 0, 0, .3);
+}
 
 #beat-pane-drummer .rack-label svg {
   vertical-align: middle;
