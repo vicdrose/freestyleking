@@ -33,8 +33,8 @@ export const state = {
   // play session starts cycling from).
   sections: {
     drum: { count: 1, cur: 0 },
-    pad: { count: 1, cur: 0 },
-    bass: { count: 1, cur: 0 },
+    pad: { count: 1, cur: 0, choke: true },
+    bass: { count: 1, cur: 0, choke: true },
     sfx: { count: 1, cur: 0 },
   },
 };
@@ -219,6 +219,17 @@ function triggerRow(row, time, val, liveIdx) {
       rec.player.start(time, 0, runLen * sixteenthDur());
     } else {
       rec.player.start(time);
+    }
+    // Choke: when this row's section has choke on, cut off every other row in
+    // the same section that's still sounding (monophonic-ish behaviour). With
+    // choke off, rows can overlap freely (polyphony).
+    if (sectionOf(row.kind).choke) {
+      state.rows.forEach((other) => {
+        if (other.id === row.id || other.kind !== row.kind) return;
+        const orec = rows.get(other.id);
+        if (!orec) return;
+        try { orec.player.stop(time); } catch (e) {}
+      });
     }
   } catch (e) {}
 }
@@ -427,6 +438,11 @@ export function setPatternCount(kind, n) {
   return s.count;
 }
 
+export function setChoke(kind, v) {
+  const s = sectionOf(kind);
+  s.choke = !!v;
+}
+
 export function onSectionPattern(cb) {
   _onSectionPattern = cb || null;
 }
@@ -446,7 +462,7 @@ export function serialize() {
     vol: state.vol,
     nextId: state._nextId,
     sections: Object.keys(state.sections).reduce((acc, k) => {
-      acc[k] = { count: state.sections[k].count, cur: state.sections[k].cur };
+      acc[k] = { count: state.sections[k].count, cur: state.sections[k].cur, choke: !!state.sections[k].choke };
       return acc;
     }, {}),
     rows: state.rows.map((r) => ({
@@ -471,6 +487,7 @@ function setStateFromData(data) {
     const d = (data.sections || {})[k];
     state.sections[k].count = d && d.count > 0 ? Math.min(MAX_PATTERNS, d.count) : 1;
     state.sections[k].cur = d && d.cur != null ? Math.min(Math.max(0, d.cur), state.sections[k].count - 1) : 0;
+    state.sections[k].choke = d && d.choke != null ? !!d.choke : (k === 'pad' || k === 'bass');
     live[k] = state.sections[k].cur;
   });
   state.rows = (data.rows || []).map((r) => {

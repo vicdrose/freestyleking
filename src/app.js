@@ -1871,6 +1871,24 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
 
   syncPatternIndicators();
 
+  // ── Choke toggles (pads / bass) ───────────────────────────────────────────
+  function syncChokeBoxes() {
+    ['pad', 'bass'].forEach((k) => {
+      const ck = document.querySelector('.drummer-choke-input[data-kind="' + k + '"]');
+      if (ck) ck.checked = !!drummer.getSection(k).choke;
+    });
+  }
+
+  document.querySelectorAll('.drummer-choke-input').forEach((ck) => {
+    ck.onchange = () => {
+      unlock();
+      drummer.setChoke(ck.dataset.kind, ck.checked);
+      drummer.save();
+    };
+  });
+
+  syncChokeBoxes();
+
   // ── Rack save / load ──────────────────────────────────────────────────────
   const RACKS_KEY = 'fk.drummer.racks';
   const drummerSaveName = document.getElementById('drummerSaveName');
@@ -1930,6 +1948,7 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
     wipeRackDom();
     rows.forEach((row) => renderDrummerRow(row));
     syncPatternIndicators();
+    syncChokeBoxes();
     drummerBpmRange.value = drummer.state.bpm;
     drummerBpmVal.textContent = drummer.state.bpm;
     drummerVolRange.value = Math.round(drummer.state.vol * 100);
@@ -1960,6 +1979,7 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
     drummerVolVal.textContent = Math.round(drummer.state.vol * 100);
     drummer.state.rows.forEach((row) => renderDrummerRow(row));
     syncPatternIndicators();
+    syncChokeBoxes();
   }
 
   // Initial behavior parity

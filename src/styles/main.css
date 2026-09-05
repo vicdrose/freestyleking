@@ -2177,6 +2177,30 @@ ion-content {
   gap: 2px;
   margin-left: auto;
 }
+
+.drummer-choke {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: .58rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #d2b48c;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.drummer-choke input[type="checkbox"] {
+  accent-color: #ffce00;
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  cursor: pointer;
+}
+.drummer-choke input[type="checkbox"]:not(:checked) + span {
+  opacity: .5;
+}
 .drummer-pat-btn {
   width: 20px;
   height: 20px;
