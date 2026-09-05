@@ -1447,6 +1447,22 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
   // ── Drummer+ Mini wiring ─────────────────────────────────────────────────
   drummer.init(drummerGain);
 
+  // Playhead: one column of step cells per step, so we can highlight the
+  // step currently being played across every row.
+  const drumCells = Array.from({ length: drummer.STEPS }, () => []);
+  let phStep = -1;
+  const movePlayhead = (step) => {
+    if (step === phStep) return;
+    if (phStep >= 0 && phStep < drumCells.length) {
+      drumCells[phStep].forEach((c) => c && c.classList.remove('ph'));
+    }
+    phStep = step;
+    if (step >= 0 && step < drumCells.length) {
+      drumCells[step].forEach((c) => c && c.classList.add('ph'));
+    }
+  };
+  drummer.onStep(movePlayhead);
+
   // Persist on unload.
   window.addEventListener('beforeunload', () => drummer.save());
 
@@ -1456,14 +1472,24 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
   const drummerVolRange = document.getElementById('drummerVolRange');
   const drummerVolVal = document.getElementById('drummerVolVal');
 
-  const drummerSyncPlayBtn = () => {
-    drummerPlayBtn.textContent = drummer.isPlaying() ? 'STOP' : 'PLAY';
+  const setDrummerPlayIcon = (playing) => {
+    if (!drummerPlayBtn) return;
+    drummerPlayBtn.classList.toggle('playing', playing);
+    const icon = drummerPlayBtn.querySelector('ion-icon');
+    if (icon) icon.setAttribute('name', playing ? 'stop' : 'play');
   };
+  // Async start (buffer load) means _started flips later than the click, so
+  // keep the button synced from the engine's play-state hook too.
+  drummer.onPlayState((playing) => {
+    setDrummerPlayIcon(playing);
+    movePlayhead(playing ? drummer.getCurrentStep() : -1);
+  });
 
   drummerPlayBtn.onclick = () => {
     unlock();
     drummer.togglePlay();
-    drummerSyncPlayBtn();
+    setDrummerPlayIcon(drummer.isPlaying());
+    movePlayhead(drummer.isPlaying() ? drummer.getCurrentStep() : -1);
     drummer.save();
   };
 
@@ -1546,10 +1572,18 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
       };
       stepsEl.appendChild(cell);
       renderCellState(cell, row.steps[s]);
+      drumCells[s].push(cell);
+      if (phStep === s) cell.classList.add('ph');
     }
 
     // ── Head buttons ───────────────────────────────────────────────────
     wrap.querySelector('.drummer-del').onclick = () => {
+      // Drop this row's cells from the playhead registry.
+      for (let s = 0; s < drummer.STEPS; s++) {
+        const clicks = drumCells[s];
+        const idx = clicks.indexOf(wrap.querySelector('.drummer-steps').children[s]);
+        if (idx >= 0) clicks.splice(idx, 1);
+      }
       drummer.removeRow(row.id);
       wrap.remove();
       drummer.save();

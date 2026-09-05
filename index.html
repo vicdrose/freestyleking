@@ -455,7 +455,9 @@
 
             <div class="rack-module rack-params">
               <div class="rack-param-row">
-                <ion-button id="btn-drummerPlay" expand="block" color="dark">PLAY</ion-button>
+                <button type="button" id="btn-drummerPlay" class="drummer-play" title="Play / Stop">
+                  <ion-icon name="play"></ion-icon>
+                </button>
                 <div class="rack-param-label">BPM</div>
                 <input type="range" class="rack-slider" id="drummerBpmRange" min="40" max="400" step="1" value="110">
                 <div class="rack-param-val" id="drummerBpmVal">110</div>
@@ -724,6 +726,7 @@
       </div>
     </div>
   </div>
+<script type="module" src="/src/main.js"></script>
 <script type="module" src="/src/main.js"></script>
 
   <!-- Name your track modal -->

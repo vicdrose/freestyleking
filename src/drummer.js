@@ -183,14 +183,24 @@ function stepTick(time) {
   currentStep = (currentStep + 1) % STEPS;
 }
 
-function scheduleAll() {
+// resetPos: when true the playhead returns to step 0 (used on fresh play);
+// when false the current position is preserved so edits take effect in time
+// rather than restarting the sequence from the top.
+function scheduleAll(resetPos) {
   Tone.Transport.cancel();
-  currentStep = 0;
+  if (resetPos) currentStep = 0;
   Tone.Transport.scheduleRepeat(stepTick, '16n');
 }
 
 // Visual callback — overridden by UI via onStep().
 function onSixteenth() {}
+
+// Play-state callback — fired when playback actually starts/stops, so the UI
+// can stay in sync even though play() starts the transport asynchronously.
+let _onPlayState = null;
+function firePlayState(playing) {
+  try { _onPlayState && _onPlayState(playing); } catch (e) {}
+}
 
 function unlockTone() {
   try { Tone.start(); } catch (e) {}
@@ -212,7 +222,7 @@ export function play() {
   // Load buffers first so the first step isn't silently missed, but fall back
   // to starting after ~2s regardless (loads may be slow on first visit).
   let started = false;
-  const start = () => { if (started) return; started = true; scheduleAll(); Tone.Transport.start(); _started = true; };
+  const start = () => { if (started) return; started = true; scheduleAll(true); Tone.Transport.start(); _started = true; firePlayState(true); };
   const t = setTimeout(start, 2000);
   preloadAll().then((ok) => {
     clearTimeout(t);
@@ -229,6 +239,7 @@ export function stop() {
     try { rec.player.stop(); } catch (e) {}
   });
   _started = false;
+  firePlayState(false);
 }
 
 export function togglePlay() {
@@ -238,6 +249,14 @@ export function togglePlay() {
 
 export function isPlaying() {
   return _started;
+}
+
+export function onPlayState(cb) {
+  _onPlayState = cb;
+}
+
+export function getCurrentStep() {
+  return currentStep;
 }
 
 export function setBpm(v) {
@@ -275,7 +294,9 @@ export function setStep(id, step, val) {
   const row = getRow(id);
   if (row && step >= 0 && step < STEPS) {
     row.steps[step] = val;
-    if (_started) scheduleAll();
+    // Re-schedule without resetting the playhead so a step edit never
+    // restarts/loops the sequence from the top mid-playback.
+    if (_started) scheduleAll(false);
   }
 }
 
