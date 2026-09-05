@@ -2152,7 +2152,7 @@ rows.forEach((row) => renderDrummerRow(row));
   function refreshSyncStatus() {
     const st = filesync.folderStatus();
     const modeLabel = st.mode === 'folder'
-      ? 'Desktop — full folder sync'
+      ? 'Full folder sync'
       : (st.mode === 'share' ? 'Phone/tablet — export/import files' : 'This browser — local only');
     if (syncStatusEl) {
       syncStatusEl.textContent = st.connected

@@ -39,6 +39,8 @@ let lastSignature = '';
 let lastStateSig = '';
 let lastRackSig = '';
 let lastSettingsSig = '';
+let lastTrackSig = '';
+let lastTrackMap = null;
 
 const b64 = (blob) => new Promise((resolve, reject) => {
   const r = new FileReader();
@@ -137,6 +139,8 @@ export async function connectFolder() {
   dirName = root.name || '';
   await kvSet(KV_KEY, root);
   lastSignature = '';
+  lastTrackSig = '';
+  lastTrackMap = null;
   return { ok: true, name: dirName };
 }
 
@@ -145,6 +149,8 @@ export async function disconnectFolder() {
   dirName = '';
   await kvSet(KV_KEY, null);
   lastSignature = '';
+  lastTrackSig = '';
+  lastTrackMap = null;
 }
 
 // Adopt a folder handle without the native picker. Exposed for testing and as
@@ -154,6 +160,8 @@ export function setDirHandle(root) {
   dirHandle = root;
   dirName = root && root.name ? root.name : '';
   lastSignature = '';
+  lastTrackSig = '';
+  lastTrackMap = null;
   return folderStatus();
 }
 
@@ -374,8 +382,31 @@ async function mirrorState(meta) {
     lastSettingsSig = settingsStr;
     if (await writeFile(dirHandle, 'settings.json', settingsStr)) wrote += 1;
   }
-  await writeFile(dirHandle, 'tracks.json', JSON.stringify(meta.tracks));
+  const tracksStr = JSON.stringify(meta.tracks);
+  if (tracksStr !== lastTrackSig) {
+    lastTrackSig = tracksStr;
+    if (await writeFile(dirHandle, 'tracks.json', tracksStr)) wrote += 1;
+    await writeTrackWavs(meta);
+  }
   return { wrote };
+}
+
+// Write WAVs for tracks that are new or whose metadata changed since the last
+// mirror, so a track saved mid-session lands in the folder immediately rather
+// than waiting for the next launch/connect full mirror.
+async function writeTrackWavs(meta) {
+  const prevMap = lastTrackMap || new Map();
+  const nextMap = new Map();
+  await Promise.all(meta.tracks.map(async (t) => {
+    nextMap.set(t.id, t);
+    const prev = prevMap.get(t.id);
+    if (prev && JSON.stringify(prev) === JSON.stringify(t)) return;
+    try {
+      const rec = await getTrack(t.id);
+      if (rec && rec.blob) await writeBlob(dirHandle, 'tracks', t.id + '.wav', rec.blob);
+    } catch (e) {}
+  }));
+  lastTrackMap = nextMap;
 }
 
 export async function writeMirror() {
@@ -388,16 +419,10 @@ export async function writeMirrorBundle() {
   if (!dirHandle) return;
   const meta = await buildMetaBundle();
   lastSignature = '';
+  lastTrackSig = '';
+  lastTrackMap = null;
   await mirrorState(meta);
-  // Write WAVs: fetch each blob and store under tracks/<id>.wav (idempotent,
-  // overwrites so the folder always has the latest rendered audio).
-  const tracks = meta.tracks;
-  await Promise.all(tracks.map(async (t) => {
-    try {
-      const rec = await getTrack(t.id);
-      if (rec && rec.blob) await writeBlob(dirHandle, 'tracks', t.id + '.wav', rec.blob);
-    } catch (e) {}
-  }));
+  await writeTrackWavs(meta);
 }
 
 export async function exportSingleFile() {
