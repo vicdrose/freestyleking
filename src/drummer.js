@@ -330,18 +330,75 @@ export function onStep(cb) {
 
 const STORAGE_KEY = 'fk.drummer.state';
 
+/**
+ * Serialize the full rack — rows (kind, folder, file, note, vol, mute, steps)
+ * plus master bpm/vol. Used by the named-rack save feature.
+ */
+export function serialize() {
+  return {
+    bpm: state.bpm,
+    vol: state.vol,
+    nextId: state._nextId,
+    rows: state.rows.map((r) => ({
+      kind: r.kind,
+      folder: r.folder,
+      file: r.file,
+      note: r.note,
+      vol: r.vol,
+      mute: r.mute,
+      steps: r.steps.slice(0, STEPS),
+    })),
+  };
+}
+
+// Build fresh state (new row ids) from serialized rack data, wiring up players
+// and buffers. Shared by restore() and applyRack().
+function setStateFromData(data) {
+  state.bpm = data.bpm || 110;
+  state.vol = data.vol != null ? data.vol : 0.85;
+  state._nextId = data.nextId || (data.rows || []).length + 1;
+  state.rows = (data.rows || []).map((r) => ({
+    id: 'r' + (state._nextId++),
+    kind: r.kind || 'drum',
+    folder: r.folder || '',
+    file: r.file || '',
+    note: (r.note !== undefined && r.note !== null) ? r.note : null,
+    vol: r.vol != null ? r.vol : 1,
+    mute: !!r.mute,
+    steps: Array.isArray(r.steps)
+      ? r.steps.map((v) => (v === 1 || v === 2 ? v : 0)).slice(0, STEPS)
+      : new Array(STEPS).fill(0),
+  }));
+
+  state.rows.forEach((row) => {
+    ensurePlayer(row);
+    if (row.folder && row.file) {
+      loadBuffer(row.folder, row.file).then((buf) => {
+        const rec = rows.get(row.id);
+        if (buf && rec) {
+          try { rec.player.buffer = buf; } catch (e) {}
+        }
+      });
+    }
+  });
+}
+
+/**
+ * Replace the current rack with a saved one. Stops playback, tears down all
+ * rows/players, and rebuilds the state; buffers load in the background.
+ * Returns the new row objects so the UI can re-render them.
+ */
+export function applyRack(data) {
+  stop();
+  state.rows.slice().forEach((r) => removeRow(r.id));
+  if (!data || !Array.isArray(data.rows)) return [];
+  setStateFromData(data);
+  return state.rows;
+}
+
 export function save() {
   try {
-    const data = {
-      bpm: state.bpm,
-      vol: state.vol,
-      nextId: state._nextId,
-      rows: state.rows.map((r) => ({
-        id: r.id, kind: r.kind, folder: r.folder, file: r.file,
-        note: r.note, vol: r.vol, mute: r.mute, steps: r.steps,
-      })),
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(serialize()));
   } catch (e) {}
 }
 
@@ -351,32 +408,7 @@ export function restore() {
     if (!raw) return false;
     const data = JSON.parse(raw);
     if (!data || !Array.isArray(data.rows)) return false;
-
-    state.bpm = data.bpm || 110;
-    state.vol = data.vol != null ? data.vol : 0.85;
-    state._nextId = data.nextId || data.rows.length + 1;
-    state.rows = data.rows.map((r) => ({
-      id: r.id || 'r' + (state._nextId++),
-      kind: r.kind || 'drum',
-      folder: r.folder || '',
-      file: r.file || '',
-      note: r.note || null,
-      vol: r.vol != null ? r.vol : 1,
-      mute: !!r.mute,
-      steps: Array.isArray(r.steps) ? r.steps.slice(0, STEPS) : new Array(STEPS).fill(0),
-    }));
-
-    state.rows.forEach((row) => {
-      ensurePlayer(row);
-      if (row.folder && row.file) {
-        loadBuffer(row.folder, row.file).then((buf) => {
-          const rec = rows.get(row.id);
-          if (buf && rec) {
-            try { rec.player.buffer = buf; } catch (e) {}
-          }
-        });
-      }
-    });
+    setStateFromData(data);
     return true;
   } catch (e) {
     return false;

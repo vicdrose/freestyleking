@@ -1780,6 +1780,86 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
     drummer.save();
   };
 
+  // ── Rack save / load ──────────────────────────────────────────────────────
+  const RACKS_KEY = 'fk.drummer.racks';
+  const drummerSaveName = document.getElementById('drummerSaveName');
+  const drummerLoadSel = document.getElementById('drummerLoadSel');
+  const getRacks = () => {
+    try { return JSON.parse(localStorage.getItem(RACKS_KEY)) || {}; } catch (e) { return {}; }
+  };
+  const putRacks = (racks) => {
+    try { localStorage.setItem(RACKS_KEY, JSON.stringify(racks)); } catch (e) {}
+  };
+
+  function refreshRackSel() {
+    const names = Object.keys(getRacks()).sort();
+    const prev = drummerLoadSel.value;
+    drummerLoadSel.innerHTML = '<option value="" disabled selected>Load\u2026</option>';
+    names.forEach((n) => {
+      const opt = document.createElement('option');
+      opt.value = n;
+      opt.textContent = n;
+      drummerLoadSel.appendChild(opt);
+    });
+    if (names.includes(prev)) drummerLoadSel.value = prev;
+  }
+
+  function saveRack() {
+    const name = (drummerSaveName.value || '').trim();
+    if (!name) {
+      drummerSaveName.focus();
+      drummerSaveName.classList.add('flash');
+      setTimeout(() => drummerSaveName.classList.remove('flash'), 400);
+      return;
+    }
+    unlock();
+    const racks = getRacks();
+    racks[name] = { savedAt: Date.now(), ...drummer.serialize() };
+    putRacks(racks);
+    refreshRackSel();
+    drummerLoadSel.value = name;
+    drummerSaveName.value = '';
+  }
+
+  function wipeRackDom() {
+    document.querySelectorAll('#beat-pane-drummer .drummer-row').forEach((r) => r.remove());
+    drumCells.forEach((arr) => arr.length = 0);
+    phStep = -1;
+    setDrummerPlayIcon(false);
+    movePlayhead(-1);
+  }
+
+  function applyRack() {
+    const name = drummerLoadSel.value;
+    if (!name) return;
+    const racks = getRacks();
+    if (!racks[name]) return;
+    unlock();
+    const rows = drummer.applyRack(racks[name]);
+    wipeRackDom();
+    rows.forEach((row) => renderDrummerRow(row));
+    drummerBpmRange.value = drummer.state.bpm;
+    drummerBpmVal.textContent = drummer.state.bpm;
+    drummerVolRange.value = Math.round(drummer.state.vol * 100);
+    drummerVolVal.textContent = Math.round(drummer.state.vol * 100);
+    drummer.save();
+  }
+
+  function deleteRack() {
+    const name = drummerLoadSel.value;
+    if (!name) return;
+    const racks = getRacks();
+    delete racks[name];
+    putRacks(racks);
+    refreshRackSel();
+    drummerSaveName.value = name;
+  }
+
+  document.getElementById('btn-drummerSaveRack').onclick = saveRack;
+  document.getElementById('btn-drummerLoadRack').onclick = applyRack;
+  document.getElementById('btn-drummerDelRack').onclick = deleteRack;
+  refreshRackSel();
+
   // Restore persisted state.
   if (drummer.restore()) {
     drummerBpmRange.value = drummer.state.bpm;

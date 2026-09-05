@@ -482,6 +482,21 @@
               </div>
             </div>
 
+            <div class="rack-module rack-params">
+              <div class="rack-label">Rack save / load</div>
+              <div class="drummer-save-row">
+                <input type="text" id="drummerSaveName" class="drummer-save-name" placeholder="Rack name" autocomplete="off">
+                <button type="button" id="btn-drummerSaveRack" class="drummer-clear" title="Save the current rack under this name">Save</button>
+              </div>
+              <div class="drummer-save-row">
+                <select id="drummerLoadSel" class="drummer-save-select" title="Saved racks">
+                  <option value="" disabled selected>Load&hellip;</option>
+                </select>
+                <button type="button" id="btn-drummerLoadRack" class="drummer-clear" title="Load the selected rack">Load</button>
+                <button type="button" id="btn-drummerDelRack" class="drummer-clear" title="Delete the selected rack">Del</button>
+              </div>
+            </div>
+
             <div class="rack-module rack-drummer-kind">
               <div class="drummer-kind-head">
                 <div class="rack-label"><ion-icon name="volume-high"></ion-icon> Drums</div>
