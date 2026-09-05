@@ -2272,6 +2272,19 @@ rows.forEach((row) => renderDrummerRow(row));
   refreshSyncStatus();
   initFileSync();
 
+  // Menu → Settings disclosure (Sync + Advanced animation live inside it)
+  const settingsMenuItem = document.getElementById('settings-menu-item');
+  const settingsMenuSub = document.getElementById('settings-menu-sub');
+  const settingsChev = document.getElementById('settings-chev');
+  if (settingsMenuItem && settingsMenuSub) {
+    settingsMenuItem.addEventListener('click', () => {
+      const openNow = settingsMenuSub.hidden;
+      settingsMenuSub.hidden = !openNow;
+      settingsMenuSub.setAttribute('data-open', String(openNow));
+      if (settingsChev) settingsChev.style.transform = openNow ? 'rotate(180deg)' : '';
+    });
+  }
+
   // Initial behavior parity
   roll();
 }

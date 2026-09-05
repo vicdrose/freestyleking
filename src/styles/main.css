@@ -46,6 +46,19 @@ ion-menu#menu-start ion-item ion-icon {
   color: #fff;
 }
 
+ion-menu#menu-start .menu-sub ion-item {
+  --padding-start: 40px;
+  background: rgba(0, 0, 0, .14);
+  font-size: .85rem;
+}
+ion-menu#menu-start .menu-sub ion-item ion-icon {
+  color: #d2b48c;
+}
+ion-menu#menu-start #settings-chev {
+  transition: transform .2s ease;
+  color: #d2b48c;
+}
+
 body {
   background-color: black;
   color: white;

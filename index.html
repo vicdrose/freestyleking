@@ -38,15 +38,21 @@
     </ion-header>
     <ion-content color="dark">
       <ion-list>
+        <ion-item id="settings-menu-item">
+          <ion-icon slot="start" name="settings-outline"></ion-icon>
+          <ion-label>Settings</ion-label>
+          <ion-icon slot="end" name="chevron-down-outline" id="settings-chev"></ion-icon>
+        </ion-item>
+        <div id="settings-menu-sub" class="menu-sub" hidden>
+          <ion-item id="sync-menu-item"><ion-icon slot="start" name="cloud-done-outline"></ion-icon><ion-label>Sync</ion-label></ion-item>
+          <ion-item>
+            <ion-checkbox slot="start" id="fk-chk-advanced"></ion-checkbox>
+            <ion-label>Advanced audio player animation</ion-label>
+          </ion-item>
+        </div>
         <ion-item><ion-icon slot="start" name="people-outline"></ion-icon><ion-label>Friends</ion-label></ion-item>
-        <ion-item><ion-icon slot="start" name="settings-outline"></ion-icon><ion-label>Settings</ion-label></ion-item>
         <ion-item><ion-icon slot="start" name="document-outline"></ion-icon><ion-label>Posts</ion-label></ion-item>
         <ion-item id="lib-menu-item"><ion-icon slot="start" name="library-outline"></ion-icon><ion-label>Library</ion-label></ion-item>
-        <ion-item id="sync-menu-item"><ion-icon slot="start" name="cloud-done-outline"></ion-icon><ion-label>Sync</ion-label></ion-item>
-        <ion-item>
-          <ion-checkbox slot="start" id="fk-chk-advanced"></ion-checkbox>
-          <ion-label>Advanced audio player animation</ion-label>
-        </ion-item>
       </ion-list>
     </ion-content>
   </ion-menu>
@@ -251,7 +257,7 @@
                   <div class="acc-drag-handle" slot="end" role="button" aria-label="Drag to reorder Recorder"><ion-icon name="reorder-three" style="color:#d2b48c"></ion-icon></div>
                 </ion-item>
                 <ion-item class="beat-acc-row" data-section="drummer">
-                  <svg slot="start" viewBox="0 0 512 512" width="24" height="24" fill="#d2b48c" aria-label="Drummer+">
+                  <svg slot="start" viewBox="0 0 512 512" width="24" height="24" fill="#d2b48c" style="margin-inline-end:32px" aria-label="Drummer+">
                     <ellipse cx="256" cy="160" rx="180" ry="52"/>
                     <path d="M76 158v112c0 66 81 112 180 112s180-46 180-112V158"/>
                     <ellipse cx="256" cy="270" rx="180" ry="52"/>
