@@ -19,6 +19,7 @@ import * as Tone from 'tone';
 import { getBeatShuffler, getPad, getBreak, getBeat, getFKBeat, getBass, getSFX, getFill, loadSampleDirs, getSampleFolders, getSampleFiles } from './services/samples.js';
 import { fetchFeed, playSong, isFeedPlaying, stopFeed } from './services/feed.js';
 import { saveTrack, listTracks, getTrack, deleteTrack } from './library.js';
+import * as filesync from './services/filesync.js';
 import * as drummer from './drummer.js';
 
 const Vue = window.Vue;
@@ -2117,8 +2118,7 @@ rows.forEach((row) => renderDrummerRow(row));
   document.getElementById('btn-drummerDelRack').onclick = deleteRack;
   refreshRackSel();
 
-  // Restore persisted state.
-  if (drummer.restore()) {
+  function applyDrummerToUi() {
     drummerBpmRange.value = drummer.state.bpm;
     drummerBpmVal.textContent = drummer.state.bpm;
     drummerVolRange.value = Math.round(drummer.state.vol * 100);
@@ -2129,6 +2129,148 @@ rows.forEach((row) => renderDrummerRow(row));
     syncClipControls();
     syncAudioVisuals();
   }
+
+  // Restore persisted state.
+  if (drummer.restore()) {
+    applyDrummerToUi();
+  }
+
+  // ── Cross-device sync (folder / import-export) ────────────────────────────
+  // Every persist (action save + the 5s interval net) mirrors to the synced
+  // folder when one is connected; rack/settings changes ride the same net.
+  drummer.onSaved(() => { filesync.writeMirror().catch(() => {}); });
+
+  const syncOverlay = document.getElementById('syncOverlay');
+  const syncStatusEl = document.getElementById('syncStatus');
+  const btnSyncConnect = document.getElementById('btn-syncConnect');
+  const btnSyncDisconnect = document.getElementById('btn-syncDisconnect');
+  const btnSyncExport = document.getElementById('btn-syncExport');
+  const btnSyncImport = document.getElementById('btn-syncImport');
+  const syncImportInput = document.getElementById('syncImportInput');
+  const syncMenuItem = document.getElementById('sync-menu-item');
+
+  function refreshSyncStatus() {
+    const st = filesync.folderStatus();
+    const modeLabel = st.mode === 'folder'
+      ? 'Desktop — full folder sync'
+      : (st.mode === 'share' ? 'Phone/tablet — export/import files' : 'This browser — local only');
+    if (syncStatusEl) {
+      syncStatusEl.textContent = st.connected
+        ? 'Synced to folder: "' + (st.name || 'connected') + '" · ' + modeLabel
+        : 'Not connected · ' + modeLabel;
+    }
+    if (btnSyncConnect) btnSyncConnect.hidden = st.connected;
+    if (btnSyncDisconnect) btnSyncDisconnect.hidden = !st.connected;
+  }
+
+  async function syncIntoApp() {
+    try {
+      const bundle = await filesync.readDirBundle();
+      if (!bundle) return;
+      const res = await filesync.mergeBundle(bundle);
+      if (res.stateChanged && res.state && Array.isArray(res.state.rows)) {
+        unlock();
+        wipeRackDom();
+        drummer.applyRack(res.state);
+        applyDrummerToUi();
+        drummer.save();
+      }
+      if (res.tracksAdded) {
+        showToast('Imported ' + res.tracksAdded + ' track' + (res.tracksAdded === 1 ? '' : 's'));
+      }
+      await filesync.writeMirror();
+    } catch (e) {}
+  }
+
+  async function initFileSync() {
+    try {
+      const connected = await filesync.loadHandle();
+      if (!connected) {
+        refreshSyncStatus();
+        return;
+      }
+      await syncIntoApp();
+      await filesync.writeMirrorBundle();
+      refreshSyncStatus();
+    } catch (e) {}
+  }
+
+  if (syncMenuItem && syncOverlay) {
+    syncMenuItem.addEventListener('click', () => {
+      const menu = document.getElementById('menu-start');
+      if (menu && typeof menu.close === 'function') menu.close();
+      refreshSyncStatus();
+      syncOverlay.hidden = false;
+    });
+  }
+  const btnSyncClose = document.getElementById('btn-syncClose');
+  if (btnSyncClose) btnSyncClose.addEventListener('click', () => { syncOverlay.hidden = true; });
+  if (syncOverlay) syncOverlay.addEventListener('click', (e) => { if (e.target === syncOverlay) syncOverlay.hidden = true; });
+
+  if (btnSyncConnect) {
+    btnSyncConnect.addEventListener('click', async () => {
+      const r = await filesync.connectFolder();
+      if (r.ok) {
+        showToast('Connected. Reading folder…');
+      } else if (r.error === 'no-folder-api') {
+        showToast('Folder access isn\u2019t available on this browser.');
+      } else if (r.error !== 'cancelled') {
+        showToast('Folder access not granted.');
+      }
+      refreshSyncStatus();
+      if (r.ok) {
+        await syncIntoApp();
+        await filesync.writeMirrorBundle();
+        refreshSyncStatus();
+      }
+    });
+  }
+
+  if (btnSyncDisconnect) {
+    btnSyncDisconnect.addEventListener('click', async () => {
+      await filesync.disconnectFolder();
+      refreshSyncStatus();
+      showToast('Disconnected.');
+    });
+  }
+
+  if (btnSyncExport) {
+    btnSyncExport.addEventListener('click', async () => {
+      const r = await filesync.exportSingleFile();
+      showToast(r.shared ? 'Shared ' + r.name : 'Downloaded ' + r.name);
+    });
+  }
+
+  if (btnSyncImport && syncImportInput) {
+    btnSyncImport.addEventListener('click', () => syncImportInput.click());
+    syncImportInput.addEventListener('change', async () => {
+      const r = await filesync.importFiles(syncImportInput.files);
+      syncImportInput.value = '';
+      if (r && r.merged) {
+        const bits = [];
+        if (r.tracksAdded) bits.push((r.tracksAdded === 1 ? '1 track' : r.tracksAdded + ' tracks') + ' imported');
+        if (r.stateChanged) bits.push('drummer state imported');
+        if (r.racksChanged) bits.push('racks imported');
+        if (r.settingsChanged) bits.push('settings imported');
+        showToast(bits.length ? bits.join(', ') : 'Nothing new to import.');
+        refreshRackSel();
+        if (r.stateChanged && r.state && Array.isArray(r.state.rows)) {
+          unlock();
+          wipeRackDom();
+          drummer.applyRack(r.state);
+          applyDrummerToUi();
+          drummer.save();
+        }
+        const libList = document.getElementById('libraryList');
+        if (libList && libList.querySelectorAll('.lib-row').length) renderLibrary();
+      } else {
+        showToast('Import failed — pick the backup file or folder files.');
+      }
+    });
+  }
+
+  refreshSyncStatus();
+  initFileSync();
 
   // Initial behavior parity
   roll();

@@ -42,6 +42,7 @@
         <ion-item><ion-icon slot="start" name="settings-outline"></ion-icon><ion-label>Settings</ion-label></ion-item>
         <ion-item><ion-icon slot="start" name="document-outline"></ion-icon><ion-label>Posts</ion-label></ion-item>
         <ion-item id="lib-menu-item"><ion-icon slot="start" name="library-outline"></ion-icon><ion-label>Library</ion-label></ion-item>
+        <ion-item id="sync-menu-item"><ion-icon slot="start" name="cloud-done-outline"></ion-icon><ion-label>Sync</ion-label></ion-item>
         <ion-item>
           <ion-checkbox slot="start" id="fk-chk-advanced"></ion-checkbox>
           <ion-label>Advanced audio player animation</ion-label>
@@ -863,6 +864,30 @@
       <div id="libraryList" class="lib-list"></div>
       <audio id="libAudio" hidden></audio>
       <button type="button" id="btn-libClose" class="fk-btn-ghost">Close</button>
+    </div>
+  </div>
+
+  <!-- Sync: cross-device folder / export-import -->
+  <div id="syncOverlay" class="fk-overlay" hidden>
+    <div class="fk-panel fk-panel-sync">
+      <div class="rack-label">Sync</div>
+      <p class="sync-tip">
+        Point Freestyle King at a folder you sync between your devices (Syncthing, Dropbox,
+        iCloud Drive&hellip;) and your tracks, racks and drummer+ state follow you everywhere.
+        On this device it auto-reads on launch and auto-writes on every change. Phones without
+        folder access use Export / Import instead.
+      </p>
+      <div class="sync-actions">
+        <button type="button" id="btn-syncConnect" class="fk-btn-ghost">Connect folder&hellip;</button>
+        <button type="button" id="btn-syncDisconnect" class="fk-btn-ghost" hidden>Disconnect</button>
+      </div>
+      <div class="sync-actions">
+        <button type="button" id="btn-syncExport" class="fk-btn-ghost">Export all as one file&hellip;</button>
+        <button type="button" id="btn-syncImport" class="fk-btn-ghost">Import from files&hellip;</button>
+        <input type="file" id="syncImportInput" accept=".json,.wav,audio/wav,application/json" multiple hidden>
+      </div>
+      <div id="syncStatus" class="sync-status">Checking&hellip;</div>
+      <button type="button" id="btn-syncClose" class="fk-btn-ghost">Close</button>
     </div>
   </div>
 

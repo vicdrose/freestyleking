@@ -609,6 +609,12 @@ export function onClipChange(cb) {
   _onClipChange = cb || null;
 }
 
+// Notified after every persist so the sync layer can mirror changes out.
+let _onSaved = null;
+export function onSaved(cb) {
+  _onSaved = cb || null;
+}
+
 // ── Persistence ─────────────────────────────────────────────────────────────
 
 const STORAGE_KEY = 'fk.drummer.state';
@@ -738,6 +744,7 @@ export function save() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(serialize()));
   } catch (e) {}
+  if (_onSaved) { try { _onSaved(); } catch (e) {} }
 }
 
 export function restore() {

@@ -33,21 +33,27 @@ function newId() {
   return String(Date.now()) + '-' + Math.random().toString(36).slice(2);
 }
 
-export function saveTrack(name, blob, duration) {
+export function putTrack(rec) {
+  if (!rec || !rec.id) return Promise.reject(new Error('track id required'));
   return openDB().then((db) => new Promise((resolve, reject) => {
-    const rec = {
-      id: newId(),
-      name: String(name || '').trim() || 'Untitled',
-      blob,
-      duration: Number.isFinite(duration) ? duration : 0,
-      size: blob ? blob.size : 0,
-      createdAt: Date.now()
-    };
     const tx = db.transaction(STORE, 'readwrite');
     tx.objectStore(STORE).put(rec);
     tx.oncomplete = () => resolve(rec);
     tx.onerror = () => reject(tx.error);
   }));
+}
+
+export function saveTrack(name, blob, duration) {
+  const rec = {
+    id: newId(),
+    name: String(name || '').trim() || 'Untitled',
+    blob,
+    duration: Number.isFinite(duration) ? duration : 0,
+    size: blob ? blob.size : 0,
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  };
+  return putTrack(rec);
 }
 
 export function listTracks() {
