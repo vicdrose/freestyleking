@@ -1558,6 +1558,7 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
           '<input type="range" class="drummer-vol" min="0" max="100" value="' + Math.round(row.vol * 100) + '">' +
         '</div>' +
         '<button type="button" class="drummer-mute' + (row.mute ? ' active' : '') + '" title="Mute">M</button>' +
+        '<button type="button" class="drummer-solo' + (row.solo ? ' active' : '') + '" title="Solo">S</button>' +
         '<button type="button" class="drummer-del" title="Remove row">&times;</button>' +
       '</div>' +
       '<div class="drummer-steps"></div>' +
@@ -1610,6 +1611,14 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
       drummer.save();
     };
 
+    const soloBtn = wrap.querySelector('.drummer-solo');
+    soloBtn.onclick = () => {
+      unlock();
+      drummer.setRowSolo(row.id, !row.solo);
+      syncAudioVisuals();
+      drummer.save();
+    };
+
     const volSlider = wrap.querySelector('.drummer-vol');
     volSlider.oninput = () => {
       drummer.setRowVol(row.id, volSlider.value / 100);
@@ -1626,6 +1635,7 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
     };
 
     cont.appendChild(wrap);
+    syncAudioVisuals();
   }
 
   const DEFAULT_NOTE = 'C4';
@@ -1966,6 +1976,49 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
 
   syncChokeBoxes();
 
+  // ── Section + row mute/solo ────────────────────────────────────────────────
+  // Reflects the engine's audibility rule: any solo active silences everything
+  // that isn't soloed (or in a soloed section); a mute always wins.
+  function syncAudioVisuals() {
+    document.querySelectorAll('#beat-pane-drummer .drummer-row').forEach((wrap) => {
+      const row = drummer.getRow(wrap.dataset.id);
+      if (!row) return;
+      const m = wrap.querySelector('.drummer-mute');
+      const s = wrap.querySelector('.drummer-solo');
+      if (m) m.classList.toggle('active', row.mute);
+      if (s) s.classList.toggle('active', row.solo);
+      wrap.classList.toggle('dim', !drummer.isRowAudible(row.id));
+    });
+    PAT_KINDS.forEach((k) => {
+      const sec = drummer.getSection(k);
+      const gm = document.querySelector('.drummer-group-mute[data-kind="' + k + '"]');
+      const gs = document.querySelector('.drummer-group-solo[data-kind="' + k + '"]');
+      const mod = document.querySelector('.rack-drummer-kind[data-kind="' + k + '"]');
+      if (gm) gm.classList.toggle('active', sec.muted);
+      if (gs) gs.classList.toggle('active', sec.solo);
+      if (mod) mod.classList.toggle('dim', sec.muted);
+    });
+  }
+
+  document.querySelectorAll('.drummer-group-mute').forEach((b) => {
+    b.onclick = () => {
+      unlock();
+      drummer.setSectionMute(b.dataset.kind, !drummer.getSection(b.dataset.kind).muted);
+      syncAudioVisuals();
+      drummer.save();
+    };
+  });
+  document.querySelectorAll('.drummer-group-solo').forEach((b) => {
+    b.onclick = () => {
+      unlock();
+      drummer.setSectionSolo(b.dataset.kind, !drummer.getSection(b.dataset.kind).solo);
+      syncAudioVisuals();
+      drummer.save();
+    };
+  });
+
+  syncAudioVisuals();
+
   // ── Rack save / load ──────────────────────────────────────────────────────
   const RACKS_KEY = 'fk.drummer.racks';
   const drummerSaveName = document.getElementById('drummerSaveName');
@@ -2027,6 +2080,7 @@ rows.forEach((row) => renderDrummerRow(row));
     syncPatternIndicators();
     syncChokeBoxes();
     syncClipControls();
+    syncAudioVisuals();
     drummerBpmRange.value = drummer.state.bpm;
     drummerBpmVal.textContent = drummer.state.bpm;
     drummerVolRange.value = Math.round(drummer.state.vol * 100);
@@ -2059,6 +2113,7 @@ rows.forEach((row) => renderDrummerRow(row));
     syncPatternIndicators();
     syncChokeBoxes();
     syncClipControls();
+    syncAudioVisuals();
   }
 
   // Initial behavior parity

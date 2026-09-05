@@ -497,9 +497,11 @@
               </div>
             </div>
 
-            <div class="rack-module rack-drummer-kind">
+            <div class="rack-module rack-drummer-kind" data-kind="drum">
               <div class="drummer-kind-head">
                 <div class="rack-label"><ion-icon name="volume-high"></ion-icon> Drums</div>
+                <button type="button" class="drummer-audio-btn drummer-group-mute" data-kind="drum" title="Mute all Drums section">M</button>
+                <button type="button" class="drummer-audio-btn drummer-group-solo" data-kind="drum" title="Solo Drums section">S</button>
                 <div class="drummer-pat-nav" data-kind="drum">
                   <button type="button" class="drummer-pat-btn drummer-pat-prev" title="Previous pattern">&lsaquo;</button>
                   <span class="drummer-pat-ind">1/1</span>
@@ -520,9 +522,11 @@
               <div id="drummerDrums" class="drummer-rows"></div>
             </div>
 
-            <div class="rack-module rack-drummer-kind">
+            <div class="rack-module rack-drummer-kind" data-kind="pad">
               <div class="drummer-kind-head">
                 <div class="rack-label"><ion-icon name="musical-notes"></ion-icon> Pads</div>
+                <button type="button" class="drummer-audio-btn drummer-group-mute" data-kind="pad" title="Mute all Pads section">M</button>
+                <button type="button" class="drummer-audio-btn drummer-group-solo" data-kind="pad" title="Solo Pads section">S</button>
                 <label class="drummer-choke" title="Cut off other Pads when a new one plays; off = play two notes at once">
                   <input type="checkbox" class="drummer-choke-input" data-kind="pad" checked>
                   <span>Choke</span>
@@ -547,9 +551,11 @@
               <div id="drummerPads" class="drummer-rows"></div>
             </div>
 
-            <div class="rack-module rack-drummer-kind">
+            <div class="rack-module rack-drummer-kind" data-kind="bass">
               <div class="drummer-kind-head">
                 <div class="rack-label"><ion-icon name="pulse"></ion-icon> Bass</div>
+                <button type="button" class="drummer-audio-btn drummer-group-mute" data-kind="bass" title="Mute all Bass section">M</button>
+                <button type="button" class="drummer-audio-btn drummer-group-solo" data-kind="bass" title="Solo Bass section">S</button>
                 <label class="drummer-choke" title="Cut off other Bass when a new one plays; off = play two notes at once">
                   <input type="checkbox" class="drummer-choke-input" data-kind="bass" checked>
                   <span>Choke</span>
@@ -574,9 +580,11 @@
               <div id="drummerBass" class="drummer-rows"></div>
             </div>
 
-            <div class="rack-module rack-drummer-kind">
+            <div class="rack-module rack-drummer-kind" data-kind="sfx">
               <div class="drummer-kind-head">
                 <div class="rack-label"><ion-icon name="flash"></ion-icon> Sound Effects</div>
+                <button type="button" class="drummer-audio-btn drummer-group-mute" data-kind="sfx" title="Mute all SFX section">M</button>
+                <button type="button" class="drummer-audio-btn drummer-group-solo" data-kind="sfx" title="Solo SFX section">S</button>
                 <div class="drummer-pat-nav" data-kind="sfx">
                   <button type="button" class="drummer-pat-btn drummer-pat-prev" title="Previous pattern">&lsaquo;</button>
                   <span class="drummer-pat-ind">1/1</span>

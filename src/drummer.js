@@ -35,10 +35,10 @@ export const state = {
   // Per-section clip settings. clips[c] = one clip (count patterns, cur = the
   // one currently displayed within that clip). clip = which clip is active.
   sections: {
-    drum: { clips: [{ count: 1, cur: 0 }], clip: 0 },
-    pad: { clips: [{ count: 1, cur: 0 }], clip: 0, choke: true },
-    bass: { clips: [{ count: 1, cur: 0 }], clip: 0, choke: true },
-    sfx: { clips: [{ count: 1, cur: 0 }], clip: 0 },
+    drum: { clips: [{ count: 1, cur: 0 }], clip: 0, muted: false, solo: false },
+    pad: { clips: [{ count: 1, cur: 0 }], clip: 0, choke: true, muted: false, solo: false },
+    bass: { clips: [{ count: 1, cur: 0 }], clip: 0, choke: true, muted: false, solo: false },
+    sfx: { clips: [{ count: 1, cur: 0 }], clip: 0, muted: false, solo: false },
   },
 };
 
@@ -60,6 +60,21 @@ function livePatternFor(kind) {
   return live[kind] != null ? live[kind] : activeClipHandle(kind).cur;
 }
 
+// Solo model: if any row or any section is soloed, only content that is
+// soloed (or lives in a soloed section) plays. A mute always wins over a solo.
+function hasSolo() {
+  return (
+    Object.keys(state.sections).some((k) => sectionOf(k).solo) ||
+    state.rows.some((r) => r.solo)
+  );
+}
+
+function rowAudible(row) {
+  if (row.mute || sectionOf(row.kind).muted) return false;
+  if (!hasSolo()) return true;
+  return !!row.solo || !!sectionOf(row.kind).solo;
+}
+
 function makeRow(kind, folder, file, note) {
   return {
     id: 'r' + (state._nextId++),
@@ -69,6 +84,7 @@ function makeRow(kind, folder, file, note) {
     note: note || null,
     vol: 1,
     mute: false,
+    solo: false,
     clips: [],
   };
 }
@@ -229,7 +245,7 @@ function sixteenthDur() {
 
 function triggerRow(row, time, val, liveIdx) {
   const rec = rows.get(row.id);
-  if (!rec || row.mute || !rec.player.buffer) return;
+  if (!rec || !rowAudible(row) || !rec.player.buffer) return;
   const pats = rowPatterns(row);
   const pat = pats[liveIdx] || pats[0];
   if (!pat) return;
@@ -407,6 +423,16 @@ export function setRowMute(id, muted) {
   if (row) row.mute = !!muted;
 }
 
+export function setRowSolo(id, solo) {
+  const row = getRow(id);
+  if (row) row.solo = !!solo;
+}
+
+export function isRowAudible(id) {
+  const row = getRow(id);
+  return row ? rowAudible(row) : false;
+}
+
 export function setRowNote(id, note) {
   const row = getRow(id);
   if (row) row.note = note ? String(note).trim() : null;
@@ -483,6 +509,18 @@ export function setChoke(kind, v) {
   const s = sectionOf(kind);
   s.choke = !!v;
 }
+
+export function setSectionMute(kind, v) {
+  const s = sectionOf(kind);
+  s.muted = !!v;
+}
+
+export function setSectionSolo(kind, v) {
+  const s = sectionOf(kind);
+  s.solo = !!v;
+}
+
+export { hasSolo };
 
 export function onSectionPattern(cb) {
   _onSectionPattern = cb || null;
@@ -580,8 +618,9 @@ function sanitizePattern(pat) {
 }
 
 /**
- * Serialize the full rack — rows (kind, folder, file, note, vol, mute,
- * per-clip per-pattern steps), master bpm/vol, and per-section clips.
+ * Serialize the full rack — rows (kind, folder, file, note, vol, mute, solo,
+ * per-clip per-pattern steps), master bpm/vol, and per-section clips
+ * (plus section mute/solo).
  */
 export function serialize() {
   return {
@@ -591,6 +630,8 @@ export function serialize() {
     sections: Object.keys(state.sections).reduce((acc, k) => {
       acc[k] = {
         choke: !!state.sections[k].choke,
+        muted: !!state.sections[k].muted,
+        solo: !!state.sections[k].solo,
         clip: state.sections[k].clip || 0,
         clips: state.sections[k].clips.map((c) => ({ count: c.count, cur: c.cur })),
       };
@@ -603,6 +644,7 @@ export function serialize() {
       note: r.note,
       vol: r.vol,
       mute: r.mute,
+      solo: r.solo,
       clips: r.clips.map((c) => ({ patterns: c.patterns.map((p) => p.slice(0, STEPS)) })),
     })),
   };
@@ -618,6 +660,8 @@ function setStateFromData(data) {
     const d = (data.sections || {})[k];
     const sec = state.sections[k];
     sec.choke = d && d.choke != null ? !!d.choke : (k === 'pad' || k === 'bass');
+    sec.muted = !!(d && d.muted);
+    sec.solo = !!(d && d.solo);
     if (d && Array.isArray(d.clips) && d.clips.length) {
       sec.clips = d.clips.map((c) => ({
         count: Math.max(1, Math.min(MAX_PATTERNS, c.count || 1)),
@@ -642,6 +686,7 @@ function setStateFromData(data) {
       note: (r.note !== undefined && r.note !== null) ? r.note : null,
       vol: r.vol != null ? r.vol : 1,
       mute: !!r.mute,
+      solo: !!r.solo,
       clips: [],
     };
     const sec = sectionOf(row.kind);

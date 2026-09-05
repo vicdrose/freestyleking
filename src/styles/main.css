@@ -2355,6 +2355,46 @@ ion-content {
   margin-bottom: 0;
 }
 
+.drummer-audio-btn {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(210, 180, 140, .3);
+  border-radius: 4px;
+  background: transparent;
+  color: #d2b48c;
+  font-size: .65rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  flex: 0 0 auto;
+}
+.drummer-audio-btn:hover {
+  background: rgba(210, 180, 140, .15);
+}
+.drummer-audio-btn:active {
+  transform: scale(.95);
+}
+.drummer-audio-btn.drummer-group-mute.active {
+  background: rgba(224, 112, 112, .3);
+  border-color: rgba(224, 112, 112, .55);
+  color: #e07070;
+}
+.drummer-audio-btn.drummer-group-solo.active {
+  background: rgba(255, 206, 0, .28);
+  border-color: rgba(255, 206, 0, .55);
+  color: #ffce00;
+}
+
+.rack-drummer-kind.dim {
+  opacity: .45;
+}
+.drummer-row.dim {
+  opacity: .5;
+}
+
 .drummer-add {
   width: 28px;
   height: 28px;
@@ -2519,7 +2559,7 @@ ion-content {
   height: 14px;
 }
 
-.drummer-mute, .drummer-del {
+.drummer-mute, .drummer-solo, .drummer-del {
   width: 22px;
   height: 22px;
   border-radius: 4px;
@@ -2535,7 +2575,15 @@ ion-content {
 }
 
 .drummer-mute.active {
-  background: rgba(210, 180, 140, .25);
+  background: rgba(224, 112, 112, .3);
+  border-color: rgba(224, 112, 112, .55);
+  color: #e07070;
+}
+
+.drummer-solo.active {
+  background: rgba(255, 206, 0, .28);
+  border-color: rgba(255, 206, 0, .55);
+  color: #ffce00;
 }
 
 .drummer-del {
