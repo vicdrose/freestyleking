@@ -1483,6 +1483,12 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
   drummer.onPlayState((playing) => {
     setDrummerPlayIcon(playing);
     movePlayhead(playing ? drummer.getCurrentStep() : -1);
+    if (!playing) {
+      PAT_KINDS.forEach((k) => {
+        const ind = patInd(k);
+        if (ind) ind.classList.remove('live');
+      });
+    }
   });
 
   drummerPlayBtn.onclick = () => {
@@ -1559,6 +1565,9 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
 
     // ── Step grid ──────────────────────────────────────────────────────
     const stepsEl = wrap.querySelector('.drummer-steps');
+    const sec = drummer.getSection(row.kind);
+    const cur = sec.cur;
+    const pat = row.patterns[cur] || row.patterns[0];
     for (let s = 0; s < drummer.STEPS; s++) {
       const cell = document.createElement('button');
       cell.type = 'button';
@@ -1567,13 +1576,13 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
       cell.textContent = String(s + 1);
       cell.onclick = () => {
         unlock();
-        const next = (row.steps[s] + 1) % 3;
-        drummer.setStep(row.id, s, next);
+        const next = (pat[s] + 1) % 3;
+        drummer.setStep(row.id, cur, s, next);
         renderCellState(cell, next);
         drummer.save();
       };
       stepsEl.appendChild(cell);
-      renderCellState(cell, row.steps[s]);
+      renderCellState(cell, pat[s]);
       drumCells[s].push(cell);
       if (phStep === s) cell.classList.add('ph');
     }
@@ -1780,6 +1789,88 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
     drummer.save();
   };
 
+  // ── Per-section pattern count / navigation ─────────────────────────────────
+  const PAT_KINDS = ['drum', 'pad', 'bass', 'sfx'];
+
+  function patInd(kind) {
+    return document.querySelector('.drummer-pat-nav[data-kind="' + kind + '"] .drummer-pat-ind');
+  }
+
+  function syncPatternIndicators() {
+    PAT_KINDS.forEach((k) => {
+      const s = drummer.getSection(k);
+      const ind = patInd(k);
+      if (ind) ind.textContent = (s.cur + 1) + '/' + s.count;
+    });
+  }
+
+  drummer.onSectionPattern((kind, idx) => {
+    const ind = patInd(kind);
+    if (ind) {
+      const s = drummer.getSection(kind);
+      ind.textContent = (idx + 1) + '/' + s.count;
+      ind.classList.toggle('live', drummer.isPlaying());
+    }
+  });
+
+  function clearRowCells(wrap) {
+    wrap.querySelectorAll('.drum-cell').forEach((c) => {
+      for (let s = 0; s < drumCells.length; s++) {
+        const i = drumCells[s].indexOf(c);
+        if (i >= 0) drumCells[s].splice(i, 1);
+      }
+    });
+  }
+
+  // Re-render every row of a section so cells show the newly selected pattern
+  // (or the full set after a count change).
+  function rerenderSectionRows(kind) {
+    const cont = kindContainer(kind);
+    if (!cont) return;
+    cont.querySelectorAll('.drummer-row').forEach((wrap) => {
+      const row = drummer.getRow(wrap.dataset.id);
+      clearRowCells(wrap);
+      wrap.remove();
+      if (row) renderDrummerRow(row);
+    });
+  }
+
+  function stepPattern(kind, d) {
+    unlock();
+    drummer.setPattern(kind, drummer.getSection(kind).cur + d);
+    rerenderSectionRows(kind);
+    drummer.save();
+  }
+
+  function growPattern(kind) {
+    unlock();
+    drummer.setPatternCount(kind, drummer.getSection(kind).count + 1);
+    rerenderSectionRows(kind);
+    drummer.save();
+  }
+
+  function shrinkPattern(kind) {
+    unlock();
+    drummer.setPatternCount(kind, drummer.getSection(kind).count - 1);
+    rerenderSectionRows(kind);
+    drummer.save();
+  }
+
+  PAT_KINDS.forEach((kind) => {
+    const nav = document.querySelector('.drummer-pat-nav[data-kind="' + kind + '"]');
+    if (!nav) return;
+    const prev = nav.querySelector('.drummer-pat-prev');
+    const next = nav.querySelector('.drummer-pat-next');
+    const add = nav.querySelector('.drummer-pat-add');
+    const del = nav.querySelector('.drummer-pat-del');
+    if (prev) prev.onclick = () => stepPattern(kind, -1);
+    if (next) next.onclick = () => stepPattern(kind, 1);
+    if (add) add.onclick = () => growPattern(kind);
+    if (del) del.onclick = () => shrinkPattern(kind);
+  });
+
+  syncPatternIndicators();
+
   // ── Rack save / load ──────────────────────────────────────────────────────
   const RACKS_KEY = 'fk.drummer.racks';
   const drummerSaveName = document.getElementById('drummerSaveName');
@@ -1838,6 +1929,7 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
     const rows = drummer.applyRack(racks[name]);
     wipeRackDom();
     rows.forEach((row) => renderDrummerRow(row));
+    syncPatternIndicators();
     drummerBpmRange.value = drummer.state.bpm;
     drummerBpmVal.textContent = drummer.state.bpm;
     drummerVolRange.value = Math.round(drummer.state.vol * 100);
@@ -1867,6 +1959,7 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
     drummerVolRange.value = Math.round(drummer.state.vol * 100);
     drummerVolVal.textContent = Math.round(drummer.state.vol * 100);
     drummer.state.rows.forEach((row) => renderDrummerRow(row));
+    syncPatternIndicators();
   }
 
   // Initial behavior parity

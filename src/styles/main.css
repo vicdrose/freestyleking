@@ -2163,8 +2163,52 @@ ion-content {
 #beat-pane-drummer .drummer-kind-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
   padding: 6px 0 0;
+}
+
+#beat-pane-drummer .drummer-kind-head .rack-label {
+  margin-bottom: 0;
+}
+
+.drummer-pat-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+}
+.drummer-pat-btn {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(210, 180, 140, .35);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, .3);
+  color: #d2b48c;
+  font-size: .74rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+.drummer-pat-btn:hover {
+  background: rgba(210, 180, 140, .2);
+}
+.drummer-pat-btn:active {
+  transform: scale(.95);
+}
+.drummer-pat-ind {
+  font-size: .68rem;
+  color: #d2b48c;
+  letter-spacing: .05em;
+  min-width: 30px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.drummer-pat-ind.live {
+  color: #fff;
+  font-weight: 600;
 }
 
 #beat-pane-drummer .rack-label svg {
