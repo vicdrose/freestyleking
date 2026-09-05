@@ -1,8 +1,11 @@
 /**
  * Drummer+ Mini — step-sequencer audio engine.
  *
- * Each row is a sample instance with a 16-step pattern. Steps can be:
- *   0 = empty, 1 = stab (one-shot), 2 = sustain (held across consecutive greens).
+ * Each row is a sample instance. Data layout per row:
+ *   row.clips[clipIdx].patterns[patternIdx][step]  (step: 0, 1=stab, 2=sustain)
+ * Sections hold an array of clips; the active clip (`section.clip`) is what you
+ * see/edit and what plays. While playing, each section cycles its active clip's
+ * patterns (live index advances per bar). Only the selected clip plays.
  *
  * Per-row audio: a Tone.Player (or Buffer) routed -> row gain -> drummerGain.
  * Timing uses Tone.Transport for BPM-sync scheduling.
@@ -13,6 +16,7 @@ import { sampleUrl } from './services/samples.js';
 const STEPS = 16;
 const BASE_MIDI = 60; // C4
 const MAX_PATTERNS = 8;
+const MAX_CLIPS = 32;
 
 let drummerGain = null;
 let _started = false;
@@ -28,14 +32,13 @@ export const state = {
   vol: 0.85,
   rows: [],
   _nextId: 1,
-  // Per-section pattern settings. count = how many 16-step patterns the
-  // section has; cur = the one currently displayed/edited (and the point a
-  // play session starts cycling from).
+  // Per-section clip settings. clips[c] = one clip (count patterns, cur = the
+  // one currently displayed within that clip). clip = which clip is active.
   sections: {
-    drum: { count: 1, cur: 0 },
-    pad: { count: 1, cur: 0, choke: true },
-    bass: { count: 1, cur: 0, choke: true },
-    sfx: { count: 1, cur: 0 },
+    drum: { clips: [{ count: 1, cur: 0 }], clip: 0 },
+    pad: { clips: [{ count: 1, cur: 0 }], clip: 0, choke: true },
+    bass: { clips: [{ count: 1, cur: 0 }], clip: 0, choke: true },
+    sfx: { clips: [{ count: 1, cur: 0 }], clip: 0 },
   },
 };
 
@@ -46,8 +49,15 @@ function sectionOf(kind) {
   return state.sections[kind] || state.sections.drum;
 }
 
+function activeClipHandle(kind) {
+  const s = sectionOf(kind);
+  if (!Array.isArray(s.clips) || !s.clips.length) s.clips = [{ count: 1, cur: 0 }];
+  s.clip = Math.max(0, Math.min(s.clips.length - 1, s.clip || 0));
+  return s.clips[s.clip];
+}
+
 function livePatternFor(kind) {
-  return live[kind] != null ? live[kind] : sectionOf(kind).cur;
+  return live[kind] != null ? live[kind] : activeClipHandle(kind).cur;
 }
 
 function makeRow(kind, folder, file, note) {
@@ -59,17 +69,28 @@ function makeRow(kind, folder, file, note) {
     note: note || null,
     vol: 1,
     mute: false,
-    patterns: [new Array(STEPS).fill(0)],
+    clips: [],
   };
+}
+
+/**
+ * Patterns for the row's active clip (what you currently see/edit/play).
+ */
+function rowPatterns(row) {
+  const s = sectionOf(row.kind);
+  const clip = row.clips[s.clip] || row.clips[0];
+  return clip ? clip.patterns : [];
 }
 
 export function addRow(kind, folder, file, note) {
   const row = makeRow(kind, folder, file, note);
-  // Match the section's current pattern count so a fresh row works end-to-end.
-  const sc = sectionOf(row.kind);
-  while (row.patterns.length < sc.count) {
-    row.patterns.push((row.patterns[0] || new Array(STEPS).fill(0)).slice());
-  }
+  // Give the new row a matching clip entry for every clip the section has.
+  const s = sectionOf(row.kind);
+  s.clips.forEach((c) => {
+    const patterns = [];
+    for (let p = 0; p < c.count; p++) patterns.push(new Array(STEPS).fill(0));
+    row.clips.push({ patterns });
+  });
   state.rows.push(row);
   ensurePlayer(row);
   loadBuffer(folder, file);
@@ -209,7 +230,9 @@ function sixteenthDur() {
 function triggerRow(row, time, val, liveIdx) {
   const rec = rows.get(row.id);
   if (!rec || row.mute || !rec.player.buffer) return;
-  const pat = row.patterns[liveIdx] || row.patterns[0];
+  const pats = rowPatterns(row);
+  const pat = pats[liveIdx] || pats[0];
+  if (!pat) return;
   try {
     rec.player.playbackRate = noteToRate(row.note);
     if (val === 2) {
@@ -238,16 +261,19 @@ function stepTick(time) {
   onSixteenth(currentStep, time);
   state.rows.forEach((row) => {
     const liveIdx = livePatternFor(row.kind);
-    const pat = row.patterns[liveIdx] || row.patterns[0];
+    const pats = rowPatterns(row);
+    const pat = pats[liveIdx] || pats[0];
+    if (!pat) return;
     const val = pat[currentStep];
     if (val !== 0) triggerRow(row, time, val, liveIdx);
   });
   currentStep = (currentStep + 1) % STEPS;
   if (currentStep === 0) {
-    // Bar boundary: each section moves on to its next pattern.
+    // Bar boundary: each section moves on to its next pattern (within the
+    // active clip). The clip itself only changes when the user switches it.
     Object.keys(state.sections).forEach((k) => {
-      const s = state.sections[k];
-      live[k] = ((live[k] != null ? live[k] : s.cur) + 1) % s.count;
+      const clip = activeClipHandle(k);
+      live[k] = ((live[k] != null ? live[k] : clip.cur) + 1) % clip.count;
       fireSectionPattern(k, live[k]);
     });
   }
@@ -261,7 +287,8 @@ function scheduleAll(resetPos) {
   if (resetPos) {
     currentStep = 0;
     Object.keys(state.sections).forEach((k) => {
-      live[k] = state.sections[k].cur;
+      const clip = activeClipHandle(k);
+      live[k] = clip.cur;
       fireSectionPattern(k, live[k]);
     });
   }
@@ -272,10 +299,17 @@ function scheduleAll(resetPos) {
 function onSixteenth() {}
 
 // Section-pattern callback — fired when a section's pattern index changes
-// (play start, bar advance while playing, navigation, count change, stop).
+// (play start, bar advance while playing, navigation, count change, stop,
+// clip switch).
 let _onSectionPattern = null;
 function fireSectionPattern(kind, idx) {
   try { _onSectionPattern && _onSectionPattern(kind, idx); } catch (e) {}
+}
+
+// Clip callback — fired when a section's active clip changes.
+let _onClipChange = null;
+function fireClipChange(kind, idx) {
+  try { _onClipChange && _onClipChange(kind, idx); } catch (e) {}
 }
 
 // Play-state callback — fired when playback actually starts/stops, so the UI
@@ -323,7 +357,8 @@ export function stop() {
   });
   _started = false;
   Object.keys(state.sections).forEach((k) => {
-    live[k] = state.sections[k].cur;
+    const clip = activeClipHandle(k);
+    live[k] = clip.cur;
     fireSectionPattern(k, live[k]);
   });
   firePlayState(false);
@@ -380,7 +415,8 @@ export function setRowNote(id, note) {
 export function setStep(id, pattern, step, val) {
   const row = getRow(id);
   if (!row) return;
-  const pat = row.patterns[pattern] || row.patterns[row.patterns.length - 1];
+  const pats = rowPatterns(row);
+  const pat = pats[pattern] || pats[pats.length - 1];
   if (pat && step >= 0 && step < STEPS) {
     pat[step] = val;
     // Re-schedule without resetting the playhead so a step edit never
@@ -393,49 +429,54 @@ export function onStep(cb) {
   onSixteenth = cb || (() => {});
 }
 
-// ── Per-section pattern navigation ──────────────────────────────────────────
+// ── Per-section patterns (within the active clip) ───────────────────────────
 
 export function getSection(kind) {
   return sectionOf(kind);
 }
 
 /**
- * Select which pattern of a section is displayed/edited. While playing it also
- * jumps that section's song position to the new pattern.
+ * Select which pattern of the active clip is displayed/edited. While playing
+ * it also jumps the section's song position to that pattern.
  */
 export function setPattern(kind, idx) {
-  const s = sectionOf(kind);
-  s.cur = Math.max(0, Math.min(s.count - 1, idx || 0));
-  if (_started) live[kind] = s.cur;
-  fireSectionPattern(kind, s.cur);
+  const clip = activeClipHandle(kind);
+  clip.cur = Math.max(0, Math.min(clip.count - 1, idx || 0));
+  if (_started) live[kind] = clip.cur;
+  fireSectionPattern(kind, clip.cur);
 }
 
 /**
- * Grow or shrink the section's pattern count (1..MAX_PATTERNS). Growing
- * duplicates the currently selected pattern into every new slot so the user
- * can nudge copies rather than rebuild from scratch. Shrinking drops the
- * trailing patterns.
+ * Grow or shrink the active clip's pattern count (1..MAX_PATTERNS). Growing
+ * duplicates the currently selected pattern into every new slot; shrinking
+ * drops the trailing patterns.
  */
 export function setPatternCount(kind, n) {
   const s = sectionOf(kind);
+  const clip = activeClipHandle(kind);
   const target = Math.max(1, Math.min(MAX_PATTERNS, Math.round(n)));
-  if (!Number.isFinite(target) || target === s.count) return s.count;
+  if (!Number.isFinite(target) || target === clip.count) return clip.count;
   const rowsK = state.rows.filter((r) => r.kind === kind);
-  if (target > s.count) {
-    const src = s.cur;
+  if (target > clip.count) {
+    const src = clip.cur;
     rowsK.forEach((r) => {
-      const base = (r.patterns[src] || new Array(STEPS).fill(0)).slice();
-      while (r.patterns.length < target) r.patterns.push(base.slice());
+      const cp = r.clips[s.clip] || r.clips[0];
+      if (!cp) return;
+      const base = (cp.patterns[src] || new Array(STEPS).fill(0)).slice();
+      while (cp.patterns.length < target) cp.patterns.push(base.slice());
     });
-    s.cur = target - 1;
+    clip.cur = target - 1;
   } else {
-    rowsK.forEach((r) => { r.patterns.length = target; });
-    s.cur = Math.min(s.cur, target - 1);
+    rowsK.forEach((r) => {
+      const cp = r.clips[s.clip] || r.clips[0];
+      if (cp) cp.patterns.length = target;
+    });
+    clip.cur = Math.min(clip.cur, target - 1);
   }
-  s.count = target;
-  if (_started) live[kind] = s.cur;
-  fireSectionPattern(kind, s.cur);
-  return s.count;
+  clip.count = target;
+  if (_started) live[kind] = clip.cur;
+  fireSectionPattern(kind, clip.cur);
+  return clip.count;
 }
 
 export function setChoke(kind, v) {
@@ -447,14 +488,100 @@ export function onSectionPattern(cb) {
   _onSectionPattern = cb || null;
 }
 
+// ── Per-section clips ───────────────────────────────────────────────────────
+
+export function getClip(kind) {
+  return sectionOf(kind).clip;
+}
+
+export function getClips(kind) {
+  return sectionOf(kind).clips.length;
+}
+
+/**
+ * Select which clip of a section is active. While playing it also jumps the
+ * section's song position to that clip's current pattern.
+ */
+export function setClip(kind, idx) {
+  const s = sectionOf(kind);
+  const target = Math.max(0, Math.min(s.clips.length - 1, idx || 0));
+  s.clip = target;
+  const clip = s.clips[target];
+  if (_started) live[kind] = clip.cur;
+  fireSectionPattern(kind, live[kind] != null ? live[kind] : clip.cur);
+  fireClipChange(kind, target);
+}
+
+/**
+ * Add a clip by duplicating the active one (content + pattern count + current
+ * pattern), then switch to it. Returns the new clip index.
+ */
+export function addClip(kind) {
+  unlockTone();
+  const s = sectionOf(kind);
+  const srcClip = activeClipHandle(kind);
+  const srcByRow = new Map();
+  state.rows.filter((r) => r.kind === kind).forEach((r) => {
+    const src = r.clips[s.clip] || r.clips[0];
+    srcByRow.set(r.id, src ? src.patterns.map((p) => p.slice()) : []);
+  });
+  const newClip = { count: srcClip.count, cur: Math.min(srcClip.count - 1, srcClip.cur) };
+  s.clips.push(newClip);
+  const newIdx = s.clips.length - 1;
+  state.rows.filter((r) => r.kind === kind).forEach((r) => {
+    r.clips.push({ patterns: (srcByRow.get(r.id) || []).map((p) => p.slice()) });
+  });
+  s.clip = newIdx;
+  if (_started) live[kind] = newClip.cur;
+  fireSectionPattern(kind, newClip.cur);
+  fireClipChange(kind, newIdx);
+  return newIdx;
+}
+
+/**
+ * Remove a clip. Never removes the last remaining clip.
+ */
+export function removeClip(kind, idx) {
+  const s = sectionOf(kind);
+  if (s.clips.length <= 1) return false;
+  const target = idx == null ? s.clip : Math.max(0, Math.min(s.clips.length - 1, idx));
+  s.clips.splice(target, 1);
+  state.rows.filter((r) => r.kind === kind).forEach((r) => r.clips.splice(target, 1));
+  s.clip = Math.min(s.clip, s.clips.length - 1);
+  const clip = s.clips[s.clip];
+  if (_started) live[kind] = clip.cur;
+  fireSectionPattern(kind, clip.cur);
+  fireClipChange(kind, s.clip);
+  return true;
+}
+
+/**
+ * Scrub the active clip: zero out every pattern of every row (naked clip).
+ */
+export function clearClip(kind) {
+  unlockTone();
+  const s = sectionOf(kind);
+  state.rows.filter((r) => r.kind === kind).forEach((r) => {
+    const cp = r.clips[s.clip] || r.clips[0];
+    if (cp) cp.patterns.forEach((p) => p.fill(0));
+  });
+}
+
+export function onClipChange(cb) {
+  _onClipChange = cb || null;
+}
+
 // ── Persistence ─────────────────────────────────────────────────────────────
 
 const STORAGE_KEY = 'fk.drummer.state';
 
+function sanitizePattern(pat) {
+  return Array.isArray(pat) ? pat.map((v) => (v === 1 || v === 2 ? v : 0)).slice(0, STEPS) : new Array(STEPS).fill(0);
+}
+
 /**
  * Serialize the full rack — rows (kind, folder, file, note, vol, mute,
- * per-pattern steps) plus master bpm/vol and per-section pattern counts.
- * Used by the named-rack save feature.
+ * per-clip per-pattern steps), master bpm/vol, and per-section clips.
  */
 export function serialize() {
   return {
@@ -462,7 +589,11 @@ export function serialize() {
     vol: state.vol,
     nextId: state._nextId,
     sections: Object.keys(state.sections).reduce((acc, k) => {
-      acc[k] = { count: state.sections[k].count, cur: state.sections[k].cur, choke: !!state.sections[k].choke };
+      acc[k] = {
+        choke: !!state.sections[k].choke,
+        clip: state.sections[k].clip || 0,
+        clips: state.sections[k].clips.map((c) => ({ count: c.count, cur: c.cur })),
+      };
       return acc;
     }, {}),
     rows: state.rows.map((r) => ({
@@ -472,7 +603,7 @@ export function serialize() {
       note: r.note,
       vol: r.vol,
       mute: r.mute,
-      patterns: r.patterns.map((p) => p.slice(0, STEPS)),
+      clips: r.clips.map((c) => ({ patterns: c.patterns.map((p) => p.slice(0, STEPS)) })),
     })),
   };
 }
@@ -485,18 +616,24 @@ function setStateFromData(data) {
   state._nextId = data.nextId || (data.rows || []).length + 1;
   Object.keys(state.sections).forEach((k) => {
     const d = (data.sections || {})[k];
-    state.sections[k].count = d && d.count > 0 ? Math.min(MAX_PATTERNS, d.count) : 1;
-    state.sections[k].cur = d && d.cur != null ? Math.min(Math.max(0, d.cur), state.sections[k].count - 1) : 0;
-    state.sections[k].choke = d && d.choke != null ? !!d.choke : (k === 'pad' || k === 'bass');
-    live[k] = state.sections[k].cur;
+    const sec = state.sections[k];
+    sec.choke = d && d.choke != null ? !!d.choke : (k === 'pad' || k === 'bass');
+    if (d && Array.isArray(d.clips) && d.clips.length) {
+      sec.clips = d.clips.map((c) => ({
+        count: Math.max(1, Math.min(MAX_PATTERNS, c.count || 1)),
+        cur: Math.max(0, c.cur || 0),
+      }));
+    } else {
+      // Legacy save: section had { count, cur } only.
+      const count = d && d.count > 0 ? Math.min(MAX_PATTERNS, d.count) : 1;
+      const cur = d && d.cur != null ? Math.min(Math.max(0, d.cur), count - 1) : 0;
+      sec.clips = [{ count, cur }];
+    }
+    sec.clip = d && d.clip != null ? Math.max(0, Math.min(sec.clips.length - 1, d.clip)) : 0;
+    sec.clips.forEach((c) => { c.cur = Math.min(c.cur, c.count - 1); });
+    live[k] = sec.clips[sec.clip].cur;
   });
   state.rows = (data.rows || []).map((r) => {
-    const patterns = Array.isArray(r.patterns)
-      ? r.patterns.slice(0, MAX_PATTERNS).map((p) =>
-          Array.isArray(p) ? p.map((v) => (v === 1 || v === 2 ? v : 0)).slice(0, STEPS) : new Array(STEPS).fill(0))
-      : [Array.isArray(r.steps)
-          ? r.steps.map((v) => (v === 1 || v === 2 ? v : 0)).slice(0, STEPS)
-          : new Array(STEPS).fill(0)];
     const row = {
       id: 'r' + (state._nextId++),
       kind: r.kind || 'drum',
@@ -505,14 +642,24 @@ function setStateFromData(data) {
       note: (r.note !== undefined && r.note !== null) ? r.note : null,
       vol: r.vol != null ? r.vol : 1,
       mute: !!r.mute,
-      patterns,
+      clips: [],
     };
-    // Make sure the row has exactly the section's pattern count.
-    const sc = sectionOf(row.kind);
-    while (row.patterns.length < sc.count) {
-      row.patterns.push((row.patterns[0] || new Array(STEPS).fill(0)).slice());
+    const sec = sectionOf(row.kind);
+    for (let c = 0; c < sec.clips.length; c++) {
+      let srcPatterns;
+      if (Array.isArray(r.clips) && r.clips[c] && Array.isArray(r.clips[c].patterns)) {
+        srcPatterns = r.clips[c].patterns.map(sanitizePattern);
+      } else if (c === 0 && Array.isArray(r.patterns)) {
+        srcPatterns = r.patterns.map(sanitizePattern);
+      } else if (c === 0 && Array.isArray(r.steps)) {
+        srcPatterns = [sanitizePattern(r.steps)];
+      } else {
+        srcPatterns = [];
+      }
+      while (srcPatterns.length < sec.clips[c].count) srcPatterns.push(new Array(STEPS).fill(0));
+      srcPatterns.length = sec.clips[c].count;
+      row.clips.push({ patterns: srcPatterns });
     }
-    row.patterns.length = sc.count;
     return row;
   });
 
@@ -561,4 +708,4 @@ export function restore() {
   }
 }
 
-export { STEPS };
+export { STEPS, MAX_CLIPS };

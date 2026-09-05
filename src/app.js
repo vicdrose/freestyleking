@@ -1566,8 +1566,10 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
     // ── Step grid ──────────────────────────────────────────────────────
     const stepsEl = wrap.querySelector('.drummer-steps');
     const sec = drummer.getSection(row.kind);
-    const cur = sec.cur;
-    const pat = row.patterns[cur] || row.patterns[0];
+    const clip = sec.clips[sec.clip] || sec.clips[0];
+    const cur = clip.cur;
+    const rowClip = row.clips[sec.clip] || row.clips[0];
+    const pat = (rowClip ? rowClip.patterns[cur] : null) || (rowClip ? rowClip.patterns[0] : []);
     for (let s = 0; s < drummer.STEPS; s++) {
       const cell = document.createElement('button');
       cell.type = 'button';
@@ -1799,8 +1801,9 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
   function syncPatternIndicators() {
     PAT_KINDS.forEach((k) => {
       const s = drummer.getSection(k);
+      const clip = s.clips[s.clip] || s.clips[0];
       const ind = patInd(k);
-      if (ind) ind.textContent = (s.cur + 1) + '/' + s.count;
+      if (ind) ind.textContent = (clip.cur + 1) + '/' + clip.count;
     });
   }
 
@@ -1808,7 +1811,8 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
     const ind = patInd(kind);
     if (ind) {
       const s = drummer.getSection(kind);
-      ind.textContent = (idx + 1) + '/' + s.count;
+      const clip = s.clips[s.clip] || s.clips[0];
+      ind.textContent = (idx + 1) + '/' + clip.count;
       ind.classList.toggle('live', drummer.isPlaying());
     }
   });
@@ -1837,21 +1841,27 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
 
   function stepPattern(kind, d) {
     unlock();
-    drummer.setPattern(kind, drummer.getSection(kind).cur + d);
+    const sec = drummer.getSection(kind);
+    const clip = sec.clips[sec.clip];
+    drummer.setPattern(kind, clip.cur + d);
     rerenderSectionRows(kind);
     drummer.save();
   }
 
   function growPattern(kind) {
     unlock();
-    drummer.setPatternCount(kind, drummer.getSection(kind).count + 1);
+    const sec = drummer.getSection(kind);
+    const clip = sec.clips[sec.clip];
+    drummer.setPatternCount(kind, clip.count + 1);
     rerenderSectionRows(kind);
     drummer.save();
   }
 
   function shrinkPattern(kind) {
     unlock();
-    drummer.setPatternCount(kind, drummer.getSection(kind).count - 1);
+    const sec = drummer.getSection(kind);
+    const clip = sec.clips[sec.clip];
+    drummer.setPatternCount(kind, clip.count - 1);
     rerenderSectionRows(kind);
     drummer.save();
   }
@@ -1870,6 +1880,74 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
   });
 
   syncPatternIndicators();
+
+  // ── Per-section clips ──────────────────────────────────────────────────────
+  function clipSel(kind) {
+    return document.querySelector('.drummer-clip-sel[data-kind="' + kind + '"]');
+  }
+
+  function syncClipControls() {
+    PAT_KINDS.forEach((k) => {
+      const sel = clipSel(k);
+      if (!sel) return;
+      const count = drummer.getClips(k);
+      const prev = sel.value;
+      sel.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const opt = document.createElement('option');
+        opt.value = String(i);
+        opt.textContent = 'Clip ' + (i + 1);
+        sel.appendChild(opt);
+      }
+      sel.value = String(drummer.getClip(k));
+      if (!sel.value && prev) sel.value = prev;
+    });
+  }
+
+  // Clip switching always re-renders the section's rows (patterns live in the
+  // active clip). The engine also fires this when + / playback jumps clips.
+  drummer.onClipChange((kind, idx) => {
+    const sel = clipSel(kind);
+    if (sel) sel.value = String(idx);
+    rerenderSectionRows(kind);
+    syncPatternIndicators();
+  });
+
+  PAT_KINDS.forEach((kind) => {
+    const nav = document.querySelector('.drummer-pat-nav[data-kind="' + kind + '"]');
+    const sel = clipSel(kind);
+    const addBtn = nav ? nav.querySelector('.drummer-clip-add') : null;
+    const clearBtn = nav ? nav.querySelector('.drummer-clip-clear') : null;
+    const upBtn = nav ? nav.querySelector('.drummer-clip-up') : null;
+    const downBtn = nav ? nav.querySelector('.drummer-clip-down') : null;
+
+    const switchClip = (idx) => {
+      unlock();
+      drummer.setClip(kind, idx);
+      rerenderSectionRows(kind);
+      syncPatternIndicators();
+      drummer.save();
+    };
+
+    if (sel) sel.onchange = () => switchClip(Number(sel.value));
+    if (addBtn) addBtn.onclick = () => {
+      unlock();
+      drummer.addClip(kind);
+      rerenderSectionRows(kind);
+      syncPatternIndicators();
+      drummer.save();
+    };
+    if (clearBtn) clearBtn.onclick = () => {
+      unlock();
+      drummer.clearClip(kind);
+      rerenderSectionRows(kind);
+      drummer.save();
+    };
+    if (upBtn) upBtn.onclick = () => switchClip(drummer.getClip(kind) - 1);
+    if (downBtn) downBtn.onclick = () => switchClip(drummer.getClip(kind) + 1);
+  });
+
+  syncClipControls();
 
   // ── Choke toggles (pads / bass) ───────────────────────────────────────────
   function syncChokeBoxes() {
@@ -1946,9 +2024,10 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
     unlock();
     const rows = drummer.applyRack(racks[name]);
     wipeRackDom();
-    rows.forEach((row) => renderDrummerRow(row));
+rows.forEach((row) => renderDrummerRow(row));
     syncPatternIndicators();
     syncChokeBoxes();
+    syncClipControls();
     drummerBpmRange.value = drummer.state.bpm;
     drummerBpmVal.textContent = drummer.state.bpm;
     drummerVolRange.value = Math.round(drummer.state.vol * 100);
@@ -1980,6 +2059,7 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
     drummer.state.rows.forEach((row) => renderDrummerRow(row));
     syncPatternIndicators();
     syncChokeBoxes();
+    syncClipControls();
   }
 
   // Initial behavior parity

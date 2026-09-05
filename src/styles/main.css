@@ -2235,6 +2235,63 @@ ion-content {
   font-weight: 600;
 }
 
+.drummer-clip-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0 0;
+}
+.drummer-clip-lab {
+  font-size: .58rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #d2b48c;
+  flex-shrink: 0;
+}
+.drummer-clip-sel {
+  flex: 1;
+  min-width: 0;
+  background: rgba(0, 0, 0, .45);
+  border: 1px solid rgba(210, 180, 140, .35);
+  border-radius: 4px;
+  color: #d2b48c;
+  font-size: .68rem;
+  padding: 2px 4px;
+}
+.drummer-clip-btn {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(210, 180, 140, .35);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, .3);
+  color: #d2b48c;
+  font-size: .74rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+.drummer-clip-btn:hover {
+  background: rgba(210, 180, 140, .2);
+}
+.drummer-clip-btn:active {
+  transform: scale(.95);
+}
+.drummer-clip-btn.drummer-clip-add {
+  border-color: rgba(255, 206, 0, .5);
+  color: #ffce00;
+  font-weight: 700;
+}
+.drummer-clip-btn.drummer-clip-clear {
+  width: auto;
+  min-width: 20px;
+  color: #e07070;
+  border-color: rgba(224, 112, 112, .4);
+}
+
 #beat-pane-drummer .rack-label svg {
   vertical-align: middle;
 }
