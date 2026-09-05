@@ -1507,9 +1507,10 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
 
   // Defaults per kind.
   const DRUMMER_DEFAULTS = {
-    drum: { folder: 'kicks' },
-    pad: { folder: 'pads' },
-    bass: { folder: 'bass' },
+    drum: { folder: 'kicks', note: null },
+    pad: { folder: 'pads', note: 'C4' },
+    bass: { folder: 'bass', note: 'C4' },
+    sfx: { folder: 'sfx', note: 'C4' },
   };
 
   function firstFile(folder) {
@@ -1520,6 +1521,7 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
   function kindContainer(kind) {
     if (kind === 'pad') return document.getElementById('drummerPads');
     if (kind === 'bass') return document.getElementById('drummerBass');
+    if (kind === 'sfx') return document.getElementById('drummerSfx');
     return document.getElementById('drummerDrums');
   }
 
@@ -1537,7 +1539,7 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
     wrap.className = 'drummer-row';
     wrap.dataset.id = row.id;
 
-    const icons = { drum: 'volume-high', pad: 'musical-notes', bass: 'pulse' };
+    const icons = { drum: 'volume-high', pad: 'musical-notes', bass: 'pulse', sfx: 'flash' };
     const icon = icons[row.kind] || 'musical-notes';
     const baseLabel = (row.file || '').split('/').pop().replace(/\.[^.]+$/, '') || 'No sample';
 
@@ -1615,10 +1617,21 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
     cont.appendChild(wrap);
   }
 
+  const DEFAULT_NOTE = 'C4';
+  function noteMidi(note) {
+    try { return Tone.Frequency(note || DEFAULT_NOTE).toMidi(); } catch (e) { return Tone.Frequency(DEFAULT_NOTE).toMidi(); }
+  }
+  function midiNote(midi) {
+    try { return Tone.Frequency(midi, 'midi').toNote(); } catch (e) { return DEFAULT_NOTE; }
+  }
+
   function buildOptsPanel(optsEl, row, wrap) {
     if (optsEl.children.length) return;
     const folders = getSampleFolders();
     const currentFolder = row.folder && folders.includes(row.folder) ? row.folder : (folders[0] || '');
+    const hasNote = row.kind !== 'drum';
+    const miniBtn = (cls, icon, title) =>
+      '<button type="button" class="drummer-mini-btn ' + cls + '" title="' + title + '"><ion-icon name="' + icon + '"></ion-icon></button>';
 
     let html = '<div class="drummer-opts-inner">';
     html += '<label>Folder <select class="drummer-folder">';
@@ -1626,9 +1639,19 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
       html += '<option value="' + f + '"' + (f === currentFolder ? ' selected' : '') + '>' + f + '</option>';
     });
     html += '</select></label>';
+    html += '<span class="drummer-row-opts">';
     html += '<label>File <select class="drummer-file"></select></label>';
-    if (row.kind !== 'drum') {
+    html += miniBtn('file-up', 'chevron-up', 'Previous file') +
+            miniBtn('file-down', 'chevron-down', 'Next file') +
+            miniBtn('file-play', 'play', 'Play sample');
+    html += '</span>';
+    if (hasNote) {
+      html += '<span class="drummer-row-opts">';
       html += '<label>Note <input type="text" class="drummer-note" value="' + (row.note || '') + '" placeholder="e.g. C4, B6"></label>';
+      html += miniBtn('note-down', 'chevron-down', 'Pitch down') +
+              miniBtn('note-up', 'chevron-up', 'Pitch up') +
+              miniBtn('note-play', 'play', 'Play note');
+      html += '</span>';
     }
     html += '</div>';
     optsEl.innerHTML = html;
@@ -1636,9 +1659,13 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
     const folderSel = optsEl.querySelector('.drummer-folder');
     const fileSel = optsEl.querySelector('.drummer-file');
 
+    const currentFiles = () => getSampleFiles(folderSel.value);
+    const keepFile = () =>
+      row.file && row.folder === folderSel.value ? row.file : (firstFile(folderSel.value));
+
     const populateFiles = () => {
-      const files = getSampleFiles(folderSel.value);
-      const keep = row.file && row.folder === folderSel.value ? row.file : (firstFile(folderSel.value));
+      const files = currentFiles();
+      const keep = keepFile();
       fileSel.innerHTML = '';
       files.forEach((f) => {
         const opt = document.createElement('option');
@@ -1666,24 +1693,61 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
       drummer.save();
     };
 
+    const setFile = (file) => {
+      if (!file) return;
+      fileSel.value = file;
+      apply(folderSel.value, fileSel.value);
+    };
+
     folderSel.onchange = () => {
-      const file = populateFiles();
-      apply(folderSel.value, file);
+      setFile(populateFiles());
     };
 
     fileSel.onchange = () => {
       apply(folderSel.value, fileSel.value);
     };
 
+    const fileUp = optsEl.querySelector('.file-up');
+    const fileDown = optsEl.querySelector('.file-down');
+    const filePlay = optsEl.querySelector('.file-play');
+    const stepFile = (delta) => {
+      const files = currentFiles();
+      if (!files.length) return;
+      let idx = files.indexOf(row.file);
+      if (idx < 0) idx = 0;
+      idx = (idx + delta + files.length) % files.length;
+      setFile(files[idx]);
+    };
+    if (fileUp) fileUp.onclick = () => stepFile(-1);
+    if (fileDown) fileDown.onclick = () => stepFile(1);
+    if (filePlay) filePlay.onclick = () => {
+      unlock();
+      drummer.preview(row.folder, row.file, row.note);
+    };
+
     populateFiles();
 
-    if (row.kind !== 'drum') {
+    if (hasNote) {
       const noteInput = optsEl.querySelector('.drummer-note');
-      noteInput.onchange = () => {
+      const commitNote = () => {
         drummer.setRowNote(row.id, noteInput.value);
         const noteEl = wrap.querySelector('.drummer-row-note');
         if (noteEl) noteEl.textContent = row.note || '';
         drummer.save();
+      };
+      noteInput.onchange = commitNote;
+      const stepNote = (delta) => {
+        noteInput.value = midiNote(noteMidi(noteInput.value) + delta);
+        commitNote();
+      };
+      const noteUp = optsEl.querySelector('.note-up');
+      const noteDown = optsEl.querySelector('.note-down');
+      const notePlay = optsEl.querySelector('.note-play');
+      if (noteUp) noteUp.onclick = () => stepNote(1);
+      if (noteDown) noteDown.onclick = () => stepNote(-1);
+      if (notePlay) notePlay.onclick = () => {
+        unlock();
+        drummer.preview(row.folder, row.file, noteInput.value || DEFAULT_NOTE);
       };
     }
   }
@@ -1693,7 +1757,7 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
     const def = DRUMMER_DEFAULTS[kind] || DRUMMER_DEFAULTS.drum;
     const folder = def.folder;
     const file = firstFile(folder);
-    const row = drummer.addRow(kind, folder, file);
+    const row = drummer.addRow(kind, folder, file, def.note || null);
     drummer.loadSample(row.id, folder, file);
     renderDrummerRow(row);
     drummer.save();
@@ -1702,6 +1766,7 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
   document.getElementById('btn-addDrumRow').onclick = () => addDrummerRow('drum');
   document.getElementById('btn-addPadRow').onclick = () => addDrummerRow('pad');
   document.getElementById('btn-addBassRow').onclick = () => addDrummerRow('bass');
+  document.getElementById('btn-addSfxRow').onclick = () => addDrummerRow('sfx');
 
   // Restore persisted state.
   if (drummer.restore()) {

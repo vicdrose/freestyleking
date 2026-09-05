@@ -139,6 +139,28 @@ function preloadAll() {
   }));
 }
 
+/**
+ * One-shot demo of a sample: loads (or reuses) the buffer, builds a transient
+ * Player routed through drummerGain, plays it and disposes when done.
+ */
+export function preview(folder, file, note) {
+  if (!folder || !file) return;
+  loadBuffer(folder, file).then((buf) => {
+    if (!buf) return;
+    try {
+      const p = new Tone.Player();
+      p.buffer = buf;
+      p.playbackRate = noteToRate(note);
+      p.connect(drummerGain);
+      p.start();
+      const ms = (buf.duration + 0.2) * 1000;
+      setTimeout(() => {
+        try { p.dispose(); } catch (e) {}
+      }, ms);
+    } catch (e) {}
+  });
+}
+
 // ── Note -> playbackRate ────────────────────────────────────────────────────
 
 function noteToRate(note) {

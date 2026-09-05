@@ -250,7 +250,11 @@
                   <div class="acc-drag-handle" slot="end" role="button" aria-label="Drag to reorder Recorder"><ion-icon name="reorder-three" style="color:#d2b48c"></ion-icon></div>
                 </ion-item>
                 <ion-item class="beat-acc-row" data-section="drummer">
-                  <ion-icon slot="start" name="drum-outline" style="color:#d2b48c"></ion-icon>
+                  <svg slot="start" viewBox="0 0 512 512" width="24" height="24" fill="#d2b48c" aria-label="Drummer+">
+                    <ellipse cx="256" cy="160" rx="180" ry="52"/>
+                    <path d="M76 158v112c0 66 81 112 180 112s180-46 180-112V158"/>
+                    <ellipse cx="256" cy="270" rx="180" ry="52"/>
+                  </svg>
                   <ion-label>Drummer+</ion-label>
                   <!-- <ion-toggle id="arm-beat-drummer" class="arm-toggle" title="Arm for input"></ion-toggle> -->
                   <ion-toggle id="chk-beat-drummer"></ion-toggle>
@@ -450,22 +454,28 @@
           <div id="beat-pane-drummer" class="beat-pane studio-rack">
 
             <div class="rack-module rack-source">
-              <div class="rack-label"><ion-icon name="paw"></ion-icon> Drummer+</div>
+              <div class="rack-label"><svg viewBox="0 0 512 512" width="20" height="20" fill="currentColor" aria-label="Drummer+"><ellipse cx="256" cy="160" rx="180" ry="52"/><path d="M76 158v112c0 66 81 112 180 112s180-46 180-112V158"/><ellipse cx="256" cy="270" rx="180" ry="52"/></svg> Drummer+</div>
             </div>
 
             <div class="rack-module rack-params">
-              <div class="rack-param-row">
-                <button type="button" id="btn-drummerPlay" class="drummer-play" title="Play / Stop">
-                  <ion-icon name="play"></ion-icon>
-                </button>
-                <div class="rack-param-label">BPM</div>
-                <input type="range" class="rack-slider" id="drummerBpmRange" min="40" max="400" step="1" value="110">
-                <div class="rack-param-val" id="drummerBpmVal">110</div>
-              </div>
-              <div class="rack-param-row">
-                <div class="rack-param-label">Vol</div>
-                <input type="range" class="rack-slider" id="drummerVolRange" min="0" max="100" step="1" value="85">
-                <div class="rack-param-val" id="drummerVolVal">85</div>
+              <div class="drummer-transport">
+                <div class="drummer-transport-left">
+                  <button type="button" id="btn-drummerPlay" class="drummer-play" title="Play / Stop">
+                    <ion-icon name="play"></ion-icon>
+                  </button>
+                </div>
+                <div class="drummer-transport-right">
+                  <div class="drummer-ctrl">
+                    <div class="rack-param-label">BPM</div>
+                    <input type="range" class="rack-slider" id="drummerBpmRange" min="40" max="400" step="1" value="110">
+                    <div class="rack-param-val" id="drummerBpmVal">110</div>
+                  </div>
+                  <div class="drummer-ctrl">
+                    <div class="rack-param-label">Vol</div>
+                    <input type="range" class="rack-slider" id="drummerVolRange" min="0" max="100" step="1" value="85">
+                    <div class="rack-param-val" id="drummerVolVal">85</div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -491,6 +501,14 @@
                 <button type="button" id="btn-addBassRow" class="drummer-add" title="Add bass row">+</button>
               </div>
               <div id="drummerBass" class="drummer-rows"></div>
+            </div>
+
+            <div class="rack-module rack-drummer-kind">
+              <div class="drummer-kind-head">
+                <div class="rack-label"><ion-icon name="flash"></ion-icon> Sound Effects</div>
+                <button type="button" id="btn-addSfxRow" class="drummer-add" title="Add sound effect row">+</button>
+              </div>
+              <div id="drummerSfx" class="drummer-rows"></div>
             </div>
 
           </div>
