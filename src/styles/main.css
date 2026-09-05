@@ -2305,8 +2305,15 @@ ion-content {
   background: rgba(0, 0, 0, .3);
 }
 
+#beat-pane-drummer .rack-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
 #beat-pane-drummer .rack-label svg {
-  vertical-align: middle;
+  width: 1.05em;
+  height: 1.05em;
+  flex: 0 0 auto;
 }
 
 .beat-acc-row svg[slot="start"] {

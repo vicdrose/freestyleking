@@ -1463,8 +1463,13 @@ const autoBeatEl = document.getElementById('autoBeatAudio');
   };
   drummer.onStep(movePlayhead);
 
-  // Persist on unload.
+  // Persist on unload (also when the tab goes to background, and as a low-cost
+  // interval net so every change survives even if an action path misses a save).
   window.addEventListener('beforeunload', () => drummer.save());
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') drummer.save();
+  });
+  setInterval(() => { try { drummer.save(); } catch (e) {} }, 5000);
 
   const drummerPlayBtn = document.getElementById('btn-drummerPlay');
   const drummerBpmRange = document.getElementById('drummerBpmRange');
