@@ -403,6 +403,27 @@ advance() {
         });
       }
     });
+
+    // Bucket buttons (radiometric word buckets) inside the Autorap overlay:
+    // tap to switch which bucket Auto Rap draws from.
+    const bucketMap = [
+      ['ariaAdj', adjectives, 'adjective'],
+      ['ariaVerb', verbs, 'verbs'],
+      ['ariaEmo', emotions, 'emotions']
+    ];
+    bucketMap.forEach(([id, list, label]) => {
+      const b = document.getElementById(id);
+      if (b) {
+        b.addEventListener('click', () => {
+          this.seeds = list;
+          this.rollFn = random_item;
+          this.label = label;
+          if (autoBucket) autoBucket.textContent = this.label;
+          this.render(random_item(list));
+          if (!this.paused) this.schedule();
+        });
+      }
+    });
   }
 };
 

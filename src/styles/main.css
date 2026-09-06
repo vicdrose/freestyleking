@@ -2136,6 +2136,11 @@ ion-content {
   text-align: center;
 }
 
+.as-bucket-btn {
+  border: 1px solid #fff;
+  box-sizing: border-box;
+}
+
 /* wordstage: single list + focus word + Hold + section switch (Autorap stage untouched) */
 .wordstage .ws-panel {
   flex: 1 1 auto;
