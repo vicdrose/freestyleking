@@ -1051,6 +1051,42 @@ ion-input {
   background: #8a3434;
 }
 
+/* Embedded YouTube player shown during live capture */
+.yt-host {
+  margin-top: 12px;
+  border: 1px solid rgba(255, 255, 255, .2);
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.yt-host-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.yt-host-title {
+  font-size: .8rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #d2b48c;
+}
+
+.yt-stopbtn {
+  padding: 4px 12px;
+}
+
+.yt-host-frame iframe {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: none;
+  border-radius: 4px;
+  background: #000;
+}
+
 @media (max-width: 400px) {
   #beat-pane-player.studio-rack .rack-param-label,
   #beat-pane-keys.studio-rack .rack-param-label,

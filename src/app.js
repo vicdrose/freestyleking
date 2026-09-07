@@ -30,6 +30,34 @@ function random_item(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
 
+// Encode an AudioBuffer to a 16-bit stereo WAV blob (module-level: used by the
+// studio player's YouTube capture and the recorder combine step).
+function audioBufferToWavSafe(buf) {
+  const ch = buf.numberOfChannels;
+  const sr = buf.sampleRate;
+  const len = buf.length;
+  const bytes = 44 + len * ch * 2;
+  const ab = new ArrayBuffer(bytes);
+  const dv = new DataView(ab);
+  const wstr = (o, s) => { for (let i = 0; i < s.length; i++) dv.setUint8(o + i, s.charCodeAt(i)); };
+  wstr(0, 'RIFF'); dv.setUint32(4, bytes - 8, true); wstr(8, 'WAVE');
+  wstr(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true);
+  dv.setUint16(22, ch, true); dv.setUint32(24, sr, true);
+  dv.setUint32(28, sr * ch * 2, true); dv.setUint16(32, ch * 2, true); dv.setUint16(34, 16, true);
+  wstr(36, 'data'); dv.setUint32(40, len * ch * 2, true);
+  const chans = [];
+  for (let i = 0; i < ch; i++) chans.push(buf.getChannelData(i));
+  let off = 44;
+  for (let i = 0; i < len; i++) {
+    for (let c = 0; c < ch; c++) {
+      const s = Math.max(-1, Math.min(1, chans[c][i]));
+      dv.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+      off += 2;
+    }
+  }
+  return new Blob([ab], { type: 'audio/wav' });
+}
+
 function setResult(value) {
   resultEl.innerHTML = value;
   UpdateWords();
@@ -1114,7 +1142,12 @@ recState: recorder.state
     loadPlayer(url, raw);
   };
 
-  // ---- YouTube beats: convert + saved playlist (player rack) ----
+  // ---- YouTube beats: in-browser live capture + saved playlist (player rack) ----
+  // YouTube blocks datacenter IPs, so no server can convert. Instead we play
+  // the video in an embedded player and record the tab's audio via
+  // getDisplayMedia (screen capture must include "share audio" / tick the
+  // "Sound" box), then decode the take to a WAV blob and load it into the
+  // studio player. Conversion happens in real time (a 3-min beat ~ 3 min).
   const ytPlaylistKey = 'fk.ytPlaylist';
   let ytPlaylist = [];
   try {
@@ -1125,13 +1158,16 @@ recState: recorder.state
     /(^|[/.])youtube\.com\/(watch\?(?:[^#]*[?&])?v=|shorts\/|embed\/|live\/)/.test(u) ||
     /(^|[/.])youtu\.be\//.test(u);
 
-  const convUrl = 'https://freestyleking-converter.onrender.com';
-
   const ytPlaylistEl = document.getElementById('ytPlaylist');
   const ytPlaylistListEl = document.getElementById('ytPlaylistList');
   const btnSaveYt = document.getElementById('btn-saveYt');
   const audioUrlEl = document.getElementById('audioUrl');
   const sendUrlBtn = document.getElementById('btn-sendUrl');
+  const ytStatusEl = document.getElementById('url');
+
+  let ytCapture = null;      // active MediaRecorder
+  let ytStream = null;       // active display-capture MediaStream
+  let ytPlayerReady = false; // YouTube iframe API loaded + player created
 
   const saveYtPlaylist = () => {
     try { localStorage.setItem(ytPlaylistKey, JSON.stringify(ytPlaylist)); } catch (e) {}
@@ -1155,6 +1191,7 @@ recState: recorder.state
       play.textContent = 'Convert';
       play.onclick = () => {
         if (audioUrlEl) audioUrlEl.value = item.url;
+        refreshUrlActions();
         convertYoutube(item.url, item.name);
       };
       const del = document.createElement('button');
@@ -1170,27 +1207,127 @@ recState: recorder.state
     });
   }
 
-  // Convert a YouTube URL through the self-hosted converter service and load
-  // the returned WAV into the player.
-  async function convertYoutube(rawUrl, name) {
-    const status = document.getElementById('url');
-    if (status) status.innerHTML = 'Converting\u2026 (cold start can take ~30s)';
-    setActiveSource(null);
+  // Lazily load the YouTube IFrame API + create the embedded player.
+  function ensureYtPlayer(videoId, onReady) {
+    if (window.YT && window.YT.Player && ytPlayerReady) {
+      return onReady();
+    }
+    const host = document.getElementById('ytPlayerHost');
+    let target = document.getElementById('ytPlayerYt');
+    if (!target && host) {
+      target = document.createElement('div');
+      target.id = 'ytPlayerYt';
+      host.appendChild(target);
+    }
+    const ready = () => {
+      ytPlayerReady = true;
+      onReady();
+    };
+    if (window.YT && window.YT.Player) {
+      window.__fkYtPlayer = new window.YT.Player('ytPlayerYt', {
+        videoId,
+        playerVars: { playsinline: 1, autoplay: 0 },
+        events: { onReady: ready }
+      });
+      return;
+    }
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(tag);
+    window.onYouTubeIframeAPIReady = () => {
+      window.__fkYtPlayer = new window.YT.Player('ytPlayerYt', {
+        videoId,
+        playerVars: { playsinline: 1, autoplay: 0 },
+        events: { onReady: ready }
+      });
+    };
+  }
+
+  // Decode a captured audio blob to an AudioBuffer -> WAV -> load into player.
+  async function loadCapturedIntoPlayer(blob, label) {
     try {
-      const qs = new URLSearchParams({ url: rawUrl, name: name || 'beat' });
-      const resp = await fetch(convUrl + '/convert?' + qs.toString(), { method: 'GET' });
-      if (!resp.ok) {
-        let msg = resp.statusText;
-        try { const j = await resp.json(); msg = j.error || msg; } catch (e) {}
-        throw new Error(msg);
-      }
-      const blob = await resp.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      loadPlayer(objectUrl, (name || 'YouTube') + ' · converted');
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const buf = await ctx.decodeAudioData(await blob.arrayBuffer());
+      const wav = audioBufferToWavSafe(buf);
+      const objectUrl = URL.createObjectURL(wav);
+      loadPlayer(objectUrl, (label || 'YouTube') + ' · captured');
     } catch (e) {
-      if (status) status.innerHTML = 'Convert failed: ' + (e && e.message);
+      if (ytStatusEl) ytStatusEl.innerHTML = 'Could not decode capture: ' + (e && e.message);
     }
   }
+
+  // The main "Convert" flow for a YouTube URL.
+  async function convertYoutube(rawUrl, name) {
+    const id = (rawUrl.match(/(?:v=|shorts\/|embed\/|youtu\.be\/)([0-9A-Za-z_-]{11})/) || [])[1];
+    if (!id) {
+      if (ytStatusEl) ytStatusEl.innerHTML = 'Could not read YouTube video ID';
+      return;
+    }
+    if (ytStatusEl) ytStatusEl.innerHTML = 'Choose which screen or tab to capture (tick "Share audio"), then pick this tab.';
+    setActiveSource(null);
+    try {
+      ytStream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: { echoCancellation: false, noiseSuppression: false }
+      });
+    } catch (e) {
+      if (ytStatusEl) ytStatusEl.innerHTML = 'Capture cancelled: ' + (e && e.message);
+      return;
+    }
+    const audioTrack = ytStream.getAudioTracks()[0];
+    if (!audioTrack) {
+      if (ytStatusEl) ytStatusEl.innerHTML = 'No audio was shared. Press again and tick "Share audio" when picking the tab.';
+      ytStream.getTracks().forEach((t) => t.stop());
+      ytStream = null;
+      return;
+    }
+    unlock();
+    ensureYtPlayer(id, () => {
+      const p = window.__fkYtPlayer;
+      if (p && p.loadVideoById) p.loadVideoById(id);
+    });
+    ensureYtVisible();
+
+    // Record only the audio track; the video track is dropped (we don't need it).
+    const audioOnly = new MediaStream([audioTrack]);
+    const rec = new MediaRecorder(audioOnly);
+    ytCapture = rec;
+    const chunks = [];
+    rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+    rec.onstop = () => {
+      if (ytCapture === rec) ytCapture = null;
+      if (ytStream) { ytStream.getTracks().forEach((t) => t.stop()); ytStream = null; }
+      const host = document.getElementById('ytPlayerHost');
+      if (host) host.style.display = 'none';
+      const blob = new Blob(chunks, { type: 'audio/webm' });
+      if (ytStatusEl) ytStatusEl.innerHTML = blob.size ? 'Captured. Converting to WAV\u2026' : 'Capture was empty.';
+      if (blob.size) loadCapturedIntoPlayer(blob, name);
+    };
+    rec.start();
+    if (ytStatusEl) ytStatusEl.innerHTML = 'Recording\u2026 press play in the player above, tap Stop below when done.';
+  }
+
+  // Make the embedded YouTube player visible (it normally lives hidden).
+  function ensureYtVisible() {
+    const host = document.getElementById('ytPlayerHost');
+    if (host) {
+      host.style.display = 'block';
+      host.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+
+  // Stop any in-progress YouTube capture.
+  function stopYtCapture() {
+    if (ytCapture && ytCapture.state !== 'inactive') {
+      try { ytCapture.stop(); } catch (e) {}
+    }
+  }
+
+  const stopYtBtn = document.getElementById('btn-stopYt');
+  if (stopYtBtn) stopYtBtn.onclick = () => {
+    stopYtCapture();
+    if (ytStatusEl) ytStatusEl.innerHTML = 'Stopping\u2026';
+  };
 
   // Update the Submit button label + show Save depending on the input.
   const refreshUrlActions = () => {
@@ -1203,12 +1340,25 @@ recState: recorder.state
   refreshUrlActions();
   renderYtPlaylist();
 
+  // "Submit" -> for a YouTube URL kick off capture, else load directly.
+  document.getElementById('btn-sendUrl').onclick = () => {
+    const raw = (audioUrlEl && audioUrlEl.value || '').trim();
+    if (!raw) return;
+    if (isYtUrl(raw)) {
+      convertYoutube(raw);
+    } else {
+      setActiveSource(null);
+      const url = toProxy(raw) || raw;
+      loadPlayer(url, raw);
+    }
+  };
+
   // Save the pasted YouTube URL to the playlist.
   if (btnSaveYt) {
     btnSaveYt.onclick = () => {
       const raw = (audioUrlEl && audioUrlEl.value || '').trim();
       if (!raw || !isYtUrl(raw)) return;
-      const name = 'Youtube Beat ' + (ytPlaylist.length + 1);
+      const name = 'YouTube Beat ' + (ytPlaylist.length + 1);
       ytPlaylist.push({ url: raw, name });
       saveYtPlaylist();
       showToast && showToast('Saved to playlist');
