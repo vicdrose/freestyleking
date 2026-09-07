@@ -47,7 +47,7 @@ const videoId = (u) => {
   return m ? m[1] : null;
 };
 
-app.get('/health', (_req, res) => res.json({ ok: true }));
+app.get('/health', (_req, res) => res.json({ ok: true, deno: DENO_STATUS }));
 
 app.get('/convert', async (req, res) => {
   const url = String(req.query.url || '').trim();
@@ -123,14 +123,17 @@ app.get('/convert', async (req, res) => {
   }
 });
 
-app.listen(PORT, '0.0.0.0', () => console.log(`freestyleking converter listening on :${PORT}`));
-
 // Startup diagnostic: confirm the deno binary exists and runs, so failures are
-// easy to spot in the Render logs.
-try {
-  const p = execFileSync(denoBin, ['--version']);
-  console.log('deno OK:', String(p).trim());
-  console.log('deno path:', denoBin);
-} catch (e) {
-  console.error('deno NOT AVAILABLE:', e && e.message);
+// easy to spot. Surfaced via GET /health.
+function probeDeno() {
+  try {
+    const out = execFileSync(denoBin, ['--version'], { timeout: 15000 });
+    return 'OK: ' + String(out).trim() + ' @ ' + denoBin;
+  } catch (e) {
+    return 'ERROR: ' + (e && (e.message || e.code || e)) + ' @ ' + denoBin;
+  }
 }
+const DENO_STATUS = probeDeno();
+console.log('deno probe:', DENO_STATUS);
+
+app.listen(PORT, '0.0.0.0', () => console.log(`freestyleking converter listening on :${PORT}`));
