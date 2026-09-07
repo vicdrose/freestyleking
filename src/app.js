@@ -1125,11 +1125,7 @@ recState: recorder.state
     /(^|[/.])youtube\.com\/(watch\?(?:[^#]*[?&])?v=|shorts\/|embed\/|live\/)/.test(u) ||
     /(^|[/.])youtu\.be\//.test(u);
 
-  const convUrlEl = document.getElementById('fk-conv-url');
-  const defaultConv = 'https://freestyleking-converter.onrender.com';
-  const getConvUrl = () => (convUrlEl && convUrlEl.value && convUrlEl.value.trim())
-    ? convUrlEl.value.trim().replace(/\/+$/, '')
-    : (localStorage.getItem('fk.convUrl') || defaultConv).replace(/\/+$/, '');
+  const convUrl = 'https://freestyleking-converter.onrender.com';
 
   const ytPlaylistEl = document.getElementById('ytPlaylist');
   const ytPlaylistListEl = document.getElementById('ytPlaylistList');
@@ -1177,13 +1173,12 @@ recState: recorder.state
   // Convert a YouTube URL through the self-hosted converter service and load
   // the returned WAV into the player.
   async function convertYoutube(rawUrl, name) {
-    const conv = getConvUrl();
     const status = document.getElementById('url');
     if (status) status.innerHTML = 'Converting\u2026 (cold start can take ~30s)';
     setActiveSource(null);
     try {
       const qs = new URLSearchParams({ url: rawUrl, name: name || 'beat' });
-      const resp = await fetch(conv + '/convert?' + qs.toString(), { method: 'GET' });
+      const resp = await fetch(convUrl + '/convert?' + qs.toString(), { method: 'GET' });
       if (!resp.ok) {
         let msg = resp.statusText;
         try { const j = await resp.json(); msg = j.error || msg; } catch (e) {}
@@ -2409,15 +2404,6 @@ rows.forEach((row) => renderDrummerRow(row));
       settingsMenuSub.hidden = !openNow;
       settingsMenuSub.setAttribute('data-open', String(openNow));
       if (settingsChev) settingsChev.style.transform = openNow ? 'rotate(180deg)' : '';
-    });
-  }
-
-  // Persist the YouTube converter URL from Settings (fallback to default).
-  const convUrlInput = document.getElementById('fk-conv-url');
-  if (convUrlInput) {
-    convUrlInput.value = localStorage.getItem('fk.convUrl') || '';
-    convUrlInput.addEventListener('change', () => {
-      try { localStorage.setItem('fk.convUrl', (convUrlInput.value || '').trim()); } catch (e) {}
     });
   }
 

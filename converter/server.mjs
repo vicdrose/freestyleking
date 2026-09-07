@@ -16,10 +16,19 @@ import cors from 'cors';
 import path from 'node:path';
 import fs from 'node:fs';
 import os from 'node:os';
+import { createRequire } from 'node:module';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import youtubedl from 'yt-dlp-exec';
 import ffmpegPath from 'ffmpeg-static';
+
+// yt-dlp needs a JS runtime (deno) to extract YouTube format data (the modern
+// player returns a JS challenge). deno-bin ships a static deno binary; expose
+// it on PATH so yt-dlp's --js-runtimes deno resolves.
+const require = createRequire(import.meta.url);
+const denoBin = require.resolve('deno-bin/bin/deno');
+process.env.PATH = path.dirname(denoBin) + path.delimiter + (process.env.PATH || '');
+const YTDL_OPTS = { jsRuntimes: 'deno' };
 
 const execFileP = promisify(execFile);
 const app = express();
@@ -59,6 +68,7 @@ app.get('/convert', async (req, res) => {
     let duration = 0;
     try {
       const out = await youtubedl(url, {
+        ...YTDL_OPTS,
         print: 'duration',
         noPlaylist: true,
         skipDownload: true
@@ -75,6 +85,7 @@ app.get('/convert', async (req, res) => {
 
     const raw = path.join(tmpDir, 'audio.m4a');
     await youtubedl(url, {
+      ...YTDL_OPTS,
       format: 'bestaudio/best',
       output: raw,
       noPlaylist: true,
