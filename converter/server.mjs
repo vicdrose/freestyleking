@@ -17,18 +17,17 @@ import path from 'node:path';
 import fs from 'node:fs';
 import os from 'node:os';
 import { createRequire } from 'node:module';
-import { execFile } from 'node:child_process';
+import { execFile, execFileSync } from 'node:child_process';
 import { promisify } from 'node:util';
 import youtubedl from 'yt-dlp-exec';
 import ffmpegPath from 'ffmpeg-static';
 
 // yt-dlp needs a JS runtime (deno) to extract YouTube format data (the modern
-// player returns a JS challenge). deno-bin ships a static deno binary; expose
-// it on PATH so yt-dlp's --js-runtimes deno resolves.
+// player returns a JS challenge). deno-bin ships a static deno binary; pass its
+// absolute path straight into --js-runtimes so no PATH guessing is involved.
 const require = createRequire(import.meta.url);
 const denoBin = require.resolve('deno-bin/bin/deno');
-process.env.PATH = path.dirname(denoBin) + path.delimiter + (process.env.PATH || '');
-const YTDL_OPTS = { jsRuntimes: 'deno' };
+const YTDL_OPTS = { jsRuntimes: 'deno:' + denoBin };
 
 const execFileP = promisify(execFile);
 const app = express();
@@ -125,3 +124,13 @@ app.get('/convert', async (req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => console.log(`freestyleking converter listening on :${PORT}`));
+
+// Startup diagnostic: confirm the deno binary exists and runs, so failures are
+// easy to spot in the Render logs.
+try {
+  const p = execFileSync(denoBin, ['--version']);
+  console.log('deno OK:', String(p).trim());
+  console.log('deno path:', denoBin);
+} catch (e) {
+  console.error('deno NOT AVAILABLE:', e && e.message);
+}
