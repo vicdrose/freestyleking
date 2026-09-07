@@ -49,6 +49,10 @@
             <ion-checkbox slot="start" id="fk-chk-advanced"></ion-checkbox>
             <ion-label>Advanced audio player animation</ion-label>
           </ion-item>
+          <ion-item>
+            <ion-label position="stacked">YouTube converter URL</ion-label>
+            <ion-input id="fk-conv-url" placeholder="https://your-converter.onrender.com"></ion-input>
+          </ion-item>
         </div>
         <ion-item><ion-icon slot="start" name="people-outline"></ion-icon><ion-label>Friends</ion-label></ion-item>
         <ion-item><ion-icon slot="start" name="document-outline"></ion-icon><ion-label>Posts</ion-label></ion-item>
@@ -318,7 +322,14 @@
                 <ion-input id="audioUrl" class="rack-url-input" placeholder="Paste Audio URL"></ion-input>
                 <ion-button id="btn-sendUrl" class="rack-url-submit">Submit</ion-button>
               </div>
+              <div class="rack-url-row">
+                <ion-button id="btn-saveYt" class="rack-url-submit rack-yt-save" style="display:none">Save to playlist</ion-button>
+              </div>
               <div class="rack-url-status" id="url">No URL loaded</div>
+              <div class="yt-playlist" id="ytPlaylist" style="display:none">
+                <div class="yt-playlist-head">YouTube Beats</div>
+                <div class="yt-playlist-list" id="ytPlaylistList"></div>
+              </div>
             </div>
 
           </div>

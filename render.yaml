@@ -1,0 +1,18 @@
+# Render Blueprint for the Freestyle King YouTube converter.
+# Creates a free-tier web service from the ./converter subfolder.
+# Push this to GitHub, then in Render: New Blueprint Instance -> repo.
+services:
+  - type: web
+    name: freestyleking-converter
+    rootDir: converter
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.mjs
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: YT_CONVERT_TOKEN
+        sync: false
+      - key: MAX_SECONDS
+        value: "600"

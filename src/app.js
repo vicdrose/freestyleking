@@ -1114,6 +1114,112 @@ recState: recorder.state
     loadPlayer(url, raw);
   };
 
+  // ---- YouTube beats: convert + saved playlist (player rack) ----
+  const ytPlaylistKey = 'fk.ytPlaylist';
+  let ytPlaylist = [];
+  try {
+    ytPlaylist = JSON.parse(localStorage.getItem(ytPlaylistKey) || '[]') || [];
+  } catch (e) { ytPlaylist = []; }
+
+  const isYtUrl = (u) =>
+    /(^|[/.])youtube\.com\/(watch\?(?:[^#]*[?&])?v=|shorts\/|embed\/|live\/)/.test(u) ||
+    /(^|[/.])youtu\.be\//.test(u);
+
+  const convUrlEl = document.getElementById('fk-conv-url');
+  const defaultConv = 'https://freestyleking-converter.onrender.com';
+  const getConvUrl = () => (convUrlEl && convUrlEl.value && convUrlEl.value.trim())
+    ? convUrlEl.value.trim().replace(/\/+$/, '')
+    : (localStorage.getItem('fk.convUrl') || defaultConv).replace(/\/+$/, '');
+
+  const ytPlaylistEl = document.getElementById('ytPlaylist');
+  const ytPlaylistListEl = document.getElementById('ytPlaylistList');
+  const btnSaveYt = document.getElementById('btn-saveYt');
+  const audioUrlEl = document.getElementById('audioUrl');
+  const sendUrlBtn = document.getElementById('btn-sendUrl');
+
+  const saveYtPlaylist = () => {
+    try { localStorage.setItem(ytPlaylistKey, JSON.stringify(ytPlaylist)); } catch (e) {}
+    renderYtPlaylist();
+  };
+
+  function renderYtPlaylist() {
+    if (!ytPlaylistEl || !ytPlaylistListEl) return;
+    ytPlaylistEl.style.display = ytPlaylist.length ? '' : 'none';
+    ytPlaylistListEl.innerHTML = '';
+    ytPlaylist.forEach((item, i) => {
+      const row = document.createElement('div');
+      row.className = 'yt-playlist-item';
+      const label = document.createElement('span');
+      label.className = 'yt-label';
+      label.textContent = item.name || item.url;
+      label.title = item.url;
+      const play = document.createElement('button');
+      play.type = 'button';
+      play.className = 'yt-play';
+      play.textContent = 'Convert';
+      play.onclick = () => {
+        if (audioUrlEl) audioUrlEl.value = item.url;
+        convertYoutube(item.url, item.name);
+      };
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'yt-del';
+      del.textContent = '×';
+      del.title = 'Remove';
+      del.onclick = () => { ytPlaylist.splice(i, 1); saveYtPlaylist(); };
+      row.appendChild(label);
+      row.appendChild(play);
+      row.appendChild(del);
+      ytPlaylistListEl.appendChild(row);
+    });
+  }
+
+  // Convert a YouTube URL through the self-hosted converter service and load
+  // the returned WAV into the player.
+  async function convertYoutube(rawUrl, name) {
+    const conv = getConvUrl();
+    const status = document.getElementById('url');
+    if (status) status.innerHTML = 'Converting\u2026 (cold start can take ~30s)';
+    setActiveSource(null);
+    try {
+      const qs = new URLSearchParams({ url: rawUrl, name: name || 'beat' });
+      const resp = await fetch(conv + '/convert?' + qs.toString(), { method: 'GET' });
+      if (!resp.ok) {
+        let msg = resp.statusText;
+        try { const j = await resp.json(); msg = j.error || msg; } catch (e) {}
+        throw new Error(msg);
+      }
+      const blob = await resp.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      loadPlayer(objectUrl, (name || 'YouTube') + ' · converted');
+    } catch (e) {
+      if (status) status.innerHTML = 'Convert failed: ' + (e && e.message);
+    }
+  }
+
+  // Update the Submit button label + show Save depending on the input.
+  const refreshUrlActions = () => {
+    const raw = (audioUrlEl && audioUrlEl.value || '').trim();
+    const yt = isYtUrl(raw);
+    if (sendUrlBtn) sendUrlBtn.textContent = yt ? 'Convert' : 'Submit';
+    if (btnSaveYt) btnSaveYt.style.display = yt ? '' : 'none';
+  };
+  if (audioUrlEl) audioUrlEl.addEventListener('input', refreshUrlActions);
+  refreshUrlActions();
+  renderYtPlaylist();
+
+  // Save the pasted YouTube URL to the playlist.
+  if (btnSaveYt) {
+    btnSaveYt.onclick = () => {
+      const raw = (audioUrlEl && audioUrlEl.value || '').trim();
+      if (!raw || !isYtUrl(raw)) return;
+      const name = 'Youtube Beat ' + (ytPlaylist.length + 1);
+      ytPlaylist.push({ url: raw, name });
+      saveYtPlaylist();
+      showToast && showToast('Saved to playlist');
+    };
+  }
+
   // Loop buttons load straight into the player; the play button then plays it.
   const wireSource = (id, get, label) => {
     const btn = document.getElementById(id);
@@ -2303,6 +2409,15 @@ rows.forEach((row) => renderDrummerRow(row));
       settingsMenuSub.hidden = !openNow;
       settingsMenuSub.setAttribute('data-open', String(openNow));
       if (settingsChev) settingsChev.style.transform = openNow ? 'rotate(180deg)' : '';
+    });
+  }
+
+  // Persist the YouTube converter URL from Settings (fallback to default).
+  const convUrlInput = document.getElementById('fk-conv-url');
+  if (convUrlInput) {
+    convUrlInput.value = localStorage.getItem('fk.convUrl') || '';
+    convUrlInput.addEventListener('change', () => {
+      try { localStorage.setItem('fk.convUrl', (convUrlInput.value || '').trim()); } catch (e) {}
     });
   }
 
