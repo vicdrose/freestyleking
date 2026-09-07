@@ -313,20 +313,20 @@
 
             <!-- Module 4: Custom URL loader -->
             <div class="rack-module rack-url">
-              <div class="rack-url-label">Load Custom URL</div>
+              <div class="rack-url-label">Load Custom URL
+                <button type="button" id="btn-yt-toggle" class="yt-toggle" title="YouTube beats">&#183;&#183;&#183;</button>
+              </div>
               <div class="rack-url-row">
                 <ion-input id="audioUrl" class="rack-url-input" placeholder="Paste Audio URL"></ion-input>
                 <ion-button id="btn-sendUrl" class="rack-url-submit">Submit</ion-button>
               </div>
-              <div class="rack-url-row">
-                <ion-button id="btn-saveYt" class="rack-url-submit rack-yt-save" style="display:none">Save to playlist</ion-button>
-              </div>
               <div class="rack-url-status" id="url">No URL loaded</div>
-              <div class="yt-playlist" id="ytPlaylist" style="display:none">
+              <div class="yt-stash" id="ytStash" hidden>
                 <div class="yt-playlist-head">YouTube Beats</div>
                 <div class="yt-playlist-list" id="ytPlaylistList"></div>
+                <button type="button" id="btn-yt-add" class="yt-add">＋ Add current URL</button>
               </div>
-              <div class="yt-host" id="ytPlayerHost" style="display:none">
+              <div class="yt-host" id="ytPlayerHost" hidden>
                 <div class="yt-host-head">
                   <span class="yt-host-title">Convert &amp; listen</span>
                   <button type="button" id="btn-stopYt" class="yt-del yt-stopbtn">&blacksquare;&nbsp; Stop</button>

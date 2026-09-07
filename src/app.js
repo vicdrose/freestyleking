@@ -1158,9 +1158,8 @@ recState: recorder.state
     /(^|[/.])youtube\.com\/(watch\?(?:[^#]*[?&])?v=|shorts\/|embed\/|live\/)/.test(u) ||
     /(^|[/.])youtu\.be\//.test(u);
 
-  const ytPlaylistEl = document.getElementById('ytPlaylist');
+  const ytStashEl = document.getElementById('ytStash');
   const ytPlaylistListEl = document.getElementById('ytPlaylistList');
-  const btnSaveYt = document.getElementById('btn-saveYt');
   const audioUrlEl = document.getElementById('audioUrl');
   const sendUrlBtn = document.getElementById('btn-sendUrl');
   const ytStatusEl = document.getElementById('url');
@@ -1175,9 +1174,16 @@ recState: recorder.state
   };
 
   function renderYtPlaylist() {
-    if (!ytPlaylistEl || !ytPlaylistListEl) return;
-    ytPlaylistEl.style.display = ytPlaylist.length ? '' : 'none';
+    if (!ytStashEl || !ytPlaylistListEl) return;
     ytPlaylistListEl.innerHTML = '';
+    if (!ytPlaylist.length) {
+      const empty = document.createElement('div');
+      empty.className = 'yt-label';
+      empty.style.color = '#666';
+      empty.textContent = 'No saved beats';
+      ytPlaylistListEl.appendChild(empty);
+      return;
+    }
     ytPlaylist.forEach((item, i) => {
       const row = document.createElement('div');
       row.className = 'yt-playlist-item';
@@ -1329,12 +1335,36 @@ recState: recorder.state
     if (ytStatusEl) ytStatusEl.innerHTML = 'Stopping\u2026';
   };
 
-  // Update the Submit button label + show Save depending on the input.
+  // Open/close the stash via the discreet ··· toggle.
+  const ytToggleBtn = document.getElementById('btn-yt-toggle');
+  if (ytToggleBtn && ytStashEl) {
+    ytToggleBtn.onclick = () => {
+      const opening = ytStashEl.hidden;
+      ytStashEl.hidden = !opening;
+      if (opening) renderYtPlaylist();
+    };
+  }
+
+  // Add the currently-pasted YouTube URL from inside the stash.
+  const btnYtAdd = document.getElementById('btn-yt-add');
+  if (btnYtAdd) {
+    btnYtAdd.onclick = () => {
+      const raw = (audioUrlEl && audioUrlEl.value || '').trim();
+      if (!raw || !isYtUrl(raw)) {
+        showToast && showToast('Paste a YouTube link first');
+        return;
+      }
+      const name = 'YouTube Beat ' + (ytPlaylist.length + 1);
+      ytPlaylist.push({ url: raw, name });
+      saveYtPlaylist();
+      showToast && showToast('Saved to stash');
+    };
+  }
+
+  // Update the Submit button label depending on the input.
   const refreshUrlActions = () => {
     const raw = (audioUrlEl && audioUrlEl.value || '').trim();
-    const yt = isYtUrl(raw);
-    if (sendUrlBtn) sendUrlBtn.textContent = yt ? 'Convert' : 'Submit';
-    if (btnSaveYt) btnSaveYt.style.display = yt ? '' : 'none';
+    if (sendUrlBtn) sendUrlBtn.textContent = isYtUrl(raw) ? 'Convert' : 'Submit';
   };
   if (audioUrlEl) audioUrlEl.addEventListener('input', refreshUrlActions);
   refreshUrlActions();
@@ -1352,18 +1382,6 @@ recState: recorder.state
       loadPlayer(url, raw);
     }
   };
-
-  // Save the pasted YouTube URL to the playlist.
-  if (btnSaveYt) {
-    btnSaveYt.onclick = () => {
-      const raw = (audioUrlEl && audioUrlEl.value || '').trim();
-      if (!raw || !isYtUrl(raw)) return;
-      const name = 'YouTube Beat ' + (ytPlaylist.length + 1);
-      ytPlaylist.push({ url: raw, name });
-      saveYtPlaylist();
-      showToast && showToast('Saved to playlist');
-    };
-  }
 
   // Loop buttons load straight into the player; the play button then plays it.
   const wireSource = (id, get, label) => {

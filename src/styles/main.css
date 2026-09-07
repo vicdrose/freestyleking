@@ -994,16 +994,41 @@ ion-input {
   word-break: break-all;
 }
 
-/* YouTube beat playlist (player rack only) */
-#beat-pane-player.studio-rack .rack-yt-save {
-  --background: #2f91ae;
+/* YouTube beat stash (kept discreet: opened via the ··· toggle on the label) */
+.yt-toggle {
+  margin-left: 6px;
+  padding: 0 4px;
+  font-size: .72rem;
+  line-height: 1;
+  color: #666;
+  background: none;
+  border: none;
+  cursor: pointer;
+  letter-spacing: 2px;
+  vertical-align: middle;
 }
 
-.yt-playlist {
+.yt-toggle:hover {
+  color: #d2b48c;
+}
+
+.yt-stash {
   margin-top: 12px;
   border: 1px solid rgba(255, 255, 255, .2);
   border-radius: 6px;
   padding: 8px;
+}
+
+.yt-add {
+  margin-top: 6px;
+  width: 100%;
+  background: #2f91ae;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: .78rem;
+  cursor: pointer;
 }
 
 .yt-playlist-head {
