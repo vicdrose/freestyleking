@@ -20,6 +20,7 @@ import { getBeatShuffler, getPad, getBreak, getBeat, getFKBeat, getBass, getSFX,
 import { fetchFeed, playSong, isFeedPlaying, stopFeed } from './services/feed.js';
 import { saveTrack, listTracks, getTrack, deleteTrack } from './library.js';
 import * as filesync from './services/filesync.js';
+import * as audioStash from './services/stash.js';
 import * as drummer from './drummer.js';
 
 const Vue = window.Vue;
@@ -1154,6 +1155,12 @@ recState: recorder.state
     ytPlaylist = JSON.parse(localStorage.getItem(ytPlaylistKey) || '[]') || [];
   } catch (e) { ytPlaylist = []; }
 
+  let stashFiles = [];
+  audioStash.listItems().then((list) => {
+    stashFiles = list || [];
+    renderYtPlaylist();
+  }).catch(() => {});
+
   const isYtUrl = (u) =>
     /(^|[/.])youtube\.com\/(watch\?(?:[^#]*[?&])?v=|shorts\/|embed\/|live\/)/.test(u) ||
     /(^|[/.])youtu\.be\//.test(u);
@@ -1176,14 +1183,44 @@ recState: recorder.state
   function renderYtPlaylist() {
     if (!ytStashEl || !ytPlaylistListEl) return;
     ytPlaylistListEl.innerHTML = '';
-    if (!ytPlaylist.length) {
+    if (!stashFiles.length && !ytPlaylist.length) {
       const empty = document.createElement('div');
       empty.className = 'yt-label';
       empty.style.color = '#666';
-      empty.textContent = 'No saved beats';
+      empty.textContent = 'Empty';
       ytPlaylistListEl.appendChild(empty);
       return;
     }
+    stashFiles.forEach((item) => {
+      const row = document.createElement('div');
+      row.className = 'yt-playlist-item';
+      const label = document.createElement('span');
+      label.className = 'yt-label';
+      label.textContent = item.name || 'Untitled';
+      label.title = (item.name || '') + (item.size ? ' · ' + (item.size / 1048576).toFixed(1) + ' MB' : '');
+      const play = document.createElement('button');
+      play.type = 'button';
+      play.className = 'yt-play';
+      play.textContent = 'Play';
+      play.onclick = () => {
+        setActiveSource(null);
+        loadPlayer(URL.createObjectURL(item.blob), item.name || 'Stashed');
+      };
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'yt-del';
+      del.textContent = '×';
+      del.title = 'Remove';
+      del.onclick = () => {
+        audioStash.deleteItem(item.id).catch(() => {});
+        stashFiles = stashFiles.filter((f) => f.id !== item.id);
+        renderYtPlaylist();
+      };
+      row.appendChild(label);
+      row.appendChild(play);
+      row.appendChild(del);
+      ytPlaylistListEl.appendChild(row);
+    });
     ytPlaylist.forEach((item, i) => {
       const row = document.createElement('div');
       row.className = 'yt-playlist-item';
@@ -1271,6 +1308,10 @@ recState: recorder.state
     }
     if (ytStatusEl) ytStatusEl.innerHTML = 'Choose which screen or tab to capture (tick "Share audio"), then pick this tab.';
     setActiveSource(null);
+    if (!navigator.mediaDevices || typeof navigator.mediaDevices.getDisplayMedia !== 'function') {
+      if (ytStatusEl) ytStatusEl.innerHTML = 'Screen capture is not available on this device/browser \u2014 use desktop Chrome.';
+      return;
+    }
     try {
       ytStream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
@@ -1359,6 +1400,29 @@ recState: recorder.state
       saveYtPlaylist();
       showToast && showToast('Saved to stash');
     };
+  }
+
+  // Load a downloaded audio file (works on Android) + keep it in the stash.
+  const btnYtFile = document.getElementById('btn-yt-file');
+  const ytFileInput = document.getElementById('ytFileInput');
+  if (btnYtFile && ytFileInput) {
+    btnYtFile.onclick = () => ytFileInput.click();
+    ytFileInput.addEventListener('change', async () => {
+      const file = ytFileInput.files && ytFileInput.files[0];
+      ytFileInput.value = '';
+      if (!file) return;
+      const name = (file.name || 'Untitled').replace(/\.[A-Za-z0-9]+$/, '') || 'Untitled';
+      setActiveSource(null);
+      loadPlayer(URL.createObjectURL(file), name);
+      try {
+        const rec = await audioStash.saveItem(name, file);
+        stashFiles.unshift(rec);
+        renderYtPlaylist();
+        showToast && showToast('Saved to stash');
+      } catch (e) {
+        showToast && showToast('Loaded but could not save to stash');
+      }
+    });
   }
 
   // Update the Submit button label depending on the input.
