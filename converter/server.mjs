@@ -42,6 +42,19 @@ const isYtUrl = (u) =>
   /(^|[/.])youtube\.com\/(watch\?(?:[^#]*[?&])?v=|shorts\/|embed\/|live\/)/.test(u) ||
   /(^|[/.])youtu\.be\//.test(u);
 
+// YouTube player clients. Default (visionos/web) now demands a JS runtime and
+// often 403s from datacenter IPs; android/tv/ios usually bypass both.
+const CLIENT_ARGS = {
+  'web': 'youtube:player_client=web',
+  'android': 'youtube:player_client=android',
+  'ios': 'youtube:player_client=ios',
+  'tv': 'youtube:player_client=tv',
+  'mweb': 'youtube:player_client=mweb',
+  'web_safari': 'youtube:player_client=web_safari',
+  'web_embedded': 'youtube:player_client=web_embedded',
+  'tv_embedded': 'youtube:player_client=tv_embedded'
+};
+
 const videoId = (u) => {
   const m = String(u).match(/(?:v=|shorts\/|embed\/|youtu\.be\/)([0-9A-Za-z_-]{11})(?:[?&#/]|$)/);
   return m ? m[1] : null;
@@ -59,6 +72,8 @@ app.get('/convert', async (req, res) => {
   }
 
   const id = videoId(url) || 'beat';
+  const clientKey = String(req.query.client || '').trim().toLowerCase();
+  const extractorArgs = CLIENT_ARGS[clientKey] || null;
   let tmpDir;
   try {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ytc-'));
@@ -68,6 +83,7 @@ app.get('/convert', async (req, res) => {
     try {
       const out = await youtubedl(url, {
         ...YTDL_OPTS,
+        ...(extractorArgs ? { extractorArgs } : {}),
         print: 'duration',
         noPlaylist: true,
         skipDownload: true
@@ -85,6 +101,7 @@ app.get('/convert', async (req, res) => {
     const raw = path.join(tmpDir, 'audio.m4a');
     await youtubedl(url, {
       ...YTDL_OPTS,
+      ...(extractorArgs ? { extractorArgs } : {}),
       format: 'bestaudio/best',
       output: raw,
       noPlaylist: true,
